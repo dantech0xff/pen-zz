@@ -336,6 +336,7 @@ class _DrawScreenState extends State<DrawScreen> {
                       children: [
                         Positioned.fill(
                           child: Listener(
+                            key: const ValueKey('draw-canvas'),
                             behavior: HitTestBehavior.opaque,
                             onPointerDown: (e) {
                               if (_pointer != null) return;
@@ -434,29 +435,34 @@ class _DrawScreenState extends State<DrawScreen> {
           const SizedBox(height: 6),
           Row(
             children: [
-              SketchButton(
-                label: 'Hoàn tác',
-                onTap: cur.isEmpty
-                    ? null
-                    : () {
-                        cur.removeLast();
-                        _drawing = null;
-                        _changed();
-                      },
-              ),
-              const SizedBox(width: 8),
-              SketchButton(
-                label: 'Xóa hết',
-                onTap: cur.isEmpty
-                    ? null
-                    : () {
-                        cur.clear();
-                        _drawing = null;
-                        _changed();
-                      },
+              Expanded(
+                child: SketchButton(
+                  label: 'Hoàn tác',
+                  onTap: cur.isEmpty
+                      ? null
+                      : () {
+                          cur.removeLast();
+                          _drawing = null;
+                          _changed();
+                        },
+                ),
               ),
               const SizedBox(width: 8),
               Expanded(
+                child: SketchButton(
+                  label: 'Xóa hết',
+                  onTap: cur.isEmpty
+                      ? null
+                      : () {
+                          cur.clear();
+                          _drawing = null;
+                          _changed();
+                        },
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 2,
                 child: SketchButton(
                   label: first ? (weapon ? 'Tiếp: vẽ khiên' : 'Xong, vào màn ${g.save.stage + 1}') : 'Lưu đồ',
                   primary: true,

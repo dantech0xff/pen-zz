@@ -4,6 +4,13 @@ import 'package:pen_zz/app.dart';
 import 'package:pen_zz/state/game_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// The lobby hero animates forever, so frames are pumped explicitly instead of settling.
+Future<void> settle(WidgetTester tester) async {
+  for (var i = 0; i < 12; i++) {
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+}
+
 /// Walks the first-time flow: lobby, drawing a weapon and a shield, pre-match, then the battle.
 void main() {
   testWidgets('first-time flow reaches the battle', (tester) async {
@@ -14,14 +21,14 @@ void main() {
     final g = GameController();
     await g.load();
     await tester.pumpWidget(PenApp(controller: g));
-    await tester.pumpAndSettle();
+    await settle(tester);
 
     expect(find.text('Bút Chiến'), findsOneWidget);
     await tester.tap(find.text('Vẽ đồ đầu tiên'));
-    await tester.pumpAndSettle();
+    await settle(tester);
     expect(find.text('Vẽ vũ khí'), findsOneWidget);
 
-    final canvas = find.byType(Listener).first;
+    final canvas = find.byKey(const ValueKey('draw-canvas'));
     Offset handAt() {
       final box = tester.getRect(canvas);
       final k = box.width / 380;
@@ -30,17 +37,17 @@ void main() {
 
     // Draw a sword straight up from the hand.
     await tester.dragFrom(handAt(), const Offset(4, -130));
-    await tester.pumpAndSettle();
+    await settle(tester);
     expect(g.save.w, isEmpty, reason: 'gear is only saved at the end');
     await tester.tap(find.text('Tiếp: vẽ khiên'));
-    await tester.pumpAndSettle();
+    await settle(tester);
     expect(find.text('Vẽ khiên'), findsOneWidget);
 
     // A short shield stroke near the shield hand.
     await tester.dragFrom(handAt() + const Offset(-8, 0), const Offset(0, 70));
-    await tester.pumpAndSettle();
+    await settle(tester);
     await tester.tap(find.text('Xong, vào màn 1'));
-    await tester.pumpAndSettle();
+    await settle(tester);
     expect(g.save.w, isNotEmpty);
     expect(find.text('Vào trận'), findsOneWidget);
 
@@ -72,7 +79,7 @@ void main() {
     );
     g.save.coins = 1000;
     await tester.pumpWidget(PenApp(controller: g));
-    await tester.pumpAndSettle();
+    await settle(tester);
 
     await tester.tap(find.text('Tủ đồ'));
     await tester.pump(const Duration(milliseconds: 400));
@@ -85,9 +92,9 @@ void main() {
     expect(g.owns('non-la'), isTrue);
 
     NavScope.read(tester.element(find.text('Tủ đồ').first)).home();
-    await tester.pumpAndSettle();
+    await settle(tester);
     await tester.tap(find.text('Luyện tập'));
-    await tester.pumpAndSettle();
+    await settle(tester);
     expect(find.text('Đấu bot luyện tập'), findsOneWidget);
   });
 }

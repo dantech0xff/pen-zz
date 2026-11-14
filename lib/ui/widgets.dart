@@ -80,10 +80,13 @@ class _SketchButtonState extends State<SketchButton> {
         ? const EdgeInsets.symmetric(horizontal: 14, vertical: 12)
         : const EdgeInsets.symmetric(horizontal: 14, vertical: 9);
     Widget content = widget.subtitle == null
-        ? Text(
-            widget.label,
-            textAlign: TextAlign.center,
-            style: widget.big ? T.display(21, fg) : T.body(widget.compact ? 17 : 19, fg),
+        ? FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              widget.label,
+              textAlign: TextAlign.center,
+              style: widget.big ? T.display(21, fg) : T.body(widget.compact ? 17 : 19, fg),
+            ),
           )
         : Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -381,8 +384,15 @@ class StatGrid extends StatelessWidget {
       children: [
         Row(
           children: [
-            Expanded(child: Text(it.label, style: T.body(15))),
-            Text(it.value, style: T.body(15).copyWith(fontFeatures: const [FontFeature.tabularFigures()])),
+            Text(it.label, style: T.body(15)),
+            const SizedBox(width: 6),
+            Expanded(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerRight,
+                child: Text(it.value, style: T.body(15).copyWith(fontFeatures: const [FontFeature.tabularFigures()])),
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 2),
@@ -535,7 +545,8 @@ class ScreenFrame extends StatelessWidget {
   @override
   Widget build(BuildContext context) => PaperBackground(
     child: SafeArea(
-      child: Center(
+      child: Align(
+        alignment: Alignment.topCenter,
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 560),
           child: Padding(

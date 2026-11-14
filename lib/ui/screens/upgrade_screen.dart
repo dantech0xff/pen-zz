@@ -61,6 +61,7 @@ class UpgradeScreen extends StatelessWidget {
                         ],
                       ),
                     ),
+                    const SizedBox(width: 10),
                     SizedBox(
                       width: 58,
                       height: 58,

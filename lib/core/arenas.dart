@@ -125,7 +125,7 @@ const List<ArenaDef> arenas = [
     'Quạt trần',
     ArenaRules(wind: WindMode.alternate, windStrength: 1, windPeriod: 5),
     ArenaTheme(paper: 0xF4F8FB, line: 0xC5D6E6, kind: PaperKind.blueprint, doodle: Doodle.physics, ink: 0x2F5D8A),
-    'Quạt trần: gió đổi chiều mỗi 5 giây, đẩy người và làm đòn văng lệch.',
+    'Gió quạt đổi chiều mỗi 5 giây, đẩy người và làm đòn văng lệch.',
   ),
   ArenaDef(
     'thi-nghiem',
@@ -146,14 +146,14 @@ const List<ArenaDef> arenas = [
       ink: 0x7A4A2A,
       platform: 0xF1E2C2,
     ),
-    'Thành cổ: sau 18 giây sàn sụt dần từ hai mép.',
+    'Sau 18 giây sàn sụt dần từ hai mép.',
   ),
   ArenaDef(
     'ban-do',
     'Bản đồ',
     ArenaRules(half: 370, mud: [Zone(-285, -205), Zone(205, 285)]),
     ArenaTheme(paper: 0xF4F6EC, line: 0xD5DDBE, kind: PaperKind.kraft, doodle: Doodle.geo, ink: 0x5C6B2E),
-    'Bản đồ rộng, có đầm lầy gần hai mép làm chậm bước.',
+    'Sàn rộng, có đầm lầy gần hai mép làm chậm bước.',
   ),
   ArenaDef(
     'vuon-truong',

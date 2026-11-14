@@ -29,8 +29,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final g = AppScope.of(context), nav = NavScope.of(context), s = g.save;
     final next = g.nextStage;
-    var sel = nav.selStage;
+    var sel = nav.selStage ?? next;
     if (sel > next || sel < 1) sel = next;
+    // Picking the next stage again goes back to following progress.
+    void pick(int st) => setState(() => nav.selStage = st == next ? null : st);
     final ch = (sel - 1) ~/ levelsPerChapter, lastCh = (next - 1) ~/ levelsPerChapter;
     final chapter = chapters[ch];
     final chStars = [for (var i = 0; i < 10; i++) starCount(s.stars[ch * 10 + i])].fold(0, (a, b) => a + b);
@@ -42,19 +44,25 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Row(
             children: [
-              Transform.rotate(
-                angle: -2 * math.pi / 180,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [Colors.transparent, Colors.transparent, Pal.hl, Pal.hl, Colors.transparent],
-                      stops: [0, 0.54, 0.54, 0.92, 0.92],
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Transform.rotate(
+                    angle: -2 * math.pi / 180,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Colors.transparent, Colors.transparent, Pal.hl, Pal.hl, Colors.transparent],
+                          stops: [0, 0.54, 0.54, 0.92, 0.92],
+                        ),
+                      ),
+                      child: Text('Bút Chiến', style: T.display(25)),
                     ),
                   ),
-                  child: Text('Bút Chiến', style: T.display(25)),
                 ),
               ),
               const Spacer(),
@@ -116,7 +124,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 4),
           Row(
             children: [
-              _MiniBtn('‹', ch > 0 ? () => setState(() => nav.selStage = (ch - 1) * 10 + 1) : null),
+              _MiniBtn('‹', ch > 0 ? () => pick((ch - 1) * 10 + 1) : null),
               Expanded(
                 child: Column(
                   children: [
@@ -130,10 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-              _MiniBtn(
-                '›',
-                ch < lastCh ? () => setState(() => nav.selStage = math.min(next, (ch + 1) * 10 + 1)) : null,
-              ),
+              _MiniBtn('›', ch < lastCh ? () => pick(math.min(next, (ch + 1) * 10 + 1)) : null),
             ],
           ),
           const SizedBox(height: 4),
@@ -153,7 +158,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   selected: ch * 10 + i == sel,
                   enabled: ch * 10 + i <= next,
                   stars: s.stars[ch * 10 + i - 1],
-                  onTap: () => setState(() => nav.selStage = ch * 10 + i),
+                  onTap: () => pick(ch * 10 + i),
                 ),
             ],
           ),
@@ -310,7 +315,7 @@ class _HeroPainter extends CustomPainter {
       ..tauntT = math.max(0, tauntAt);
     paintFighter(c, f, t);
     c.restore();
-    if (tauntAt >= 0)
+    if (tauntAt >= 0) {
       drawBubble(
         c,
         tx + 10 * k,
@@ -319,6 +324,7 @@ class _HeroPainter extends CustomPainter {
         rgb(inkColor(s.eq[Slot.ink]!)),
         size.width,
       );
+    }
   }
 
   @override

@@ -27,7 +27,9 @@ class Nav extends ChangeNotifier {
   DrawFrom drawFrom = DrawFrom.home;
   OppSpec? opp;
   ArenaDef arena = arenas.first;
-  int selStage = 1;
+
+  /// Stage picked on the lobby map; null follows the next unbeaten stage.
+  int? selStage;
   int battleKey = 0;
 
   void go(Scr s) {
@@ -44,9 +46,9 @@ class Nav extends ChangeNotifier {
   }
 
   void openStage(int stage) {
-    selStage = stage.clamp(1, levelCount);
-    opp = stageOpponent(selStage);
-    arena = LevelDef(selStage).arena;
+    final st = stage.clamp(1, levelCount);
+    opp = stageOpponent(st);
+    arena = LevelDef(st).arena;
     go(Scr.pre);
   }
 

@@ -371,8 +371,9 @@ class _BattleScreenState extends State<BattleScreen> {
       buttons.add(SketchButton(label: 'Đấu lại', primary: true, onTap: nav.startBattle));
       buttons.add(SketchButton(label: 'Về luyện tập', onTap: () => nav.go(Scr.practice)));
     }
-    if (g.save.free > 0)
+    if (g.save.free > 0) {
       buttons.add(SketchButton(label: 'Cộng ${g.save.free} điểm nâng cấp', onTap: () => nav.go(Scr.upgrade)));
+    }
     if (!r.won) {
       buttons.add(
         SketchButton(
