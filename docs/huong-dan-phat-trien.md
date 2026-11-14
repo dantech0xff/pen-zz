@@ -48,6 +48,8 @@ Bản web build với `--no-web-resources-cdn` để CanvasKit nằm sẵn trong
 
 Bản Android và iOS có mua trong app (RevenueCat) và quảng cáo (AdMob). Build như trên thì dùng quảng cáo thử của Google và cửa hàng chưa mở. Cách tạo sản phẩm, lấy khoá và build bản thật nằm ở [kiem-tien.md](kiem-tien.md).
 
+Bản Android và iOS lưu tiến trình lên Firebase khi build kèm cấu hình Firebase; không có cấu hình thì chỉ lưu trên máy. Cách thiết lập nằm ở [luu-tren-may.md](luu-tren-may.md).
+
 APK release hiện ký bằng khoá debug của Flutter, chỉ dùng để cài thử. Trước khi đưa lên Google Play, cần tạo khoá ký riêng và đổi `applicationId` trong `android/app/build.gradle.kts`.
 
 ## Cấu trúc mã
@@ -57,8 +59,8 @@ APK release hiện ký bằng khoá debug của Flutter, chỉ dùng để cài 
 | `lib/core` | Dart thuần, không phụ thuộc Flutter: hình học nét vẽ, bộ xương người que, chỉ số đồ, mô phỏng trận, AI, sân, màn, đối thủ, tủ đồ, lưu tiến trình |
 | `lib/render` | Vẽ bằng Canvas: người que và trang phục, hiệu ứng hạt, sân đấu, chữ |
 | `lib/game` | `BattleGame` chạy trên Flame: bước mô phỏng cố định 120 Hz, camera, hiệu ứng, âm thanh, rung |
-| `lib/state` | `GameController`: tiến trình, mua đồ, cộng điểm, phần thưởng, sao, mở khoá mẫu. `Monetization`: luật quảng cáo, mua và khôi phục giao dịch |
-| `lib/monetize` | Quảng cáo AdMob và cửa hàng RevenueCat cho mobile; bản rỗng cho web và test |
+| `lib/state` | `GameController`: tiến trình, mua đồ, cộng điểm, phần thưởng, sao, mở khoá mẫu. `Monetization`: luật quảng cáo, mua và khôi phục giao dịch. `CloudSync`: gộp và tải bản lưu lên mây |
+| `lib/monetize` | Quảng cáo AdMob, cửa hàng RevenueCat và lưu trên mây Firebase cho mobile; bản rỗng cho web và test |
 | `lib/ui` | Các màn hình Flutter: sảnh, vẽ đồ, trước trận, trận đấu, nâng cấp, tủ đồ, cửa hàng, luyện tập, cài đặt |
 | `tool` | Công cụ phụ trợ, xem mục dưới |
 | `test` | Test lõi game, so khớp với bản web, luồng giao diện |

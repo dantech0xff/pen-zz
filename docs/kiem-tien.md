@@ -89,7 +89,8 @@ Vài điều cần biết:
 - Gói xu được ghi theo mã giao dịch của RevenueCat, lấy từ lịch sử mua mà RevenueCat trả về. Mỗi mã chỉ cộng một lần, mua bao nhiêu lần cũng vậy. Mã đơn hàng của Google trong kết quả mua không dùng tới, vì nó không bao giờ xuất hiện trong lịch sử.
 - Gói xu không cộng lại khi cài lại app. Lần đầu bản lưu gặp cửa hàng, game ghi lại giờ của máy chủ cửa hàng (`storeSince`), không dùng giờ trên điện thoại. Gói xu mua trước mốc đó thuộc lần cài cũ nên được bỏ qua.
 - Thanh toán đang chờ (ví dụ trả tiền mặt ở cửa hàng tiện lợi) được cộng khi RevenueCat báo giao dịch hoàn tất.
-- Trường hợp hiếm: người chơi đã bị trừ tiền nhưng app chưa nhận được xác nhận (mất mạng đúng lúc đó), rồi xoá app và cài lại. Gói xu đó sẽ không được cộng. Hãy tra giao dịch trên RevenueCat rồi bù cho người chơi.
+- Trường hợp hiếm: người chơi đã bị trừ tiền nhưng app chưa nhận được xác nhận (mất mạng đúng lúc đó), rồi xoá app và cài lại. Nếu người chơi đã liên kết Google, liên kết lại sau khi cài là gói xu được cộng (xem [luu-tren-may.md](luu-tren-may.md)). Nếu chưa liên kết, hãy tra giao dịch trên RevenueCat rồi bù cho người chơi.
+- RevenueCat dùng mã người chơi Firebase làm App User ID khi bản build có cấu hình Firebase, nên đồ đã mua đi theo tài khoản.
 - Xoá tiến trình vẫn giữ đồ đã mua, trạng thái gỡ quảng cáo và lịch sử giao dịch đã cộng.
 - Bản web không có cửa hàng, nhưng vẫn tải file JavaScript của RevenueCat (khoảng 1 MB) đi kèm gói `purchases_flutter`, vì gói này có bản web. Game không gọi tới file đó. Việc này đã được chấp nhận vì bản web chỉ dùng nội bộ.
 - Chưa có: thu hồi đồ trang trí khi hoàn tiền (riêng gỡ quảng cáo thì theo entitlement nên sẽ bật lại quảng cáo), gói đăng ký, server riêng.
