@@ -123,4 +123,17 @@ void main() {
     expect(g.half, lessThan(rules.half));
     expect(g.half, greaterThanOrEqualTo(rules.shrinkMin));
   });
+
+  test('the winner keeps taunting after the match ends', () {
+    final g = stageBattle(3, seed: 2);
+    g.runToEnd();
+    expect(g.finished, isTrue);
+    final w = g.p.taunting ? g.p : g.b, t0 = w.tauntT, wins = (g.winsP, g.winsB);
+    for (var i = 0; i < 120; i++) {
+      g.step();
+    }
+    expect(w.tauntT, greaterThan(t0));
+    expect((g.winsP, g.winsB), wins, reason: 'no round logic runs after the match');
+    expect(g.finished, isTrue);
+  });
 }

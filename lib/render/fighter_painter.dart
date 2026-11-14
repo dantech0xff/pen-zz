@@ -768,12 +768,14 @@ void _drawStatus(Canvas c, Fighter f, Rig j, double animT) {
 
 P _toe(P p) => P(p.x + 8, p.y);
 
-final Expando<P> _farCache = Expando('far-point');
+final Expando<(int, P)> _farCache = Expando('far-point');
 
 /// Farthest point from the grip; special inks run their gradient from the grip to it.
+/// The editor grows the stroke list in place, so the cache is keyed on its size too.
 P farPoint(Strokes st) {
+  final key = st.length * 4096 + (st.isEmpty ? 0 : st.last.length);
   final hit = _farCache[st];
-  if (hit != null) return hit;
+  if (hit != null && hit.$1 == key) return hit.$2;
   var p = const P(0, -60);
   var best = 400.0;
   for (final s in st) {
@@ -785,7 +787,7 @@ P farPoint(Strokes st) {
       }
     }
   }
-  _farCache[st] = p;
+  _farCache[st] = (key, p);
   return p;
 }
 

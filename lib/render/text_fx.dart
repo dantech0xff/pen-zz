@@ -6,7 +6,7 @@ final Map<String, TextPainter> _cache = {};
 
 /// Cached text layout: canvas text is redrawn every frame, layouts are not.
 TextPainter textPainter(String text, double size, Color color, {String family = Fonts.body, Paint? foreground}) {
-  final key = '$text|$size|${color.toARGB32()}|$family|${foreground == null ? '' : 'o'}';
+  final key = '$text|$size|${color.toARGB32()}|$family|${foreground == null ? '' : 'o${foreground.strokeWidth}'}';
   final hit = _cache[key];
   if (hit != null) return hit;
   if (_cache.length > 400) _cache.clear();
@@ -41,18 +41,22 @@ void drawText(
   Color outlineColor = Pal.body,
   double alpha = 1,
 }) {
-  final col = withAlpha(color, alpha);
+  // Fades in 32 steps so fading text reuses cached layouts instead of making one per frame.
+  final a = (alpha.clamp(0.0, 1.0) * 32).round() / 32;
+  if (a <= 0) return;
+  final col = withAlpha(color, a);
   if (outline > 0) {
+    final rimCol = withAlpha(outlineColor, a);
     final rim = textPainter(
       text,
       size,
-      outlineColor,
+      rimCol,
       family: family,
       foreground: Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = outline
         ..strokeJoin = StrokeJoin.round
-        ..color = withAlpha(outlineColor, alpha),
+        ..color = rimCol,
     );
     rim.paint(c, Offset(x - rim.width / 2, y - rim.height / 2));
   }
@@ -64,7 +68,8 @@ void drawText(
 void drawBubble(Canvas c, double x, double y, String text, Color col, double maxW) {
   final tp = textPainter(text, 16, col);
   final w = tp.width + 18, h = 26.0;
-  final cx = x.clamp(w / 2 + 4, maxW - w / 2 - 4).toDouble();
+  final lo = w / 2 + 4, hi = maxW - w / 2 - 4;
+  final cx = lo <= hi ? x.clamp(lo, hi).toDouble() : maxW / 2;
   final r = RRect.fromRectAndRadius(Rect.fromLTWH(cx - w / 2, y - h, w, h), const Radius.circular(10));
   final fill = Paint()..color = Pal.body;
   final stroke = Paint()

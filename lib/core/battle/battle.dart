@@ -693,9 +693,9 @@ class Battle {
     }
   }
 
-  /// Advances one fixed step.
+  /// Advances one fixed step. After the match the fighters keep moving (the winner's
+  /// taunt plays behind the result card) but no round logic runs.
   void step([double dt = Battle.dt]) {
-    if (phase == Phase.done) return;
     for (final f in [p, b]) {
       if (f.taunting) f.tauntT += dt;
     }
