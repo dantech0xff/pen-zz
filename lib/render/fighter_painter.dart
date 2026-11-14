@@ -469,6 +469,45 @@ void drawHat(Canvas c, String id, Color ink, double animT) {
         dot(c, cx, cy, 1, const Color(0xFFFFCA3A));
         i++;
       }
+    case 'vuong-mien-ngoc':
+      _fs(
+        c,
+        _poly([-11, -10, -12, -22, -6.5, -15, -3, -25, 0, -16.5, 3, -25, 6.5, -15, 12, -22, 11, -10]),
+        const Color(0xFFF2C94C),
+        const Color(0xFF8A6A00),
+        1.5,
+      );
+      fillRect(c, -11, -12.6, 22, 2.8, const Color(0xFFB8860B));
+      dot(c, 0, -14.6, 2.1, const Color(0xFFD7263D));
+      dot(c, -6.3, -13.6, 1.5, const Color(0xFF1E88E5));
+      dot(c, 6.3, -13.6, 1.5, const Color(0xFF1E88E5));
+      dot(c, -3, -25, 1.2, const Color(0xFF2F9E6B));
+      dot(c, 3, -25, 1.2, const Color(0xFF2F9E6B));
+      final tw = 0.5 + 0.5 * math.sin(animT * 4);
+      _fillP(c, _star(10, -26, 0.8 + 2.6 * tw, 0.6, 4), const Color(0xFFFFFFFF));
+    case 'mu-ngan-ha':
+      const navy = Color(0xFF1B1446), rim = Color(0xFF0A0820);
+      c.save();
+      c.translate(1, -8.5);
+      c.rotate(-0.06);
+      _fs(c, _ellipse(0, 0, 19, 3.6), navy, rim, 1.5);
+      c.restore();
+      _fs(
+        c,
+        Path()
+          ..moveTo(-9, -9.5)
+          ..quadraticBezierTo(-4, -26, -14, -40)
+          ..quadraticBezierTo(3, -30, 11, -10)
+          ..close(),
+        navy,
+        rim,
+        1.5,
+      );
+      final tw = 0.6 + 0.4 * math.sin(animT * 3);
+      _fillP(c, _star(-1.5, -22, 3.2, 1.4, 5), const Color(0xFF3FB8F0));
+      _fillP(c, _star(4, -14, 0.6 + 2 * tw, 0.7, 5), const Color(0xFFFFF176));
+      _fillP(c, _star(-6, -31, 1.6, 0.6, 4), const Color(0xFFFFFFFF));
+      dot(c, -13.6, -39.6, 2.2, const Color(0xFFFFF176));
   }
 }
 
@@ -502,6 +541,8 @@ const Map<String, _Cape> _capes = {
   'ao-choang-la': _Cape(0x2F9E44, 0x1B5E20, 56, 18, pattern: 'leaf'),
   'ao-choang-bang': _Cape(0x7CC6F0, 0x2A7FB0, 58, 19, pattern: 'snow'),
   'ao-choang-lua': _Cape(0xE8541C, 0x9A2A0A, 58, 20, trim: true, pattern: 'flame'),
+  'ao-choang-hoang-gia': _Cape(0x8E1B2E, 0x4A0A16, 64, 22, collar: true, trim: true),
+  'ao-choang-ngan-ha': _Cape(0x1B1446, 0x0A0820, 62, 21, collar: true, stars: true),
 };
 
 bool _moving(Fighter f) =>

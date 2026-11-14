@@ -8,14 +8,17 @@ import '../../core/catalog.dart';
 import '../../core/ink_fx.dart';
 import '../../core/mathx.dart';
 import '../../core/rig.dart';
+import '../../core/store_catalog.dart';
 import '../../render/fighter_painter.dart';
 import '../../render/fx.dart';
 import '../../render/ink_painter.dart';
 import '../../render/palette.dart';
 import '../../render/text_fx.dart';
 import '../../state/game_controller.dart';
+import '../../state/monetization.dart';
 import '../theme.dart';
 import '../widgets.dart';
+import 'store_sheet.dart';
 
 enum ShopTab { hat, cape, glass, ink, fx, taunt }
 
@@ -57,7 +60,7 @@ class _ShopScreenState extends State<ShopScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final g = AppScope.of(context), nav = NavScope.of(context), s = g.save;
+    final g = AppScope.of(context), nav = NavScope.of(context), m = MonetizationScope.of(context), s = g.save;
     final items = itemsFor(slot);
     final current = s.eq[slot] ?? defaultEquip[slot]!;
     final selId = sel != null && items.any((i) => i.id == sel) ? sel! : current;
@@ -70,6 +73,14 @@ class _ShopScreenState extends State<ShopScreen> {
     } else if (owned) {
       buyLabel = 'Dùng';
       buy = () => g.buyOrEquip(slot, selId);
+    } else if (it.exclusive) {
+      final p = productForItem(selId);
+      if (m.enabled && p != null) {
+        buyLabel = 'Có trong ${p.title}';
+        buy = () => showStoreSheet(context, highlight: p.id);
+      } else {
+        buyLabel = 'Chỉ có trên bản app';
+      }
     } else if (s.coins >= it.price) {
       buyLabel = 'Mua · ${fmtNum(it.price)} xu';
       buy = () => g.buyOrEquip(slot, selId);
@@ -92,6 +103,18 @@ class _ShopScreenState extends State<ShopScreen> {
               Expanded(
                 child: ScreenHeader(title: 'Tủ đồ', onBack: nav.home),
               ),
+              if (m.enabled) ...[
+                SizedBox(
+                  width: 104,
+                  child: SketchButton(
+                    label: 'Cửa hàng',
+                    compact: true,
+                    primary: true,
+                    onTap: () => showStoreSheet(context),
+                  ),
+                ),
+                const SizedBox(width: 6),
+              ],
               CoinChip(coins: s.coins),
             ],
           ),
@@ -245,19 +268,22 @@ class _ItemTile extends StatelessWidget {
             ),
             Row(
               children: [
-                if (equipped)
-                  Text('Đang dùng', style: T.body(14, Pal.ink))
-                else if (owned)
-                  Text('Đã có', style: T.body(14))
-                else ...[
-                  const CoinIcon(size: 13),
-                  const SizedBox(width: 4),
-                  Text(fmtNum(item.price), style: T.body(14)),
-                ],
-                if (item.fx != InkFx.none) ...[
-                  const Spacer(),
-                  Text(inkFxSpec(item.fx).title, style: T.body(13, Pal.red)),
-                ],
+                if (!equipped && !owned && !item.exclusive) ...[const CoinIcon(size: 13), const SizedBox(width: 4)],
+                Expanded(
+                  child: Text(
+                    equipped
+                        ? 'Đang dùng'
+                        : owned
+                        ? 'Đã có'
+                        : item.exclusive
+                        ? 'Độc quyền'
+                        : fmtNum(item.price),
+                    style: T.body(14, equipped ? Pal.ink : (item.exclusive && !owned ? Pal.red : Pal.pencil)),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (item.fx != InkFx.none) Text(inkFxSpec(item.fx).title, style: T.body(13, Pal.red)),
               ],
             ),
           ],

@@ -11,6 +11,7 @@ import '../../game/battle_game.dart';
 import '../../render/fighter_painter.dart';
 import '../../render/palette.dart';
 import '../../state/game_controller.dart';
+import '../../state/monetization.dart';
 import '../theme.dart';
 import '../widgets.dart';
 
@@ -60,6 +61,17 @@ class _BattleScreenState extends State<BattleScreen> {
 
   void _resume() => game.held.value = false;
 
+  /// Leaves the result card, showing an interstitial first when one is due.
+  Future<void> _leave(VoidCallback go) async {
+    await MonetizationScope.read(context).afterMatch();
+    if (mounted) go();
+  }
+
+  Future<void> _double(MatchReward r) async {
+    final m = MonetizationScope.read(context);
+    if (await m.doubleReward(r)) Sfx.instance.play('coin');
+  }
+
   @override
   void dispose() {
     game.held.dispose();
@@ -74,7 +86,7 @@ class _BattleScreenState extends State<BattleScreen> {
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
         if (_reward != null) {
-          nav.home();
+          _leave(nav.home);
         } else if (game.held.value && !_tip) {
           _resume();
         } else {
@@ -298,6 +310,7 @@ class _BattleScreenState extends State<BattleScreen> {
   );
 
   Widget _result(MatchReward r) {
+    final m = MonetizationScope.of(context);
     final st = battle.stats;
     final lv = o.kind == OppKind.stage ? LevelDef(o.stage) : null;
     final title = r.won ? (lv != null && lv.boss ? 'Hạ trùm rồi!' : 'Thắng!') : 'Thua rồi';
@@ -309,6 +322,21 @@ class _BattleScreenState extends State<BattleScreen> {
       ),
       const SizedBox(height: 4),
       Text('+${r.coins} xu · +${r.xp} kinh nghiệm', textAlign: TextAlign.center, style: T.body(19, Pal.ink)),
+      if (m.doubled(r))
+        Text(
+          'Đã nhân đôi: thêm +${r.coins} xu · +${r.xp} kinh nghiệm',
+          textAlign: TextAlign.center,
+          style: T.body(16, Pal.ink).copyWith(backgroundColor: Pal.hl),
+        )
+      else if (m.canDouble(r))
+        Padding(
+          padding: const EdgeInsets.only(top: 6),
+          child: SketchButton(
+            label: m.ads.rewardedReady ? 'Xem quảng cáo: nhân đôi xu và kinh nghiệm' : 'Đang tải quảng cáo…',
+            compact: true,
+            onTap: m.ads.rewardedReady ? () => _double(r) : null,
+          ),
+        ),
       if (lv != null && r.won) ...[
         const SizedBox(height: 6),
         Row(
@@ -356,40 +384,46 @@ class _BattleScreenState extends State<BattleScreen> {
       if (r.won) {
         buttons.add(
           o.stage < levelCount
-              ? SketchButton(label: 'Màn ${o.stage + 1}', primary: true, onTap: () => nav.openStage(o.stage + 1))
-              : SketchButton(label: 'Đã qua cả 120 màn!', primary: true, onTap: nav.home),
+              ? SketchButton(
+                  label: 'Màn ${o.stage + 1}',
+                  primary: true,
+                  onTap: () => _leave(() => nav.openStage(o.stage + 1)),
+                )
+              : SketchButton(label: 'Đã qua cả 120 màn!', primary: true, onTap: () => _leave(nav.home)),
         );
       } else {
         buttons.add(
           SketchButton(
             label: 'Đấu lại',
             primary: true,
-            onTap: () {
+            onTap: () => _leave(() {
               o.resetShield();
               nav.go(Scr.pre);
-            },
+            }),
           ),
         );
       }
     } else {
-      buttons.add(SketchButton(label: 'Đấu lại', primary: true, onTap: nav.startBattle));
-      buttons.add(SketchButton(label: 'Về luyện tập', onTap: () => nav.go(Scr.practice)));
+      buttons.add(SketchButton(label: 'Đấu lại', primary: true, onTap: () => _leave(nav.startBattle)));
+      buttons.add(SketchButton(label: 'Về luyện tập', onTap: () => _leave(() => nav.go(Scr.practice))));
     }
     if (g.save.free > 0) {
-      buttons.add(SketchButton(label: 'Cộng ${g.save.free} điểm nâng cấp', onTap: () => nav.go(Scr.upgrade)));
+      buttons.add(
+        SketchButton(label: 'Cộng ${g.save.free} điểm nâng cấp', onTap: () => _leave(() => nav.go(Scr.upgrade))),
+      );
     }
     if (!r.won) {
       buttons.add(
         SketchButton(
           label: 'Sửa đồ',
-          onTap: () {
+          onTap: () => _leave(() {
             o.resetShield();
             nav.openEditor(DrawMode.weapon, DrawFrom.pre);
-          },
+          }),
         ),
       );
     }
-    buttons.add(SketchButton(label: 'Về sảnh', onTap: nav.home));
+    buttons.add(SketchButton(label: 'Về sảnh', onTap: () => _leave(nav.home)));
     return _card(title, body, buttons);
   }
 }

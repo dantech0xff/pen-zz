@@ -3,18 +3,26 @@ import 'package:flutter/material.dart';
 import '../../app.dart';
 import '../../render/palette.dart';
 import '../../state/game_controller.dart';
+import '../../state/monetization.dart';
 import '../theme.dart';
 import '../widgets.dart';
 
 Future<void> showSettingsSheet(BuildContext context) =>
     showModalBottomSheet<void>(context: context, builder: (ctx) => const _SettingsSheet());
 
-class _SettingsSheet extends StatelessWidget {
+class _SettingsSheet extends StatefulWidget {
   const _SettingsSheet();
 
   @override
+  State<_SettingsSheet> createState() => _SettingsSheetState();
+}
+
+class _SettingsSheetState extends State<_SettingsSheet> {
+  String? _msg;
+
+  @override
   Widget build(BuildContext context) {
-    final g = AppScope.of(context);
+    final g = AppScope.of(context), m = MonetizationScope.of(context);
     final s = g.save;
     return SafeArea(
       child: Padding(
@@ -40,6 +48,21 @@ class _SettingsSheet extends StatelessWidget {
             ),
             Text('Thắng ${s.wins} trận · thua ${s.losses} trận · qua ${s.stage}/120 màn', style: T.body(15)),
             const SizedBox(height: 12),
+            if (m.storeReady) ...[
+              SketchButton(
+                label: 'Khôi phục giao dịch',
+                onTap: () async {
+                  final msg = await m.restore();
+                  if (mounted) setState(() => _msg = msg);
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
+            if (m.ads.privacyOptionsRequired) ...[
+              SketchButton(label: 'Tuỳ chọn quyền riêng tư cho quảng cáo', onTap: m.ads.showPrivacyOptions),
+              const SizedBox(height: 8),
+            ],
+            if (_msg != null) ...[Text(_msg!, style: T.body(15, Pal.ink)), const SizedBox(height: 8)],
             SketchButton(
               label: 'Giấy phép phông chữ và thư viện',
               onTap: () => showLicensePage(context: context, applicationName: 'Bút Chiến'),

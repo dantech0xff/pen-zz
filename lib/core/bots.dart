@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'catalog.dart';
 import 'gear.dart';
+import 'ink_fx.dart';
 import 'levels.dart';
 import 'mathx.dart';
 import 'rig.dart';
@@ -101,7 +102,7 @@ List<String> _earlierWeapons(int chapterIndex) => [
 String _some(Rng rng, List<Item> list, double p, int maxPrice) {
   final pool = [
     for (final it in list.skip(1))
-      if (it.price <= maxPrice) it.id,
+      if (it.price <= maxPrice && !it.exclusive) it.id,
   ];
   return pool.isNotEmpty && rng.next() < p ? rng.pick(pool) : list.first.id;
 }
@@ -110,7 +111,7 @@ Map<Slot, String> _botLook(Rng rng, LevelDef lv) {
   final s = lv.stage;
   final effectInks = [
     for (final it in weaponInks)
-      if (!it.rainbow) it.id,
+      if (it.fx != InkFx.none) it.id,
   ];
   if (lv.boss) {
     final tier = lv.chapterIndex;

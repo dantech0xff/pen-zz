@@ -15,6 +15,7 @@ import '../core/levels.dart';
 import '../core/rig.dart';
 import '../core/rng.dart';
 import '../core/save_data.dart';
+import '../core/store_catalog.dart';
 import '../core/strokes.dart';
 import '../core/templates.dart';
 
@@ -109,7 +110,8 @@ class GameController extends ChangeNotifier {
     final it = itemById(id);
     if (it == null || !fitsSlot(slot, id)) return false;
     if (!owns(id)) {
-      if (save.coins < it.price) return false;
+      // Exclusive items come only from the store, never for coins.
+      if (it.exclusive || save.coins < it.price) return false;
       save.coins -= it.price;
       save.owned.add(id);
       Sfx.instance.play('buy');
@@ -166,11 +168,87 @@ class GameController extends ChangeNotifier {
     _changed();
   }
 
+  /// Starts over but keeps settings and everything bought with real money.
   Future<void> resetProgress() async {
-    final sound = save.sound, haptics = save.haptics;
-    save = SaveData(sound: sound, haptics: haptics);
+    final old = save;
+    save = SaveData(
+      sound: old.sound,
+      haptics: old.haptics,
+      noAds: old.noAds,
+      creditedPacks: old.creditedPacks,
+      creditedTx: old.creditedTx,
+      storeSince: old.storeSince,
+      adDay: old.adDay,
+      adCoinsUsed: old.adCoinsUsed,
+    );
+    save.owned.addAll(old.owned.where((id) => itemIndex[id]?.exclusive ?? false));
     _changed();
     await flush();
+  }
+
+  // ---------------- purchases and ads ----------------
+
+  /// Extra coins and experience, e.g. from a rewarded ad. Returns the levels gained.
+  int addBonus({required int coins, required int xp}) {
+    save.coins += coins;
+    final gained = _addXp(xp);
+    _changed();
+    return gained;
+  }
+
+  /// Coins from a rewarded "free coins" view on [day] (yyyymmdd).
+  void creditAdCoins(int day, int coins) {
+    if (save.adDay != day) {
+      save.adDay = day;
+      save.adCoinsUsed = 0;
+    }
+    save.adCoinsUsed++;
+    save.coins += coins;
+    _changed();
+  }
+
+  void resetAdCounter() {
+    save.matchesSinceAd = 0;
+    _changed();
+  }
+
+  /// Remembers when this save first reached the store; see [SaveData.storeSince].
+  void markStoreSeen(DateTime now) {
+    if (save.storeSince != 0) return;
+    save.storeSince = now.millisecondsSinceEpoch;
+    _changed();
+  }
+
+  /// Applies what the store reports. Entitlements unlock their items and switch ads off; a
+  /// one-time pack's coins are credited once; coin packs are credited once per transaction,
+  /// skipping ones bought before this save reached the store (an older install) unless
+  /// [purchasedTx] names the purchase that just finished. Returns the coins credited.
+  int applyStore(StoreSnapshot snap, {String? purchasedTx}) {
+    var credited = 0;
+    save.noAds = snap.entitlements.contains(Ent.noAds);
+    for (final p in storeProducts) {
+      final e = p.entitlement;
+      if (e == null || !snap.entitlements.contains(e)) continue;
+      save.owned.addAll(p.items);
+      if (p.coins > 0 && save.creditedPacks.add(p.id)) {
+        save.coins += p.coins;
+        credited += p.coins;
+      }
+    }
+    // Ten minutes of slack for a device clock that runs ahead of the store's.
+    final since = save.storeSince - 10 * 60 * 1000;
+    for (final t in snap.transactions) {
+      final p = productById(t.productId);
+      if (p == null || p.kind != ProductKind.consumable || save.creditedTx.contains(t.id)) continue;
+      final fresh = t.id == purchasedTx || (t.time != null && t.time!.millisecondsSinceEpoch >= since);
+      if (!fresh) continue;
+      save.creditedTx.add(t.id);
+      if (save.creditedTx.length > SaveData.maxCreditedTx) save.creditedTx.removeAt(0);
+      save.coins += p.coins;
+      credited += p.coins;
+    }
+    _changed();
+    return credited;
   }
 
   // ---------------- matches ----------------
@@ -197,6 +275,7 @@ class GameController extends ChangeNotifier {
   }
 
   MatchReward finishMatch(OppSpec o, bool won, MatchStats st) {
+    save.matchesSinceAd++;
     var coins = 0, xp = 0, bits = 0, newBits = 0;
     var first = false;
     GearTemplate? unlocked;

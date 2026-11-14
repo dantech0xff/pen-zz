@@ -4,6 +4,7 @@ import 'core/arenas.dart';
 import 'core/bots.dart';
 import 'core/levels.dart';
 import 'state/game_controller.dart';
+import 'state/monetization.dart';
 import 'ui/screens/battle_screen.dart';
 import 'ui/screens/draw_screen.dart';
 import 'ui/screens/home_screen.dart';
@@ -90,8 +91,11 @@ class NavScope extends InheritedNotifier<Nav> {
 }
 
 class PenApp extends StatefulWidget {
-  const PenApp({super.key, required this.controller});
+  const PenApp({super.key, required this.controller, this.monetization});
   final GameController controller;
+
+  /// Ads and the store; none when left out (the web build and widget tests).
+  final Monetization? monetization;
 
   @override
   State<PenApp> createState() => _PenAppState();
@@ -100,29 +104,36 @@ class PenApp extends StatefulWidget {
 class _PenAppState extends State<PenApp> {
   final Nav _nav = Nav();
   late final AppLifecycleListener _life;
+  late final Monetization _money = widget.monetization ?? Monetization.none(widget.controller);
 
   @override
   void initState() {
     super.initState();
     _life = AppLifecycleListener(onPause: widget.controller.flush, onDetach: widget.controller.flush);
+    // The consent message needs a screen, so ads and the store start after the first frame.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _money.init());
   }
 
   @override
   void dispose() {
     _life.dispose();
+    if (widget.monetization == null) _money.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) => AppScope(
     controller: widget.controller,
-    child: NavScope(
-      nav: _nav,
-      child: MaterialApp(
-        title: 'Bút Chiến',
-        debugShowCheckedModeBanner: false,
-        theme: appTheme(),
-        home: const _Shell(),
+    child: MonetizationScope(
+      monetization: _money,
+      child: NavScope(
+        nav: _nav,
+        child: MaterialApp(
+          title: 'Bút Chiến',
+          debugShowCheckedModeBanner: false,
+          theme: appTheme(),
+          home: const _Shell(),
+        ),
       ),
     ),
   );

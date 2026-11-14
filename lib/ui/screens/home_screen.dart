@@ -11,9 +11,11 @@ import '../../render/fighter_painter.dart';
 import '../../render/palette.dart';
 import '../../render/text_fx.dart';
 import '../../state/game_controller.dart';
+import '../../state/monetization.dart';
 import '../theme.dart';
 import '../widgets.dart';
 import 'settings_sheet.dart';
+import 'store_sheet.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -27,7 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final g = AppScope.of(context), nav = NavScope.of(context), s = g.save;
+    final g = AppScope.of(context), nav = NavScope.of(context), m = MonetizationScope.of(context), s = g.save;
     final next = g.nextStage;
     var sel = nav.selStage ?? next;
     if (sel > next || sel < 1) sel = next;
@@ -38,181 +40,216 @@ class _HomeScreenState extends State<HomeScreen> {
     final chStars = [for (var i = 0; i < 10; i++) starCount(s.stars[ch * 10 + i])].fold(0, (a, b) => a + b);
     final need = xpNeed(s.lvl);
     final selLv = LevelDef(sel);
-    return ScreenFrame(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              Flexible(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Transform.rotate(
-                    angle: -2 * math.pi / 180,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [Colors.transparent, Colors.transparent, Pal.hl, Pal.hl, Colors.transparent],
-                          stops: [0, 0.54, 0.54, 0.92, 0.92],
+    final frame = ScreenFrame(
+      // Fills the screen when there is room. On short screens (a small phone, a banner below,
+      // large text) the hero keeps a minimum size and the lobby scrolls instead of overflowing.
+      child: LayoutBuilder(
+        builder: (context, box) => SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: box.maxHeight),
+            child: IntrinsicHeight(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Transform.rotate(
+                            angle: -2 * math.pi / 180,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 4),
+                              decoration: const BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [Colors.transparent, Colors.transparent, Pal.hl, Pal.hl, Colors.transparent],
+                                  stops: [0, 0.54, 0.54, 0.92, 0.92],
+                                ),
+                              ),
+                              child: Text('Bút Chiến', style: T.display(25)),
+                            ),
+                          ),
                         ),
                       ),
-                      child: Text('Bút Chiến', style: T.display(25)),
+                      const Spacer(),
+                      GestureDetector(
+                        onTap: m.enabled && g.hasGear ? () => showStoreSheet(context) : null,
+                        child: CoinChip(coins: s.coins),
+                      ),
+                      const SizedBox(width: 6),
+                      IconButton(
+                        tooltip: 'Cài đặt',
+                        onPressed: () => showSettingsSheet(context),
+                        icon: const Icon(Icons.settings_outlined, color: Pal.pencil),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                        decoration: BoxDecoration(color: Pal.ink, borderRadius: BorderRadius.circular(999)),
+                        child: Text('Cấp ${s.lvl}', style: T.display(17, Colors.white)),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            InkBar(value: s.xp / need),
+                            const SizedBox(height: 2),
+                            Text('${s.xp}/$need kinh nghiệm', style: T.body(13)),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      const StarIcon(on: true, size: 18),
+                      Text(' ${s.totalStars}/${levelCount * 3}', style: T.body(15, Pal.ink)),
+                    ],
+                  ),
+                  Expanded(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(minHeight: 140),
+                      child: GestureDetector(
+                        onTap: () {
+                          if (s.w.isEmpty) return;
+                          Sfx.instance.play('tap', volume: 0.4);
+                          setState(() => _tauntAt = 0);
+                        },
+                        child: Animated(
+                          builder: (t, dt) {
+                            if (_tauntAt >= 0) {
+                              _tauntAt += dt;
+                              if (_tauntAt > 2.6) _tauntAt = -1;
+                            }
+                            return _HeroPainter(g, t, _tauntAt);
+                          },
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-              const Spacer(),
-              CoinChip(coins: s.coins),
-              const SizedBox(width: 6),
-              IconButton(
-                tooltip: 'Cài đặt',
-                onPressed: () => showSettingsSheet(context),
-                icon: const Icon(Icons.settings_outlined, color: Pal.pencil),
-              ),
-            ],
-          ),
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                decoration: BoxDecoration(color: Pal.ink, borderRadius: BorderRadius.circular(999)),
-                child: Text('Cấp ${s.lvl}', style: T.display(17, Colors.white)),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    InkBar(value: s.xp / need),
-                    const SizedBox(height: 2),
-                    Text('${s.xp}/$need kinh nghiệm', style: T.body(13)),
+                  Text(
+                    g.hasGear ? 'Chạm vào nhân vật để xem ăn mừng.' : 'Vẽ vũ khí và khiên của bạn để bắt đầu.',
+                    textAlign: TextAlign.center,
+                    style: T.body(13, const Color(0xFF6B7080)),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      _MiniBtn('‹', ch > 0 ? () => pick((ch - 1) * 10 + 1) : null),
+                      Expanded(
+                        child: Column(
+                          children: [
+                            Text(chapter.name, style: T.display(17)),
+                            Text(
+                              'Sân ${chapter.arena.name} · qua ${(s.stage - ch * 10).clamp(0, 10)}/10 · $chStars/30 sao',
+                              style: T.body(13),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      _MiniBtn('›', ch < lastCh ? () => pick(math.min(next, (ch + 1) * 10 + 1)) : null),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  // Two rows of five stages (plain rows, so the lobby can measure its own height).
+                  for (final row in [0, 5]) ...[
+                    if (row > 0) const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        for (var i = row + 1; i <= row + 5; i++) ...[
+                          if (i > row + 1) const SizedBox(width: 6),
+                          Expanded(
+                            child: AspectRatio(
+                              aspectRatio: 1.15,
+                              child: _Node(
+                                stage: ch * 10 + i,
+                                done: ch * 10 + i <= s.stage,
+                                current: ch * 10 + i == next,
+                                selected: ch * 10 + i == sel,
+                                enabled: ch * 10 + i <= next,
+                                stars: s.stars[ch * 10 + i - 1],
+                                onTap: () => pick(ch * 10 + i),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
                   ],
-                ),
-              ),
-              const SizedBox(width: 10),
-              const StarIcon(on: true, size: 18),
-              Text(' ${s.totalStars}/${levelCount * 3}', style: T.body(15, Pal.ink)),
-            ],
-          ),
-          Expanded(
-            child: GestureDetector(
-              onTap: () {
-                if (s.w.isEmpty) return;
-                Sfx.instance.play('tap', volume: 0.4);
-                setState(() => _tauntAt = 0);
-              },
-              child: Animated(
-                builder: (t, dt) {
-                  if (_tauntAt >= 0) {
-                    _tauntAt += dt;
-                    if (_tauntAt > 2.6) _tauntAt = -1;
-                  }
-                  return _HeroPainter(g, t, _tauntAt);
-                },
+                  Text(chapter.arena.ruleText, textAlign: TextAlign.center, style: T.body(13, const Color(0xFF6B7080))),
+                  const SizedBox(height: 6),
+                  SketchButton(
+                    label: !g.hasGear ? 'Vẽ đồ đầu tiên' : 'Đánh màn $sel${selLv.boss ? ' (trùm)' : ''}',
+                    primary: true,
+                    big: true,
+                    onTap: () => g.hasGear ? nav.openStage(sel) : nav.openEditor(DrawMode.weapon, DrawFrom.first),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: SketchButton(
+                          label: 'Luyện tập',
+                          subtitle: 'bot, bóng ma, chọn sân',
+                          onTap: g.hasGear ? () => nav.go(Scr.practice) : null,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: SketchButton(
+                          label: 'Nâng cấp',
+                          subtitle: s.free > 0 ? '${s.free} điểm chưa cộng' : 'sức mạnh, thủ, tốc độ',
+                          alert: s.free > 0,
+                          onTap: g.hasGear ? () => nav.go(Scr.upgrade) : null,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: SketchButton(
+                          label: 'Tủ đồ',
+                          subtitle: 'mũ, áo choàng, kính, mực',
+                          onTap: g.hasGear ? () => nav.go(Scr.shop) : null,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: SketchButton(
+                          label: 'Sửa đồ',
+                          subtitle: 'vẽ lại vũ khí, khiên',
+                          onTap: g.hasGear ? () => nav.openEditor(DrawMode.weapon, DrawFrom.home) : null,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),
-          Text(
-            g.hasGear ? 'Chạm vào nhân vật để xem ăn mừng.' : 'Vẽ vũ khí và khiên của bạn để bắt đầu.',
-            textAlign: TextAlign.center,
-            style: T.body(13, const Color(0xFF6B7080)),
-          ),
-          const SizedBox(height: 4),
-          Row(
-            children: [
-              _MiniBtn('‹', ch > 0 ? () => pick((ch - 1) * 10 + 1) : null),
-              Expanded(
-                child: Column(
-                  children: [
-                    Text(chapter.name, style: T.display(17)),
-                    Text(
-                      'Sân ${chapter.arena.name} · qua ${(s.stage - ch * 10).clamp(0, 10)}/10 · $chStars/30 sao',
-                      style: T.body(13),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-              _MiniBtn('›', ch < lastCh ? () => pick(math.min(next, (ch + 1) * 10 + 1)) : null),
-            ],
-          ),
-          const SizedBox(height: 4),
-          GridView.count(
-            crossAxisCount: 5,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 4,
-            crossAxisSpacing: 6,
-            childAspectRatio: 1.15,
-            children: [
-              for (var i = 1; i <= 10; i++)
-                _Node(
-                  stage: ch * 10 + i,
-                  done: ch * 10 + i <= s.stage,
-                  current: ch * 10 + i == next,
-                  selected: ch * 10 + i == sel,
-                  enabled: ch * 10 + i <= next,
-                  stars: s.stars[ch * 10 + i - 1],
-                  onTap: () => pick(ch * 10 + i),
-                ),
-            ],
-          ),
-          Text(chapter.arena.ruleText, textAlign: TextAlign.center, style: T.body(13, const Color(0xFF6B7080))),
-          const SizedBox(height: 6),
-          SketchButton(
-            label: !g.hasGear ? 'Vẽ đồ đầu tiên' : 'Đánh màn $sel${selLv.boss ? ' (trùm)' : ''}',
-            primary: true,
-            big: true,
-            onTap: () => g.hasGear ? nav.openStage(sel) : nav.openEditor(DrawMode.weapon, DrawFrom.first),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: SketchButton(
-                  label: 'Luyện tập',
-                  subtitle: 'bot, bóng ma, chọn sân',
-                  onTap: g.hasGear ? () => nav.go(Scr.practice) : null,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: SketchButton(
-                  label: 'Nâng cấp',
-                  subtitle: s.free > 0 ? '${s.free} điểm chưa cộng' : 'sức mạnh, thủ, tốc độ',
-                  alert: s.free > 0,
-                  onTap: g.hasGear ? () => nav.go(Scr.upgrade) : null,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: SketchButton(
-                  label: 'Tủ đồ',
-                  subtitle: 'mũ, áo choàng, kính, mực',
-                  onTap: g.hasGear ? () => nav.go(Scr.shop) : null,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: SketchButton(
-                  label: 'Sửa đồ',
-                  subtitle: 'vẽ lại vũ khí, khiên',
-                  onTap: g.hasGear ? () => nav.openEditor(DrawMode.weapon, DrawFrom.home) : null,
-                ),
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
+    );
+    if (!m.showBanner) return frame;
+    // The banner sits under the lobby; the lobby gives up its bottom inset to it.
+    return Column(
+      children: [
+        Expanded(
+          child: MediaQuery.removePadding(context: context, removeBottom: true, child: frame),
+        ),
+        ColoredBox(
+          color: Pal.paper,
+          child: SafeArea(top: false, child: Center(child: m.ads.banner())),
+        ),
+      ],
     );
   }
 }

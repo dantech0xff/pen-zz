@@ -13,6 +13,7 @@ class Item {
     this.rainbow = false,
     this.fx = InkFx.none,
     this.say,
+    this.exclusive = false,
   });
 
   final String id;
@@ -31,6 +32,9 @@ class Item {
 
   /// Speech bubble of a taunt.
   final String? say;
+
+  /// Sold only for real money (see store_catalog.dart), never for coins; bots never wear it.
+  final bool exclusive;
 
   bool get special => grad != null || rainbow;
 }
@@ -57,6 +61,8 @@ const List<Item> hats = [
   Item('sung-quy', 'Sừng quỷ', 2200),
   Item('hao-quang', 'Hào quang', 3500),
   Item('vuong-mien', 'Vương miện', 5000),
+  Item('vuong-mien-ngoc', 'Vương miện ngọc', 0, exclusive: true),
+  Item('mu-ngan-ha', 'Mũ ngân hà', 0, exclusive: true),
 ];
 
 const List<Item> capes = [
@@ -73,6 +79,8 @@ const List<Item> capes = [
   Item('canh-doi', 'Cánh dơi', 2600),
   Item('phi-phong-vang', 'Phi phong vàng', 3500),
   Item('canh-thien-than', 'Cánh thiên thần', 4500),
+  Item('ao-choang-hoang-gia', 'Áo choàng hoàng gia', 0, exclusive: true),
+  Item('ao-choang-ngan-ha', 'Áo choàng ngân hà', 0, exclusive: true),
 ];
 
 const List<Item> glasses = [
@@ -103,9 +111,10 @@ const List<Item> bodyInks = [
   Item('muc-man', 'Mực mận', 600, color: 0x8E2457),
   Item('nhu-vang', 'Nhũ vàng', 1500, color: 0xB58500),
   Item('muc-bac', 'Nhũ bạc', 2500, color: 0x7B8794),
+  Item('nhu-ngoc', 'Nhũ ngọc', 0, color: 0x0E9F8E, exclusive: true),
 ];
 
-/// Special inks for weapons only. All but the rainbow carry a gameplay effect.
+/// Special inks for weapons only. All but the rainbow and the exclusive inks carry a gameplay effect.
 const List<Item> weaponInks = [
   Item('muc-da', 'Mực đá', 1500, color: 0x6B6E78, grad: [0x3E3F45, 0x7D7F88, 0xB9BCC4], fx: InkFx.stone),
   Item('muc-gio', 'Mực gió', 1800, color: 0x2BB59A, grad: [0x0B8F7A, 0x5FD3B9, 0xC8FFF0], fx: InkFx.wind),
@@ -114,6 +123,8 @@ const List<Item> weaponInks = [
   Item('muc-set', 'Mực sét', 3000, color: 0x4A7FF0, grad: [0x5B2BE0, 0x3FB8F0, 0xFFF176], fx: InkFx.shock),
   Item('muc-hut', 'Mực hút', 3500, color: 0x9B1D4F, grad: [0x4A0E2E, 0x9B1D4F, 0xE04F6F], fx: InkFx.leech),
   Item('muc-cau-vong', 'Mực cầu vồng', 6000, color: 0x7A4BD6, rainbow: true),
+  Item('muc-hoang-kim', 'Mực hoàng kim', 0, color: 0xC9A227, grad: [0x8A6A00, 0xE2B12A, 0xFFF1A8], exclusive: true),
+  Item('muc-ngan-ha', 'Mực ngân hà', 0, color: 0x5B3AA8, grad: [0x1B1446, 0x5B3AA8, 0x3FB8F0], exclusive: true),
 ];
 
 const List<Item> hitFxs = [

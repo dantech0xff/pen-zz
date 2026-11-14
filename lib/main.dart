@@ -4,7 +4,9 @@ import 'package:flutter/widgets.dart';
 
 import 'app.dart';
 import 'audio/sfx.dart';
+import 'monetize/services.dart';
 import 'state/game_controller.dart';
+import 'state/monetization.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,5 +22,6 @@ Future<void> main() async {
   final controller = GameController();
   await controller.load();
   Sfx.instance.preload();
-  runApp(PenApp(controller: controller));
+  final monetization = Monetization(game: controller, ads: createAds(), store: createStore());
+  runApp(PenApp(controller: controller, monetization: monetization));
 }

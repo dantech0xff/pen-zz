@@ -64,5 +64,17 @@
 	</array>
 	<key>UIRequiresFullScreen</key>
 	<true/>
+	<key>GADApplicationIdentifier</key>
+	<!-- AdMob app id. Google's test app until the real one is set (see docs/kiem-tien.md). -->
+	<string>ca-app-pub-3940256099942544~1458002511</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>Bút Chiến dùng mã quảng cáo để hiện quảng cáo phù hợp hơn với bạn. Game vẫn chơi đầy đủ nếu bạn không cho phép.</string>
+	<key>SKAdNetworkItems</key>
+	<array>
+		<dict>
+			<key>SKAdNetworkIdentifier</key>
+			<string>cstr6suwn9.skadnetwork</string>
+		</dict>
+	</array>
 </dict>
 </plist>

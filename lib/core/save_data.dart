@@ -25,7 +25,16 @@ class SaveData {
     this.tutorialDone = false,
     this.wins = 0,
     this.losses = 0,
+    this.noAds = false,
+    Set<String>? creditedPacks,
+    List<String>? creditedTx,
+    this.storeSince = 0,
+    this.adDay = 0,
+    this.adCoinsUsed = 0,
+    this.matchesSinceAd = 0,
   }) : pts = pts ?? Points(),
+       creditedPacks = creditedPacks ?? {},
+       creditedTx = creditedTx ?? [],
        stars = stars ?? List<int>.filled(levelCount, 0),
        owned =
            owned ??
@@ -60,6 +69,30 @@ class SaveData {
   bool sound, haptics, tutorialDone;
   int wins, losses;
 
+  // ---- purchases and ads ----
+
+  /// Last known state of the "remove ads" entitlement, kept for offline play.
+  bool noAds;
+
+  /// One-time products whose coins were already credited (the starter pack).
+  Set<String> creditedPacks;
+
+  /// Coin-pack transactions already credited, newest last.
+  List<String> creditedTx;
+
+  /// When this save first reached the store (ms since epoch). Coin packs bought before it
+  /// belong to an older install and are not credited again.
+  int storeSince;
+
+  /// Day (yyyymmdd) and count of rewarded "free coins" views.
+  int adDay, adCoinsUsed;
+
+  /// Finished matches since the last interstitial.
+  int matchesSinceAd;
+
+  /// Keeps at most this many credited transaction ids.
+  static const int maxCreditedTx = 100;
+
   int get totalStars => stars.fold(0, (a, b) => a + starCount(b));
 
   Map<String, Object?> toJson() => {
@@ -81,6 +114,13 @@ class SaveData {
     'tutorialDone': tutorialDone,
     'wins': wins,
     'losses': losses,
+    'noAds': noAds,
+    'creditedPacks': creditedPacks.toList(),
+    'creditedTx': creditedTx,
+    'storeSince': storeSince,
+    'adDay': adDay,
+    'adCoinsUsed': adCoinsUsed,
+    'matchesSinceAd': matchesSinceAd,
   };
 
   /// Reads a save defensively: unknown or broken fields fall back to defaults.
@@ -130,6 +170,18 @@ class SaveData {
     out.tutorialDone = data['tutorialDone'] == true;
     out.wins = n(data['wins'], 0, 100000000, 0);
     out.losses = n(data['losses'], 0, 100000000, 0);
+    out.noAds = data['noAds'] == true;
+    final packs = data['creditedPacks'];
+    if (packs is List) out.creditedPacks.addAll(packs.whereType<String>().take(50));
+    final tx = data['creditedTx'];
+    if (tx is List) {
+      final ids = tx.whereType<String>().toList();
+      out.creditedTx.addAll(ids.skip(ids.length > maxCreditedTx ? ids.length - maxCreditedTx : 0));
+    }
+    out.storeSince = n(data['storeSince'], 0, 1 << 52, 0);
+    out.adDay = n(data['adDay'], 0, 99991231, 0);
+    out.adCoinsUsed = n(data['adCoinsUsed'], 0, 1000, 0);
+    out.matchesSinceAd = n(data['matchesSinceAd'], 0, 1000000, 0);
     return out;
   }
 }
