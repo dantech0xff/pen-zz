@@ -72,6 +72,14 @@ class OppSpec {
 
   bool get hasShieldYet => s != null;
 
+  /// Forget the drawn shield so the bot draws a new one after seeing the player's weapon again.
+  void resetShield() {
+    if (kind == OppKind.ghost) return;
+    sStrokes = [];
+    sName = '';
+    compute();
+  }
+
   void compute() {
     w = boostW(weaponStats(wStrokes), pts, inkFxOf(eq[Slot.inkW] ?? sameInk));
     s = sStrokes.isNotEmpty || kind == OppKind.ghost ? boostS(shieldStats(sStrokes), pts) : null;
@@ -139,7 +147,10 @@ OppSpec stageOpponent(int stage) {
   final aiL = aiLevelFor(lv.stage, boss);
   final arch = rng.pick(archetypes.keys.toList());
   final String wid;
-  if (lv.chapterBoss) {
+  if (lv.stage <= 2) {
+    // A gentle first fight: the lightest sword.
+    wid = 'kiem';
+  } else if (lv.chapterBoss) {
     wid = ch.bossWeapon;
   } else if (lv.chapterIndex == 0 || rng.chance(0.8)) {
     wid = rng.pick(ch.weapons);
@@ -147,7 +158,7 @@ OppSpec stageOpponent(int stage) {
     wid = rng.pick(_earlierWeapons(lv.chapterIndex));
   }
   final t = templateOf(wid);
-  final ws = botWeapon(t, aiL, rng);
+  final ws = lv.stage <= 2 ? wobble(scaleSt(t.strokes, 0.9), 1.2, rng) : botWeapon(t, aiL, rng);
   final eq = _botLook(rng, lv);
   final name = lv.chapterBoss
       ? ch.boss
