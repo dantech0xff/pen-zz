@@ -156,57 +156,61 @@ class _BattleScreenState extends State<BattleScreen> {
                       style: T.body(14),
                     ),
                     const SizedBox(height: 6),
-                    ValueListenableBuilder<HudState>(
-                      valueListenable: game.hud,
-                      builder: (context, h, _) => Row(
-                        children: [
-                          Expanded(
-                            flex: 78,
-                            child: _Pad(
-                              label: '',
-                              icon: Icons.arrow_left_rounded,
-                              sub: 'lùi',
-                              move: true,
-                              onDown: () => battle.inBack = true,
-                              onUp: () => battle.inBack = false,
+                    ValueListenableBuilder<bool>(
+                      valueListenable: game.held,
+                      builder: (context, held, pads) => IgnorePointer(ignoring: held, child: pads),
+                      child: ValueListenableBuilder<HudState>(
+                        valueListenable: game.hud,
+                        builder: (context, h, _) => Row(
+                          children: [
+                            Expanded(
+                              flex: 78,
+                              child: _Pad(
+                                label: '',
+                                icon: Icons.arrow_left_rounded,
+                                sub: 'lùi',
+                                move: true,
+                                onDown: () => game.pad(back: true),
+                                onUp: () => game.pad(back: false),
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            flex: 78,
-                            child: _Pad(
-                              label: '',
-                              icon: Icons.arrow_right_rounded,
-                              sub: 'tới',
-                              move: true,
-                              onDown: () => battle.inFwd = true,
-                              onUp: () => battle.inFwd = false,
+                            const SizedBox(width: 8),
+                            Expanded(
+                              flex: 78,
+                              child: _Pad(
+                                label: '',
+                                icon: Icons.arrow_right_rounded,
+                                sub: 'tới',
+                                move: true,
+                                onDown: () => game.pad(fwd: true),
+                                onUp: () => game.pad(fwd: false),
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            flex: 100,
-                            child: _Pad(
-                              label: 'ĐỠ',
-                              sub: h.blockReady ? 'giữ để đỡ' : 'không khiên',
-                              enabled: h.blockReady,
-                              onDown: () => battle.inBlock = true,
-                              onUp: () => battle.inBlock = false,
+                            const SizedBox(width: 8),
+                            Expanded(
+                              flex: 100,
+                              child: _Pad(
+                                label: 'ĐỠ',
+                                sub: h.blockReady ? 'giữ để đỡ' : 'không khiên',
+                                enabled: h.blockReady,
+                                onDown: () => game.pad(block: true),
+                                onUp: () => game.pad(block: false),
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            flex: 118,
-                            child: _Pad(
-                              label: 'ĐÁNH',
-                              sub: 'chạm để vung',
-                              attack: true,
-                              ready: h.atkReady,
-                              onDown: battle.pressAttack,
-                              onUp: () {},
+                            const SizedBox(width: 8),
+                            Expanded(
+                              flex: 118,
+                              child: _Pad(
+                                label: 'ĐÁNH',
+                                sub: 'chạm để vung',
+                                attack: true,
+                                ready: h.atkReady,
+                                onDown: game.attack,
+                                onUp: () {},
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ],

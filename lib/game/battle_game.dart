@@ -109,17 +109,50 @@ class BattleGame extends Game with KeyboardEvents {
     if (state != AppLifecycleState.resumed && !battle.finished) held.value = true;
   }
 
+  // Touch pads and keyboard drive the same inputs. Each keeps its own state, so a key
+  // event cannot cancel a pad the player is holding, or the other way round.
+  bool _padFwd = false, _padBack = false, _padBlock = false;
+  bool _keyFwd = false, _keyBack = false, _keyBlock = false;
+
+  static final Set<LogicalKeyboardKey> _fwdKeys = {LogicalKeyboardKey.keyD, LogicalKeyboardKey.arrowRight};
+  static final Set<LogicalKeyboardKey> _backKeys = {LogicalKeyboardKey.keyA, LogicalKeyboardKey.arrowLeft};
+  static final Set<LogicalKeyboardKey> _blockKeys = {
+    LogicalKeyboardKey.keyK,
+    LogicalKeyboardKey.shiftLeft,
+    LogicalKeyboardKey.shiftRight,
+  };
+  static final Set<LogicalKeyboardKey> _attackKeys = {LogicalKeyboardKey.keyJ, LogicalKeyboardKey.space};
+
+  /// Touch pad state from the battle screen.
+  void pad({bool? fwd, bool? back, bool? block}) {
+    _padFwd = fwd ?? _padFwd;
+    _padBack = back ?? _padBack;
+    _padBlock = block ?? _padBlock;
+    _syncInput();
+  }
+
+  void _syncInput() {
+    battle.inFwd = _padFwd || _keyFwd;
+    battle.inBack = _padBack || _keyBack;
+    battle.inBlock = _padBlock || _keyBlock;
+  }
+
+  /// Swings from the pad or a key. Nothing happens while the battle is paused.
+  void attack() {
+    if (!held.value) battle.pressAttack();
+  }
+
   @override
   KeyEventResult onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
-    bool has(List<LogicalKeyboardKey> ks) => ks.any(keysPressed.contains);
-    battle.inFwd = has([LogicalKeyboardKey.keyD, LogicalKeyboardKey.arrowRight]);
-    battle.inBack = has([LogicalKeyboardKey.keyA, LogicalKeyboardKey.arrowLeft]);
-    battle.inBlock = has([LogicalKeyboardKey.keyK, LogicalKeyboardKey.shiftLeft, LogicalKeyboardKey.shiftRight]);
-    if (event is KeyDownEvent &&
-        (event.logicalKey == LogicalKeyboardKey.keyJ || event.logicalKey == LogicalKeyboardKey.space)) {
-      battle.pressAttack();
-    }
-    return KeyEventResult.handled;
+    _keyFwd = keysPressed.any(_fwdKeys.contains);
+    _keyBack = keysPressed.any(_backKeys.contains);
+    _keyBlock = keysPressed.any(_blockKeys.contains);
+    _syncInput();
+    final k = event.logicalKey;
+    if (event is KeyDownEvent && _attackKeys.contains(k)) attack();
+    // Volume, back and every other key go on to the system.
+    final used = _fwdKeys.contains(k) || _backKeys.contains(k) || _blockKeys.contains(k) || _attackKeys.contains(k);
+    return used ? KeyEventResult.handled : KeyEventResult.ignored;
   }
 
   void _banner2(String text, double dur) {
