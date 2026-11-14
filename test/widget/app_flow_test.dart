@@ -1,6 +1,10 @@
+import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pen_zz/app.dart';
+import 'package:pen_zz/core/battle/battle.dart';
+import 'package:pen_zz/core/battle/fighter.dart';
+import 'package:pen_zz/game/battle_game.dart';
 import 'package:pen_zz/state/game_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -104,5 +108,53 @@ void main() {
     await tester.tap(find.text('Luyện tập'));
     await settle(tester);
     expect(find.text('Đấu bot luyện tập'), findsOneWidget);
+  });
+
+  testWidgets('two fingers: hold forward and tap attack at the same time', (tester) async {
+    tester.view.physicalSize = const Size(412 * 3, 860 * 3);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    SharedPreferences.setMockInitialValues({});
+    final g = GameController();
+    await g.load();
+    g.saveGear(
+      [
+        [0, 10, 3, -120],
+      ],
+      [
+        [10, -40, 10, 40],
+      ],
+    );
+    g.markTutorialDone();
+    await tester.pumpWidget(PenApp(controller: g));
+    await settle(tester);
+    await tester.tap(find.text('Đánh màn 1'));
+    await settle(tester);
+    await tester.tap(find.text('Vào trận'));
+    await tester.pump(const Duration(milliseconds: 16));
+    final game = tester.widget<GameWidget<BattleGame>>(find.byType(GameWidget<BattleGame>)).game!;
+    final battle = game.battle;
+    for (var i = 0; i < 200 && battle.phase != Phase.fight; i++) {
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    expect(battle.phase, Phase.fight);
+    expect(battle.p.state, FState.idle);
+
+    final fwd = await tester.startGesture(tester.getCenter(find.text('tới')), pointer: 11);
+    await tester.pump(const Duration(milliseconds: 16));
+    expect(battle.inFwd, isTrue);
+
+    final atk = await tester.startGesture(tester.getCenter(find.text('ĐÁNH')), pointer: 12);
+    await tester.pump(const Duration(milliseconds: 16));
+    expect(battle.p.state, isNot(FState.idle), reason: 'the second finger starts a swing');
+    await atk.up();
+    await tester.pump(const Duration(milliseconds: 16));
+    expect(battle.inFwd, isTrue, reason: 'lifting the attack finger keeps walking');
+
+    await fwd.up();
+    await tester.pump(const Duration(milliseconds: 16));
+    expect(battle.inFwd, isFalse);
+    // Let the attack pad's press animation timer finish.
+    await tester.pump(const Duration(milliseconds: 200));
   });
 }
