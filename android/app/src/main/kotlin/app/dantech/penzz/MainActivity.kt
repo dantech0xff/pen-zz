@@ -1,4 +1,4 @@
-package io.github.dantech0xff.pen_zz
+package app.dantech.penzz
 
 import io.flutter.embedding.android.FlutterActivity
 

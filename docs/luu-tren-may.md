@@ -49,7 +49,7 @@ Nhờ vậy, trường hợp hiếm "đã trả tiền gói xu nhưng mất mạ
 ### Tạo project
 
 1. Vào Firebase console, tạo project.
-2. Thêm app Android với package `io.github.dantech0xff.pen_zz`.
+2. Thêm app Android với package `app.dantech.penzz`.
 3. Thêm SHA-1 và SHA-256 của mọi khoá ký app:
    - khoá debug: `keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android`;
    - khoá tải lên của bạn;
@@ -82,7 +82,7 @@ flutter build appbundle --release --dart-define-from-file=keys.json -PadmobAppId
 
 ### iOS (cần máy Mac)
 
-Thêm app iOS trong Firebase rồi điền `FB_APP_ID_IOS` và `GOOGLE_IOS_CLIENT_ID`. Thêm `REVERSED_CLIENT_ID` vào `CFBundleURLTypes` trong `ios/Runner/Info.plist` theo hướng dẫn của gói `google_sign_in`. App Store yêu cầu có thêm Sign in with Apple khi app cho đăng nhập Google; phần này chưa làm.
+Thêm app iOS trong Firebase với Bundle ID `app.dantech.penZz`, rồi điền `FB_APP_ID_IOS` và `GOOGLE_IOS_CLIENT_ID`. Thêm `REVERSED_CLIENT_ID` vào `CFBundleURLTypes` trong `ios/Runner/Info.plist` theo hướng dẫn của gói `google_sign_in`. App Store yêu cầu có thêm Sign in with Apple khi app cho đăng nhập Google; phần này chưa làm.
 
 ## Trước khi phát hành
 

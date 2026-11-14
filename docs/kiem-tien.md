@@ -37,7 +37,7 @@ Danh sách sản phẩm nằm ở `storeProducts` trong `lib/core/store_catalog.
 
 ### Google Play Console
 
-1. Tạo app với mã ứng dụng `io.github.dantech0xff.pen_zz`, bật Play App Signing và tạo khoá tải lên của riêng bạn.
+1. Tạo app với mã ứng dụng `app.dantech.penzz`, bật Play App Signing và tạo khoá tải lên của riêng bạn.
 2. Tải một bản `.aab` lên kênh Thử nghiệm nội bộ. Google chỉ cho tạo và thử sản phẩm khi app đã có bản tải lên.
 3. Vào phần sản phẩm trong app (In-app products), tạo 7 mã ở bảng trên rồi kích hoạt.
 4. Thêm tài khoản Google dùng để thử vào License testing, để mua thử không mất tiền.

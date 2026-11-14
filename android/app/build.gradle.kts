@@ -16,7 +16,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.dantech0xff.pen_zz"
+    namespace = "app.dantech.penzz"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -27,7 +27,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "io.github.dantech0xff.pen_zz"
+        applicationId = "app.dantech.penzz"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
