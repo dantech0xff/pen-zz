@@ -4,13 +4,7 @@ enum InkFx { none, ice, fire, shock, stone, wind, leech }
 /// Stat side of an ink effect: knockback, % damage and wind-up multipliers,
 /// plus the text shown in the wardrobe.
 class InkFxSpec {
-  const InkFxSpec({
-    required this.title,
-    required this.desc,
-    this.pMul = 1,
-    this.dMul = 1,
-    this.windMul = 1,
-  });
+  const InkFxSpec({required this.title, required this.desc, this.pMul = 1, this.dMul = 1, this.windMul = 1});
 
   final String title;
   final String desc;
@@ -48,11 +42,7 @@ const Map<InkFx, InkFxSpec> inkFxSpecs = {
     pMul: 1.15,
     dMul: 0.75,
   ),
-  InkFx.leech: InkFxSpec(
-    title: 'Hút',
-    desc: 'Trúng đòn hồi lại cho bạn 30% số % vừa gây ra. Văng kém 8%.',
-    pMul: 0.92,
-  ),
+  InkFx.leech: InkFxSpec(title: 'Hút', desc: 'Trúng đòn hồi lại cho bạn 30% số % vừa gây ra. Văng kém 8%.', pMul: 0.92),
 };
 
 InkFxSpec inkFxSpec(InkFx fx) => inkFxSpecs[fx]!;

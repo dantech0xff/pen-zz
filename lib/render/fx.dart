@@ -6,13 +6,46 @@ import 'ink_painter.dart';
 import 'palette.dart';
 import 'text_fx.dart';
 
-enum PartKind { streak, ring, ember, dot, petal, bolt, bubble, star, heart, flake, confetti, word, leaf, blot, note, pixel }
+enum PartKind {
+  streak,
+  ring,
+  ember,
+  dot,
+  petal,
+  bolt,
+  bubble,
+  star,
+  heart,
+  flake,
+  confetti,
+  word,
+  leaf,
+  blot,
+  note,
+  pixel,
+}
 
 class Part {
-  Part(this.kind, this.x, this.y, this.col, this.life,
-      {this.vx = 0, this.vy = 0, this.w = 3, this.r = 3, this.rot = 0, this.vr = 0, this.a = 0, this.len = 0, this.seed = 0,
-      this.r0 = 14, this.grow = 70, this.lw = 4, this.text = ''})
-      : max = life;
+  Part(
+    this.kind,
+    this.x,
+    this.y,
+    this.col,
+    this.life, {
+    this.vx = 0,
+    this.vy = 0,
+    this.w = 3,
+    this.r = 3,
+    this.rot = 0,
+    this.vr = 0,
+    this.a = 0,
+    this.len = 0,
+    this.seed = 0,
+    this.r0 = 14,
+    this.grow = 70,
+    this.lw = 4,
+    this.text = '',
+  }) : max = life;
 
   final PartKind kind;
   double x, y, vx, vy, life;
@@ -54,14 +87,24 @@ class FxSystem {
   void sparks(double x, double y, double dir, Color col, int n, double speed) {
     for (var i = 0; i < n; i++) {
       final a = (dir > 0 ? 0 : math.pi) + rand(-1.3, 1.3), v = rand(speed * 0.35, speed);
-      parts.add(Part(PartKind.streak, x, y, col, rand(0.25, 0.45),
-          vx: math.cos(a) * v, vy: math.sin(a) * v - rand(60, 260), w: rand(2, 4)));
+      parts.add(
+        Part(
+          PartKind.streak,
+          x,
+          y,
+          col,
+          rand(0.25, 0.45),
+          vx: math.cos(a) * v,
+          vy: math.sin(a) * v - rand(60, 260),
+          w: rand(2, 4),
+        ),
+      );
     }
   }
 
-  void ring(double x, double y, Color col, {bool small = false}) => parts.add(small
-      ? Part(PartKind.ring, x, y, col, 0.22, r0: 6, grow: 26, lw: 2.5)
-      : Part(PartKind.ring, x, y, col, 0.42));
+  void ring(double x, double y, Color col, {bool small = false}) => parts.add(
+    small ? Part(PartKind.ring, x, y, col, 0.22, r0: 6, grow: 26, lw: 2.5) : Part(PartKind.ring, x, y, col, 0.42),
+  );
 
   void hitFx(double x, double y, double dir, String fx, Color ink, {int n = 12, double speed = 560}) {
     final base = dir > 0 ? 0.0 : math.pi;
@@ -70,8 +113,18 @@ class FxSystem {
       case 'lua':
         for (var i = 0; i < n + 4; i++) {
           final a = ang(1.4), v = rand(speed * 0.2, speed * 0.6);
-          parts.add(Part(PartKind.ember, x, y, rgb(pick([0xFF9F1C, 0xFFBF69, 0xE4572E, 0xFFD23F])), rand(0.35, 0.7),
-              vx: math.cos(a) * v, vy: math.sin(a) * v - rand(60, 200), r: rand(2, 4.5)));
+          parts.add(
+            Part(
+              PartKind.ember,
+              x,
+              y,
+              rgb(pick([0xFF9F1C, 0xFFBF69, 0xE4572E, 0xFFD23F])),
+              rand(0.35, 0.7),
+              vx: math.cos(a) * v,
+              vy: math.sin(a) * v - rand(60, 200),
+              r: rand(2, 4.5),
+            ),
+          );
         }
       case 'set':
         for (var i = 0; i < 6; i++) {
@@ -81,14 +134,35 @@ class FxSystem {
       case 'cau-vong':
         for (var i = 0; i < n + 4; i++) {
           final a = ang(1.3), v = rand(speed * 0.35, speed);
-          parts.add(Part(PartKind.streak, x, y, hsl(rand(0, 360), 0.9, 0.55), rand(0.3, 0.5),
-              vx: math.cos(a) * v, vy: math.sin(a) * v - rand(60, 260), w: rand(2.5, 4.5)));
+          parts.add(
+            Part(
+              PartKind.streak,
+              x,
+              y,
+              hsl(rand(0, 360), 0.9, 0.55),
+              rand(0.3, 0.5),
+              vx: math.cos(a) * v,
+              vy: math.sin(a) * v - rand(60, 260),
+              w: rand(2.5, 4.5),
+            ),
+          );
         }
       case 'hoa-dao':
         for (var i = 0; i < n; i++) {
           final a = ang(1.5), v = rand(80, speed * 0.5);
-          parts.add(Part(PartKind.petal, x, y, rgb(pick([0xFF8FB1, 0xFFC2D4, 0xFFB3C8, 0xFF6F9C])), rand(0.8, 1.4),
-              vx: math.cos(a) * v, vy: math.sin(a) * v - rand(40, 160), rot: rand(0, 6), vr: rand(-8, 8)));
+          parts.add(
+            Part(
+              PartKind.petal,
+              x,
+              y,
+              rgb(pick([0xFF8FB1, 0xFFC2D4, 0xFFB3C8, 0xFF6F9C])),
+              rand(0.8, 1.4),
+              vx: math.cos(a) * v,
+              vy: math.sin(a) * v - rand(40, 160),
+              rot: rand(0, 6),
+              vr: rand(-8, 8),
+            ),
+          );
         }
       case 'phao-hoa':
         for (var j = 0; j < 3; j++) {
@@ -96,67 +170,174 @@ class FxSystem {
           final ox = x + rand(-26, 26), oy = y + rand(-34, 10);
           for (var i = 0; i < 12; i++) {
             final a = i / 12 * math.pi * 2, v = rand(160, 260);
-            parts.add(Part(PartKind.dot, ox, oy, col, rand(0.5, 0.75), vx: math.cos(a) * v, vy: math.sin(a) * v, r: 2.6));
+            parts.add(
+              Part(PartKind.dot, ox, oy, col, rand(0.5, 0.75), vx: math.cos(a) * v, vy: math.sin(a) * v, r: 2.6),
+            );
           }
         }
       case 'bong-bong':
         for (var i = 0; i < n; i++) {
           final a = ang(1.4), v = rand(60, speed * 0.35);
-          parts.add(Part(PartKind.bubble, x, y, rgb(0x6EC6F0), rand(0.8, 1.3),
-              vx: math.cos(a) * v, vy: math.sin(a) * v - rand(20, 90), r: rand(3, 7)));
+          parts.add(
+            Part(
+              PartKind.bubble,
+              x,
+              y,
+              rgb(0x6EC6F0),
+              rand(0.8, 1.3),
+              vx: math.cos(a) * v,
+              vy: math.sin(a) * v - rand(20, 90),
+              r: rand(3, 7),
+            ),
+          );
         }
       case 'trai-tim':
         for (var i = 0; i < 9; i++) {
           final a = ang(1.3), v = rand(70, speed * 0.4);
-          parts.add(Part(PartKind.heart, x, y, rgb(pick([0xFF4F7B, 0xFF8FB1, 0xE91E63])), rand(0.7, 1.1),
-              vx: math.cos(a) * v, vy: math.sin(a) * v - rand(40, 120), r: rand(2.6, 4.2)));
+          parts.add(
+            Part(
+              PartKind.heart,
+              x,
+              y,
+              rgb(pick([0xFF4F7B, 0xFF8FB1, 0xE91E63])),
+              rand(0.7, 1.1),
+              vx: math.cos(a) * v,
+              vy: math.sin(a) * v - rand(40, 120),
+              r: rand(2.6, 4.2),
+            ),
+          );
         }
       case 'ngoi-sao':
         for (var i = 0; i < 9; i++) {
           final a = ang(1.4), v = rand(120, speed * 0.7);
-          parts.add(Part(PartKind.star, x, y, rgb(pick([0xFFCA3A, 0xFFE14A, 0xFFF59D])), rand(0.5, 0.8),
-              vx: math.cos(a) * v, vy: math.sin(a) * v - rand(80, 220), r: rand(3, 5), rot: rand(0, 6), vr: rand(-10, 10)));
+          parts.add(
+            Part(
+              PartKind.star,
+              x,
+              y,
+              rgb(pick([0xFFCA3A, 0xFFE14A, 0xFFF59D])),
+              rand(0.5, 0.8),
+              vx: math.cos(a) * v,
+              vy: math.sin(a) * v - rand(80, 220),
+              r: rand(3, 5),
+              rot: rand(0, 6),
+              vr: rand(-10, 10),
+            ),
+          );
         }
       case 'tuyet':
         for (var i = 0; i < n; i++) {
           final a = ang(1.6), v = rand(50, speed * 0.3);
-          parts.add(Part(PartKind.flake, x, y, rgb(pick([0xFFFFFF, 0xBDE6FA, 0x8FD3F5])), rand(0.9, 1.5),
-              vx: math.cos(a) * v, vy: math.sin(a) * v - rand(30, 100), r: rand(2.6, 4.2), rot: rand(0, 3), vr: rand(-3, 3)));
+          parts.add(
+            Part(
+              PartKind.flake,
+              x,
+              y,
+              rgb(pick([0xFFFFFF, 0xBDE6FA, 0x8FD3F5])),
+              rand(0.9, 1.5),
+              vx: math.cos(a) * v,
+              vy: math.sin(a) * v - rand(30, 100),
+              r: rand(2.6, 4.2),
+              rot: rand(0, 3),
+              vr: rand(-3, 3),
+            ),
+          );
         }
       case 'giay-vun':
         for (var i = 0; i < n + 6; i++) {
           final a = ang(1.5), v = rand(120, speed * 0.75);
-          parts.add(Part(PartKind.confetti, x, y, rgb(pick([0xFF595E, 0xFFCA3A, 0x8AC926, 0x1982C4, 0xC77DFF, 0xFF8FB1])),
+          parts.add(
+            Part(
+              PartKind.confetti,
+              x,
+              y,
+              rgb(pick([0xFF595E, 0xFFCA3A, 0x8AC926, 0x1982C4, 0xC77DFF, 0xFF8FB1])),
               rand(0.6, 1.0),
-              vx: math.cos(a) * v, vy: math.sin(a) * v - rand(120, 300), rot: rand(0, 6), vr: rand(-14, 14)));
+              vx: math.cos(a) * v,
+              vy: math.sin(a) * v - rand(120, 300),
+              rot: rand(0, 6),
+              vr: rand(-14, 14),
+            ),
+          );
         }
       case 'la-phong':
         for (var i = 0; i < 9; i++) {
           final a = ang(1.5), v = rand(80, speed * 0.45);
-          parts.add(Part(PartKind.leaf, x, y, rgb(pick([0xE4572E, 0xF28C28, 0xC0392B, 0xF5B041])), rand(0.9, 1.5),
-              vx: math.cos(a) * v, vy: math.sin(a) * v - rand(40, 140), r: rand(3.5, 5), rot: rand(0, 6), vr: rand(-6, 6)));
+          parts.add(
+            Part(
+              PartKind.leaf,
+              x,
+              y,
+              rgb(pick([0xE4572E, 0xF28C28, 0xC0392B, 0xF5B041])),
+              rand(0.9, 1.5),
+              vx: math.cos(a) * v,
+              vy: math.sin(a) * v - rand(40, 140),
+              r: rand(3.5, 5),
+              rot: rand(0, 6),
+              vr: rand(-6, 6),
+            ),
+          );
         }
       case 'not-nhac':
         for (var i = 0; i < 7; i++) {
           final a = ang(1.2), v = rand(60, speed * 0.3);
-          parts.add(Part(PartKind.note, x, y, rgb(pick([0x6A3DB8, 0x1D3AA8, 0xC2185B])), rand(0.8, 1.2),
-              vx: math.cos(a) * v, vy: math.sin(a) * v - rand(40, 110), r: rand(2.6, 3.6)));
+          parts.add(
+            Part(
+              PartKind.note,
+              x,
+              y,
+              rgb(pick([0x6A3DB8, 0x1D3AA8, 0xC2185B])),
+              rand(0.8, 1.2),
+              vx: math.cos(a) * v,
+              vy: math.sin(a) * v - rand(40, 110),
+              r: rand(2.6, 3.6),
+            ),
+          );
         }
       case 'muc-tau':
         for (var i = 0; i < n; i++) {
           final a = ang(1.3), v = rand(100, speed * 0.7);
-          parts.add(Part(PartKind.blot, x, y, withAlpha(ink, 0.9), rand(0.45, 0.75),
-              vx: math.cos(a) * v, vy: math.sin(a) * v - rand(60, 200), r: rand(1.6, 5)));
+          parts.add(
+            Part(
+              PartKind.blot,
+              x,
+              y,
+              withAlpha(ink, 0.9),
+              rand(0.45, 0.75),
+              vx: math.cos(a) * v,
+              vy: math.sin(a) * v - rand(60, 200),
+              r: rand(1.6, 5),
+            ),
+          );
         }
       case 'dien-tu':
         for (var i = 0; i < n + 4; i++) {
           final a = ang(1.6), v = rand(120, speed * 0.7);
-          parts.add(Part(PartKind.pixel, x, y, rgb(pick([0x00E676, 0x00B8D4, 0xD500F9, 0xFFEA00])), rand(0.4, 0.7),
-              vx: math.cos(a) * v, vy: math.sin(a) * v - rand(40, 160), r: rand(2.5, 4.5)));
+          parts.add(
+            Part(
+              PartKind.pixel,
+              x,
+              y,
+              rgb(pick([0x00E676, 0x00B8D4, 0xD500F9, 0xFFEA00])),
+              rand(0.4, 0.7),
+              vx: math.cos(a) * v,
+              vy: math.sin(a) * v - rand(40, 160),
+              r: rand(2.5, 4.5),
+            ),
+          );
         }
       case 'chu-bop':
-        parts.add(Part(PartKind.word, x + dir * 10, y - 18, rgb(pick([0xFFCA3A, 0xFF595E, 0x1982C4])), 0.6,
-            text: pick(['BỐP!', 'BỤP!', 'CHÁT!', 'BÙM!', 'HỰ!']), rot: rand(-0.25, 0.25)));
+        parts.add(
+          Part(
+            PartKind.word,
+            x + dir * 10,
+            y - 18,
+            rgb(pick([0xFFCA3A, 0xFF595E, 0x1982C4])),
+            0.6,
+            text: pick(['BỐP!', 'BỤP!', 'CHÁT!', 'BÙM!', 'HỰ!']),
+            rot: rand(-0.25, 0.25),
+          ),
+        );
         sparks(x, y, dir, ink, 6, speed * 0.8);
       default:
         sparks(x, y, dir, ink, n, speed);
@@ -169,35 +350,120 @@ class FxSystem {
     switch (fx) {
       case 'lua':
         if (p < 0.6) {
-          parts.add(Part(PartKind.ember, x, y, rgb(pick([0xFF9F1C, 0xFFD23F, 0xE4572E])), rand(0.25, 0.45),
-              vx: rand(-40, 40), vy: rand(-80, -20), r: rand(2, 3.5)));
+          parts.add(
+            Part(
+              PartKind.ember,
+              x,
+              y,
+              rgb(pick([0xFF9F1C, 0xFFD23F, 0xE4572E])),
+              rand(0.25, 0.45),
+              vx: rand(-40, 40),
+              vy: rand(-80, -20),
+              r: rand(2, 3.5),
+            ),
+          );
         }
       case 'hoa-dao':
         if (p < 0.35) {
-          parts.add(Part(PartKind.petal, x, y, rgb(pick([0xFF8FB1, 0xFFC2D4])), rand(0.6, 1.0),
-              vx: rand(-30, 30), vy: rand(-40, 0), rot: rand(0, 6), vr: rand(-6, 6)));
+          parts.add(
+            Part(
+              PartKind.petal,
+              x,
+              y,
+              rgb(pick([0xFF8FB1, 0xFFC2D4])),
+              rand(0.6, 1.0),
+              vx: rand(-30, 30),
+              vy: rand(-40, 0),
+              rot: rand(0, 6),
+              vr: rand(-6, 6),
+            ),
+          );
         }
       case 'bong-bong':
-        if (p < 0.3) parts.add(Part(PartKind.bubble, x, y, rgb(0x6EC6F0), rand(0.5, 0.8), vx: rand(-20, 20), vy: rand(-50, -10), r: rand(2, 4)));
+        if (p < 0.3) {
+          parts.add(
+            Part(
+              PartKind.bubble,
+              x,
+              y,
+              rgb(0x6EC6F0),
+              rand(0.5, 0.8),
+              vx: rand(-20, 20),
+              vy: rand(-50, -10),
+              r: rand(2, 4),
+            ),
+          );
+        }
       case 'ngoi-sao':
         if (p < 0.3) {
-          parts.add(Part(PartKind.star, x, y, rgb(0xFFCA3A), rand(0.3, 0.5), vx: rand(-30, 30), vy: rand(-30, 30), r: 2.4, vr: rand(-8, 8)));
+          parts.add(
+            Part(
+              PartKind.star,
+              x,
+              y,
+              rgb(0xFFCA3A),
+              rand(0.3, 0.5),
+              vx: rand(-30, 30),
+              vy: rand(-30, 30),
+              r: 2.4,
+              vr: rand(-8, 8),
+            ),
+          );
         }
       case 'tuyet':
-        if (p < 0.35) parts.add(Part(PartKind.flake, x, y, rgb(0xFFFFFF), rand(0.6, 1.0), vx: rand(-20, 20), vy: rand(0, 30), r: 2.6, vr: 2));
+        if (p < 0.35) {
+          parts.add(
+            Part(
+              PartKind.flake,
+              x,
+              y,
+              rgb(0xFFFFFF),
+              rand(0.6, 1.0),
+              vx: rand(-20, 20),
+              vy: rand(0, 30),
+              r: 2.6,
+              vr: 2,
+            ),
+          );
+        }
       case 'giay-vun':
         if (p < 0.4) {
-          parts.add(Part(PartKind.confetti, x, y, rgb(pick([0xFF595E, 0xFFCA3A, 0x8AC926, 0x1982C4])), rand(0.4, 0.7),
-              vx: rand(-40, 40), vy: rand(-60, 0), rot: rand(0, 6), vr: rand(-10, 10)));
+          parts.add(
+            Part(
+              PartKind.confetti,
+              x,
+              y,
+              rgb(pick([0xFF595E, 0xFFCA3A, 0x8AC926, 0x1982C4])),
+              rand(0.4, 0.7),
+              vx: rand(-40, 40),
+              vy: rand(-60, 0),
+              rot: rand(0, 6),
+              vr: rand(-10, 10),
+            ),
+          );
         }
       case 'dien-tu':
         if (p < 0.4) parts.add(Part(PartKind.pixel, x, y, rgb(pick([0x00E676, 0x00B8D4])), rand(0.25, 0.4), r: 3));
       case 'not-nhac':
-        if (p < 0.15) parts.add(Part(PartKind.note, x, y, rgb(0x6A3DB8), rand(0.6, 0.9), vx: rand(-20, 20), vy: -40, r: 2.6));
+        if (p < 0.15) {
+          parts.add(Part(PartKind.note, x, y, rgb(0x6A3DB8), rand(0.6, 0.9), vx: rand(-20, 20), vy: -40, r: 2.6));
+        }
       case 'la-phong':
         if (p < 0.25) {
-          parts.add(Part(PartKind.leaf, x, y, rgb(pick([0xE4572E, 0xF28C28])), rand(0.6, 1.0),
-              vx: rand(-30, 30), vy: rand(-30, 10), r: 3.4, rot: rand(0, 6), vr: rand(-5, 5)));
+          parts.add(
+            Part(
+              PartKind.leaf,
+              x,
+              y,
+              rgb(pick([0xE4572E, 0xF28C28])),
+              rand(0.6, 1.0),
+              vx: rand(-30, 30),
+              vy: rand(-30, 10),
+              r: 3.4,
+              rot: rand(0, 6),
+              vr: rand(-5, 5),
+            ),
+          );
         }
     }
   }
@@ -272,7 +538,12 @@ class FxSystem {
       final col = withAlpha(p.col, a);
       switch (p.kind) {
         case PartKind.ring:
-          strokePath(c, Path()..addOval(Rect.fromCircle(center: Offset(p.x, p.y), radius: p.r0 + (1 - a) * p.grow)), col, p.lw);
+          strokePath(
+            c,
+            Path()..addOval(Rect.fromCircle(center: Offset(p.x, p.y), radius: p.r0 + (1 - a) * p.grow)),
+            col,
+            p.lw,
+          );
         case PartKind.ember:
           dot(c, p.x, p.y, p.r * (0.5 + a * 0.5), col);
         case PartKind.dot:
@@ -294,7 +565,11 @@ class FxSystem {
           strokePath(c, path, col, 3);
           strokePath(c, path, withAlpha(const Color(0xFFFFFFFF), a), 1.2);
         case PartKind.bubble:
-          fillPath(c, Path()..addOval(Rect.fromCircle(center: Offset(p.x, p.y), radius: p.r)), withAlpha(p.col, a * 0.18));
+          fillPath(
+            c,
+            Path()..addOval(Rect.fromCircle(center: Offset(p.x, p.y), radius: p.r)),
+            withAlpha(p.col, a * 0.18),
+          );
           strokePath(c, Path()..addOval(Rect.fromCircle(center: Offset(p.x, p.y), radius: p.r)), col, 1.3);
           dot(c, p.x - p.r * 0.35, p.y - p.r * 0.35, p.r * 0.22, withAlpha(const Color(0xFFFFFFFF), a));
         case PartKind.heart:
@@ -308,8 +583,15 @@ class FxSystem {
         case PartKind.flake:
           for (var k = 0; k < 3; k++) {
             final ang = p.rot + k * math.pi / 3;
-            line(c, p.x - math.cos(ang) * p.r, p.y - math.sin(ang) * p.r, p.x + math.cos(ang) * p.r, p.y + math.sin(ang) * p.r,
-                col, 1.2);
+            line(
+              c,
+              p.x - math.cos(ang) * p.r,
+              p.y - math.sin(ang) * p.r,
+              p.x + math.cos(ang) * p.r,
+              p.y + math.sin(ang) * p.r,
+              col,
+              1.2,
+            );
           }
         case PartKind.confetti:
           c.save();
@@ -323,7 +605,18 @@ class FxSystem {
           c.translate(p.x, p.y);
           c.rotate(p.rot);
           c.scale(grow);
-          drawText(c, p.text, 0, 0, 22, p.col, family: Fonts.display, outline: 5, outlineColor: const Color(0xFF1D1F27), alpha: a);
+          drawText(
+            c,
+            p.text,
+            0,
+            0,
+            22,
+            p.col,
+            family: Fonts.display,
+            outline: 5,
+            outlineColor: const Color(0xFF1D1F27),
+            alpha: a,
+          );
           c.restore();
         case PartKind.leaf:
           c.save();
@@ -332,7 +625,11 @@ class FxSystem {
           fillPath(c, _starPath(p.r, p.r * 0.5, 5), col);
           c.restore();
         case PartKind.note:
-          fillPath(c, Path()..addOval(Rect.fromCenter(center: Offset(p.x, p.y), width: p.r * 2.2, height: p.r * 1.6)), col);
+          fillPath(
+            c,
+            Path()..addOval(Rect.fromCenter(center: Offset(p.x, p.y), width: p.r * 2.2, height: p.r * 1.6)),
+            col,
+          );
           line(c, p.x + p.r, p.y, p.x + p.r, p.y - p.r * 3.4, col, 1.3);
           line(c, p.x + p.r, p.y - p.r * 3.4, p.x + p.r * 2.2, p.y - p.r * 2.6, col, 1.3);
         case PartKind.pixel:
@@ -413,13 +710,14 @@ void drawTrail(Canvas c, String fx, Color ink, List<P> trail, double fade, doubl
     if (fx == 'set' || fx == 'dien-tu') {
       final mx = (a.x + b.x) / 2 + (rnd.nextDouble() - 0.5) * 12, my = (a.y + b.y) / 2 + (rnd.nextDouble() - 0.5) * 12;
       strokePath(
-          c,
-          Path()
-            ..moveTo(a.x, a.y)
-            ..lineTo(mx, my)
-            ..lineTo(b.x, b.y),
-          col,
-          w);
+        c,
+        Path()
+          ..moveTo(a.x, a.y)
+          ..lineTo(mx, my)
+          ..lineTo(b.x, b.y),
+        col,
+        w,
+      );
     } else {
       line(c, a.x, a.y, b.x, b.y, col, w);
     }

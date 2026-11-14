@@ -162,7 +162,17 @@ Pose poseFor(Fighter f, String kind, double animT) {
       return p;
     case 'stun':
       final w = math.sin(f.t * 9) * 0.06;
-      return Pose(hipX: -6, hipY: -44, lean: -0.22 + w, head: -0.15 + w * 2, fFx: 20, fBx: -17, hWx: 6, hWy: -92, th: f.th);
+      return Pose(
+        hipX: -6,
+        hipY: -44,
+        lean: -0.22 + w,
+        head: -0.15 + w * 2,
+        fFx: 20,
+        fBx: -17,
+        hWx: 6,
+        hWy: -92,
+        th: f.th,
+      );
     case 'fall':
       return Pose(head: -0.3, lean: 0, fFx: 18, fFy: -22, fBx: -16, fBy: -14, hWx: 16, hWy: -118, th: f.th);
     case 'taunt':

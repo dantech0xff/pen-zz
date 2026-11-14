@@ -25,13 +25,23 @@ class SaveData {
     this.tutorialDone = false,
     this.wins = 0,
     this.losses = 0,
-  })  : pts = pts ?? Points(),
-        stars = stars ?? List<int>.filled(levelCount, 0),
-        owned = owned ?? {for (final id in defaultEquip.values) if (id != sameInk) id},
-        eq = eq ?? Map.of(defaultEquip),
-        w = w ?? [],
-        s = s ?? [],
-        blueprints = blueprints ?? {for (final t in [...weaponTemplates, ...shieldTemplates]) if (t.starter) t.id};
+  }) : pts = pts ?? Points(),
+       stars = stars ?? List<int>.filled(levelCount, 0),
+       owned =
+           owned ??
+           {
+             for (final id in defaultEquip.values)
+               if (id != sameInk) id,
+           },
+       eq = eq ?? Map.of(defaultEquip),
+       w = w ?? [],
+       s = s ?? [],
+       blueprints =
+           blueprints ??
+           {
+             for (final t in [...weaponTemplates, ...shieldTemplates])
+               if (t.starter) t.id,
+           };
 
   static const int version = 1;
 
@@ -53,25 +63,25 @@ class SaveData {
   int get totalStars => stars.fold(0, (a, b) => a + starCount(b));
 
   Map<String, Object?> toJson() => {
-        'v': version,
-        'coins': coins,
-        'xp': xp,
-        'lvl': lvl,
-        'free': free,
-        'pts': pts.toJson(),
-        'stage': stage,
-        'stars': stars,
-        'owned': owned.toList(),
-        'eq': {for (final e in eq.entries) e.key.name: e.value},
-        'w': roundSt(w),
-        's': roundSt(s),
-        'blueprints': blueprints.toList(),
-        'sound': sound,
-        'haptics': haptics,
-        'tutorialDone': tutorialDone,
-        'wins': wins,
-        'losses': losses,
-      };
+    'v': version,
+    'coins': coins,
+    'xp': xp,
+    'lvl': lvl,
+    'free': free,
+    'pts': pts.toJson(),
+    'stage': stage,
+    'stars': stars,
+    'owned': owned.toList(),
+    'eq': {for (final e in eq.entries) e.key.name: e.value},
+    'w': roundSt(w),
+    's': roundSt(s),
+    'blueprints': blueprints.toList(),
+    'sound': sound,
+    'haptics': haptics,
+    'tutorialDone': tutorialDone,
+    'wins': wins,
+    'losses': losses,
+  };
 
   /// Reads a save defensively: unknown or broken fields fall back to defaults.
   static SaveData fromJson(Object? data) {

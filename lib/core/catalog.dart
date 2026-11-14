@@ -4,7 +4,16 @@ import 'ink_fx.dart';
 enum Slot { hat, cape, glass, ink, inkW, inkS, fx, taunt }
 
 class Item {
-  const Item(this.id, this.name, this.price, {this.color, this.grad, this.rainbow = false, this.fx = InkFx.none, this.say});
+  const Item(
+    this.id,
+    this.name,
+    this.price, {
+    this.color,
+    this.grad,
+    this.rainbow = false,
+    this.fx = InkFx.none,
+    this.say,
+  });
 
   final String id;
   final String name;
@@ -159,15 +168,15 @@ Item? itemById(String id) => id == sameInk ? sameInkItem : itemIndex[id];
 
 /// Items a slot can hold, in shop order.
 List<Item> itemsFor(Slot slot) => switch (slot) {
-      Slot.hat => hats,
-      Slot.cape => capes,
-      Slot.glass => glasses,
-      Slot.ink => bodyInks,
-      Slot.inkW => [sameInkItem, ...bodyInks, ...weaponInks],
-      Slot.inkS => [sameInkItem, ...bodyInks],
-      Slot.fx => hitFxs,
-      Slot.taunt => taunts,
-    };
+  Slot.hat => hats,
+  Slot.cape => capes,
+  Slot.glass => glasses,
+  Slot.ink => bodyInks,
+  Slot.inkW => [sameInkItem, ...bodyInks, ...weaponInks],
+  Slot.inkS => [sameInkItem, ...bodyInks],
+  Slot.fx => hitFxs,
+  Slot.taunt => taunts,
+};
 
 bool fitsSlot(Slot slot, String id) => itemsFor(slot).any((it) => it.id == id);
 

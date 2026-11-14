@@ -12,8 +12,8 @@ void main() {
   final golden = jsonDecode(File('test/fixtures/gear_golden.json').readAsStringSync()) as Map<String, dynamic>;
 
   Strokes strokesOf(dynamic raw) => [
-        for (final s in raw as List) [for (final v in s as List) (v as num).toDouble()],
-      ];
+    for (final s in raw as List) [for (final v in s as List) (v as num).toDouble()],
+  ];
 
   void close(num actual, num expected, String what) {
     expect(actual.toDouble(), closeTo(expected.toDouble(), 1e-6 + expected.abs() * 1e-9), reason: what);

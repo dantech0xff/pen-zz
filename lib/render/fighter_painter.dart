@@ -102,13 +102,14 @@ void drawFace(Canvas c, Mood mood, Color ink, String glass) {
         _strokeP(c, _arc(9.8, -1.8, 2.3, 0, 5), ink, 1.3);
       }
       _strokeP(
-          c,
-          Path()
-            ..moveTo(4, 5)
-            ..quadraticBezierTo(6, 3, 7.5, 5)
-            ..quadraticBezierTo(9, 7, 10.5, 5),
-          ink,
-          1.6);
+        c,
+        Path()
+          ..moveTo(4, 5)
+          ..quadraticBezierTo(6, 3, 7.5, 5)
+          ..quadraticBezierTo(9, 7, 10.5, 5),
+        ink,
+        1.6,
+      );
     case Mood.happy:
       if (!hide) {
         _strokeP(c, _arc(5, -1.5, 1.8, math.pi, 0), ink, 1.8);
@@ -189,7 +190,13 @@ void drawGlasses(Canvas c, String id) {
       _fillP(c, _ellipse(9.8, -1.6, 3.4, 3), col);
       line(c, 6.6, -3.8, -10, -6.4, col, 1.2);
     case 'kinh-3d':
-      _fs(c, Path()..addRect(const Rect.fromLTWH(1.2, -4.6, 12.8, 5.6)), const Color(0xFFFFFFFF), const Color(0xFF1C1F2A), 1.1);
+      _fs(
+        c,
+        Path()..addRect(const Rect.fromLTWH(1.2, -4.6, 12.8, 5.6)),
+        const Color(0xFFFFFFFF),
+        const Color(0xFF1C1F2A),
+        1.1,
+      );
       fillRect(c, 2, -3.9, 4.8, 4.2, const Color(0xBFE53935));
       fillRect(c, 8.4, -3.9, 4.8, 4.2, const Color(0xBF1E88E5));
       line(c, 1.2, -3, -6, -3.6, const Color(0xFF1C1F2A), 1.1);
@@ -219,52 +226,56 @@ void drawHat(Canvas c, String id, Color ink, double animT) {
   switch (id) {
     case 'non-la':
       _fs(
-          c,
-          Path()
-            ..moveTo(-22, -6)
-            ..lineTo(1, -29)
-            ..lineTo(24, -6)
-            ..quadraticBezierTo(1, -1, -22, -6)
-            ..close(),
-          const Color(0xFFEAD39A),
-          const Color(0xFF8A6D2F),
-          1.6);
+        c,
+        Path()
+          ..moveTo(-22, -6)
+          ..lineTo(1, -29)
+          ..lineTo(24, -6)
+          ..quadraticBezierTo(1, -1, -22, -6)
+          ..close(),
+        const Color(0xFFEAD39A),
+        const Color(0xFF8A6D2F),
+        1.6,
+      );
       line(c, -11, -13, 13, -13, const Color(0x998A6D2F), 1);
       line(c, -4, -20, 6, -20, const Color(0x998A6D2F), 1);
     case 'luoi-trai':
       _fs(c, _dome(0, -3, 11.6), const Color(0xFFF2B632), const Color(0xFF8F6400), 1.5);
       _fs(
-          c,
-          Path()
-            ..moveTo(7, -4.5)
-            ..quadraticBezierTo(16, -6.5, 22, -3)
-            ..quadraticBezierTo(15, -1.5, 7, -2)
-            ..close(),
-          const Color(0xFFF2B632),
-          const Color(0xFF8F6400),
-          1.5);
+        c,
+        Path()
+          ..moveTo(7, -4.5)
+          ..quadraticBezierTo(16, -6.5, 22, -3)
+          ..quadraticBezierTo(15, -1.5, 7, -2)
+          ..close(),
+        const Color(0xFFF2B632),
+        const Color(0xFF8F6400),
+        1.5,
+      );
       dot(c, 0, -14.4, 1.6, const Color(0xFF8F6400));
     case 'bao-hiem':
       _fs(c, _dome(0, -1, 13.2), const Color(0xFFFF8A3D), const Color(0xFF9A3D0A), 1.6);
       _fillP(
-          c,
-          Path()
-            ..moveTo(-3, -14)
-            ..quadraticBezierTo(1, -14.6, 3, -14)
-            ..lineTo(3.4, -1.2)
-            ..lineTo(-3.4, -1.2)
-            ..close(),
-          const Color(0xD9FFFFFF));
+        c,
+        Path()
+          ..moveTo(-3, -14)
+          ..quadraticBezierTo(1, -14.6, 3, -14)
+          ..lineTo(3.4, -1.2)
+          ..lineTo(-3.4, -1.2)
+          ..close(),
+        const Color(0xD9FFFFFF),
+      );
       _fs(
-          c,
-          Path()
-            ..moveTo(11, -2)
-            ..quadraticBezierTo(17, -2.4, 18, 0.2)
-            ..lineTo(11, 0.2)
-            ..close(),
-          const Color(0xFFFF8A3D),
-          const Color(0xFF9A3D0A),
-          1.6);
+        c,
+        Path()
+          ..moveTo(11, -2)
+          ..quadraticBezierTo(17, -2.4, 18, 0.2)
+          ..lineTo(11, 0.2)
+          ..close(),
+        const Color(0xFFFF8A3D),
+        const Color(0xFF9A3D0A),
+        1.6,
+      );
       line(c, -4, 0, 1, 11, const Color(0xFF4A3A30), 1.1);
     case 'tai-meo':
       _fillP(c, _poly([-9.5, -6.5, -7, -19, -1, -10.4]), ink);
@@ -278,45 +289,59 @@ void drawHat(Canvas c, String id, Color ink, double animT) {
       _fs(c, _ellipse(0, 0, 19, 3.6), const Color(0xFF5B3AA8), const Color(0xFF2E1C63), 1.5);
       c.restore();
       _fs(
-          c,
-          Path()
-            ..moveTo(-9, -9.5)
-            ..quadraticBezierTo(-4, -26, -14, -40)
-            ..quadraticBezierTo(3, -30, 11, -10)
-            ..close(),
-          const Color(0xFF5B3AA8),
-          const Color(0xFF2E1C63),
-          1.5);
+        c,
+        Path()
+          ..moveTo(-9, -9.5)
+          ..quadraticBezierTo(-4, -26, -14, -40)
+          ..quadraticBezierTo(3, -30, 11, -10)
+          ..close(),
+        const Color(0xFF5B3AA8),
+        const Color(0xFF2E1C63),
+        1.5,
+      );
       fillRect(c, -8.6, -14.6, 18.6, 3.2, const Color(0xFFE7B82C));
       _fillP(c, _star(-1.5, -22, 3.2, 1.4, 5), Pal.hl);
     case 'vuong-mien':
-      _fs(c, _poly([-10, -10, -10, -20, -5, -14.5, 0, -23, 5, -14.5, 10, -20, 10, -10]), Pal.hl, const Color(0xFF9A7400), 1.5);
+      _fs(
+        c,
+        _poly([-10, -10, -10, -20, -5, -14.5, 0, -23, 5, -14.5, 10, -20, 10, -10]),
+        Pal.hl,
+        const Color(0xFF9A7400),
+        1.5,
+      );
       dot(c, 0, -13.6, 1.6, Pal.red);
       dot(c, -6, -12.8, 1.2, const Color(0xFF2F9E6B));
       dot(c, 6, -12.8, 1.2, const Color(0xFF2F9E6B));
     case 'mu-len':
       _fs(c, _dome(0, -2, 12.4), const Color(0xFFD3303C), const Color(0xFF8F1D26), 1.4);
-      _fs(c, Path()..addRRect(RRect.fromLTRBR(-13, -4.5, 13, -0.5, const Radius.circular(1.5))), Pal.body,
-          const Color(0xFF8F1D26), 1.2);
+      _fs(
+        c,
+        Path()..addRRect(RRect.fromLTRBR(-13, -4.5, 13, -0.5, const Radius.circular(1.5))),
+        Pal.body,
+        const Color(0xFF8F1D26),
+        1.2,
+      );
       _fs(c, _circle(0, -15.6, 3.4), Pal.body, const Color(0xFF8F1D26), 1.2);
     case 'bang-do':
       const red = Color(0xFFD3303C);
       fillRect(c, -11.4, -7.6, 22.8, 4.2, red);
       final wave = math.sin(animT * 6) * 1.5;
       _strokeP(
-          c,
-          Path()
-            ..moveTo(-11, -6)
-            ..quadraticBezierTo(-17, -8 + wave, -21, -3 + wave),
-          red,
-          2.2);
+        c,
+        Path()
+          ..moveTo(-11, -6)
+          ..quadraticBezierTo(-17, -8 + wave, -21, -3 + wave),
+        red,
+        2.2,
+      );
       _strokeP(
-          c,
-          Path()
-            ..moveTo(-11, -4.5)
-            ..quadraticBezierTo(-16, -1 - wave, -19, 3 - wave),
-          red,
-          2.2);
+        c,
+        Path()
+          ..moveTo(-11, -4.5)
+          ..quadraticBezierTo(-16, -1 - wave, -19, 3 - wave),
+        red,
+        2.2,
+      );
       dot(c, -11, -5.6, 1.8, const Color(0xFF8F1D26));
     case 'non-coi':
       _fs(c, _dome(0, -3, 13.6), const Color(0xFF7D8A4E), const Color(0xFF3F4724), 1.5);
@@ -325,62 +350,67 @@ void drawHat(Canvas c, String id, Color ink, double animT) {
       _fillP(c, _star(0, -10, 2.4, 1, 5), const Color(0xFFE2B12A));
     case 'tot-nghiep':
       _fillP(
-          c,
-          Path()
-            ..moveTo(-10, -5)
-            ..lineTo(-9, -12)
-            ..lineTo(9, -12)
-            ..lineTo(10, -5)
-            ..quadraticBezierTo(0, -3, -10, -5)
-            ..close(),
-          const Color(0xFF23252F));
+        c,
+        Path()
+          ..moveTo(-10, -5)
+          ..lineTo(-9, -12)
+          ..lineTo(9, -12)
+          ..lineTo(10, -5)
+          ..quadraticBezierTo(0, -3, -10, -5)
+          ..close(),
+        const Color(0xFF23252F),
+      );
       _fs(c, _poly([-17, -14, 3, -20, 20, -14, 0, -8.6]), const Color(0xFF2B2D3A), const Color(0xFF11121A), 1.2);
       _strokeP(
-          c,
-          Path()
-            ..moveTo(1.5, -14.2)
-            ..lineTo(14, -11)
-            ..lineTo(14.5, -3),
-          const Color(0xFFE7B82C),
-          1.2);
+        c,
+        Path()
+          ..moveTo(1.5, -14.2)
+          ..lineTo(14, -11)
+          ..lineTo(14.5, -3),
+        const Color(0xFFE7B82C),
+        1.2,
+      );
       dot(c, 1.5, -14.2, 1.2, const Color(0xFFE7B82C));
       fillRect(c, 13.2, -4.5, 2.6, 3.5, const Color(0xFFE7B82C));
     case 'cao-boi':
       const fill = Color(0xFFA0652A), edge = Color(0xFF5A3510);
       _fs(
-          c,
-          Path()
-            ..moveTo(-8, -8)
-            ..lineTo(-7.4, -18)
-            ..quadraticBezierTo(0, -21.5, 7.4, -18)
-            ..lineTo(8, -8)
-            ..close(),
-          fill,
-          edge,
-          1.4);
+        c,
+        Path()
+          ..moveTo(-8, -8)
+          ..lineTo(-7.4, -18)
+          ..quadraticBezierTo(0, -21.5, 7.4, -18)
+          ..lineTo(8, -8)
+          ..close(),
+        fill,
+        edge,
+        1.4,
+      );
       fillRect(c, -8, -10, 16, 2, edge);
       _fs(
-          c,
-          Path()
-            ..moveTo(-21, -11)
-            ..quadraticBezierTo(-14, -5, 0, -6)
-            ..quadraticBezierTo(14, -5, 21, -11)
-            ..quadraticBezierTo(18, -6, 0, -3)
-            ..quadraticBezierTo(-18, -6, -21, -11)
-            ..close(),
-          fill,
-          edge,
-          1.4);
+        c,
+        Path()
+          ..moveTo(-21, -11)
+          ..quadraticBezierTo(-14, -5, 0, -6)
+          ..quadraticBezierTo(14, -5, 21, -11)
+          ..quadraticBezierTo(18, -6, 0, -3)
+          ..quadraticBezierTo(-18, -6, -21, -11)
+          ..close(),
+        fill,
+        edge,
+        1.4,
+      );
     case 'cuop-bien':
       _fillP(
-          c,
-          Path()
-            ..moveTo(-17, -6)
-            ..quadraticBezierTo(-12, -25, 0, -21)
-            ..quadraticBezierTo(12, -25, 17, -6)
-            ..quadraticBezierTo(0, -10, -17, -6)
-            ..close(),
-          const Color(0xFF1D1F27));
+        c,
+        Path()
+          ..moveTo(-17, -6)
+          ..quadraticBezierTo(-12, -25, 0, -21)
+          ..quadraticBezierTo(12, -25, 17, -6)
+          ..quadraticBezierTo(0, -10, -17, -6)
+          ..close(),
+        const Color(0xFF1D1F27),
+      );
       line(c, -3.2, -17.5, 3.2, -11, const Color(0xFFFFFFFF), 1.1);
       line(c, 3.2, -17.5, -3.2, -11, const Color(0xFFFFFFFF), 1.1);
       dot(c, 0, -14.6, 2.6, const Color(0xFFFFFFFF));
@@ -389,25 +419,27 @@ void drawHat(Canvas c, String id, Color ink, double animT) {
     case 'sung-quy':
       const fill = Color(0xFFD3303C), edge = Color(0xFF8F1D26);
       _fs(
-          c,
-          Path()
-            ..moveTo(-8, -8.6)
-            ..quadraticBezierTo(-13, -15, -8.5, -22)
-            ..quadraticBezierTo(-8, -15.5, -3, -10.4)
-            ..close(),
-          fill,
-          edge,
-          1);
+        c,
+        Path()
+          ..moveTo(-8, -8.6)
+          ..quadraticBezierTo(-13, -15, -8.5, -22)
+          ..quadraticBezierTo(-8, -15.5, -3, -10.4)
+          ..close(),
+        fill,
+        edge,
+        1,
+      );
       _fs(
-          c,
-          Path()
-            ..moveTo(3, -10.6)
-            ..quadraticBezierTo(8, -15.5, 8.5, -22.5)
-            ..quadraticBezierTo(12.5, -15, 7.6, -8.2)
-            ..close(),
-          fill,
-          edge,
-          1);
+        c,
+        Path()
+          ..moveTo(3, -10.6)
+          ..quadraticBezierTo(8, -15.5, 8.5, -22.5)
+          ..quadraticBezierTo(12.5, -15, 7.6, -8.2)
+          ..close(),
+        fill,
+        edge,
+        1,
+      );
     case 'hao-quang':
       final y = -21 + math.sin(animT * 3) * 1;
       _strokeP(c, _ellipse(0, y, 11, 3), const Color(0x59FFE14A), 5);
@@ -443,8 +475,17 @@ void drawHat(Canvas c, String id, Color ink, double animT) {
 // ---------------- back layer: capes, wings, backpack ----------------
 
 class _Cape {
-  const _Cape(this.col, this.dark, this.len, this.flare,
-      {this.knot = false, this.collar = false, this.stars = false, this.trim = false, this.pattern = ''});
+  const _Cape(
+    this.col,
+    this.dark,
+    this.len,
+    this.flare, {
+    this.knot = false,
+    this.collar = false,
+    this.stars = false,
+    this.trim = false,
+    this.pattern = '',
+  });
   final int col, dark;
   final double len, flare;
   final bool knot, collar, stars, trim;
@@ -464,7 +505,11 @@ const Map<String, _Cape> _capes = {
 };
 
 bool _moving(Fighter f) =>
-    f.walking || f.state == FState.strike || f.state == FState.hitstun || f.state == FState.fall || f.state == FState.windup;
+    f.walking ||
+    f.state == FState.strike ||
+    f.state == FState.hitstun ||
+    f.state == FState.fall ||
+    f.state == FState.windup;
 
 void _drawCape(Canvas c, _Cape sp, Rig j, Fighter f, double animT) {
   final moving = _moving(f);
@@ -499,8 +544,15 @@ void _drawCape(Canvas c, _Cape sp, Rig j, Fighter f, double animT) {
       } else if (sp.pattern == 'snow') {
         for (var k = 0; k < 3; k++) {
           final a = k * math.pi / 3;
-          line(c, x - math.cos(a) * 2.6, y - math.sin(a) * 2.6, x + math.cos(a) * 2.6, y + math.sin(a) * 2.6,
-              const Color(0xFFFFFFFF), 1);
+          line(
+            c,
+            x - math.cos(a) * 2.6,
+            y - math.sin(a) * 2.6,
+            x + math.cos(a) * 2.6,
+            y + math.sin(a) * 2.6,
+            const Color(0xFFFFFFFF),
+            1,
+          );
         }
       } else if (sp.pattern == 'check') {
         fillRect(c, x - 2, y - 2, 4, 4, const Color(0xCCFFFFFF));
@@ -509,12 +561,13 @@ void _drawCape(Canvas c, _Cape sp, Rig j, Fighter f, double animT) {
     if (sp.trim) {
       final trim = sp.pattern == 'flame' ? const Color(0xFFFFC23D) : const Color(0xD9FFF6BE);
       _strokeP(
-          c,
-          Path()
-            ..moveTo(b1.x, b1.y - 3)
-            ..quadraticBezierTo((b1.x + b2.x) / 2 + wv2, (b1.y + b2.y) / 2 + 1, b2.x, b2.y - 3),
-          trim,
-          3);
+        c,
+        Path()
+          ..moveTo(b1.x, b1.y - 3)
+          ..quadraticBezierTo((b1.x + b2.x) / 2 + wv2, (b1.y + b2.y) / 2 + 1, b2.x, b2.y - 3),
+        trim,
+        3,
+      );
     }
     c.restore();
   }
@@ -533,24 +586,25 @@ void _drawCape(Canvas c, _Cape sp, Rig j, Fighter f, double animT) {
 void _drawWings(Canvas c, Rig j, Fighter f, double animT, bool angel) {
   final moving = _moving(f);
   final flap = math.sin(animT * (moving ? 9 : 3)) * (moving ? 0.25 : 0.12);
-  final fill = angel ? Pal.body : const Color(0xFF3A2D4A), edge = angel ? const Color(0xFF9AA0AD) : const Color(0xFF1B1324);
+  final fill = angel ? Pal.body : const Color(0xFF3A2D4A),
+      edge = angel ? const Color(0xFF9AA0AD) : const Color(0xFF1B1324);
   Path wing() => angel
       ? (Path()
-        ..moveTo(0, 0)
-        ..quadraticBezierTo(-14, -22, -34, -26)
-        ..quadraticBezierTo(-30, -18, -36, -14)
-        ..quadraticBezierTo(-28, -10, -32, -4)
-        ..quadraticBezierTo(-22, -4, -24, 2)
-        ..quadraticBezierTo(-12, 0, 0, 0)
-        ..close())
+          ..moveTo(0, 0)
+          ..quadraticBezierTo(-14, -22, -34, -26)
+          ..quadraticBezierTo(-30, -18, -36, -14)
+          ..quadraticBezierTo(-28, -10, -32, -4)
+          ..quadraticBezierTo(-22, -4, -24, 2)
+          ..quadraticBezierTo(-12, 0, 0, 0)
+          ..close())
       : (Path()
-        ..moveTo(0, 0)
-        ..lineTo(-30, -24)
-        ..quadraticBezierTo(-27, -15, -34, -10)
-        ..quadraticBezierTo(-24, -10, -26, -3)
-        ..quadraticBezierTo(-16, -5, -16, 2)
-        ..quadraticBezierTo(-8, -2, 0, 0)
-        ..close());
+          ..moveTo(0, 0)
+          ..lineTo(-30, -24)
+          ..quadraticBezierTo(-27, -15, -34, -10)
+          ..quadraticBezierTo(-24, -10, -26, -3)
+          ..quadraticBezierTo(-16, -5, -16, 2)
+          ..quadraticBezierTo(-8, -2, 0, 0)
+          ..close());
   for (final far in [true, false]) {
     c.save();
     c.translate(j.sh.x - 3 + (far ? 2 : 0), j.sh.y + 2 - (far ? 2 : 0));
@@ -573,10 +627,20 @@ void _drawBackpack(Canvas c, Rig j) {
   c.save();
   c.translate(mx - fwx * 9, my - fwy * 9 - 3);
   c.rotate(j.lean);
-  _fs(c, Path()..addRRect(RRect.fromLTRBR(-7, -12, 6, 11, const Radius.circular(4))), const Color(0xFFE2B12A),
-      const Color(0xFF8A6A00), 1.4);
-  _fs(c, Path()..addRRect(RRect.fromLTRBR(-5, 2, 4, 9, const Radius.circular(2))), const Color(0xFFF2C94C),
-      const Color(0xFF8A6A00), 1);
+  _fs(
+    c,
+    Path()..addRRect(RRect.fromLTRBR(-7, -12, 6, 11, const Radius.circular(4))),
+    const Color(0xFFE2B12A),
+    const Color(0xFF8A6A00),
+    1.4,
+  );
+  _fs(
+    c,
+    Path()..addRRect(RRect.fromLTRBR(-5, 2, 4, 9, const Radius.circular(2))),
+    const Color(0xFFF2C94C),
+    const Color(0xFF8A6A00),
+    1,
+  );
   c.restore();
   line(c, mx - fwx * 6, my - fwy * 6 - 12, j.sh.x, j.sh.y + 2, const Color(0xFF8A6A00), 1.6);
 }
@@ -599,8 +663,13 @@ void _drawBack(Canvas c, String cape, Rig j, Fighter f, double animT) {
 /// Blue plastic street-tea stool.
 void _drawChair(Canvas c, Rig j) {
   final y = j.hip.y + 4;
-  _fs(c, Path()..addRRect(RRect.fromLTRBR(-15, y, 15, y + 5, const Radius.circular(2))), const Color(0xFF3C7BE0),
-      const Color(0xFF1F4A96), 2);
+  _fs(
+    c,
+    Path()..addRRect(RRect.fromLTRBR(-15, y, 15, y + 5, const Radius.circular(2))),
+    const Color(0xFF3C7BE0),
+    const Color(0xFF1F4A96),
+    2,
+  );
   line(c, -12, y + 5, -14, 0, const Color(0xFF1F4A96), 2);
   line(c, 12, y + 5, 14, 0, const Color(0xFF1F4A96), 2);
 }
@@ -620,14 +689,26 @@ void _drawPhone(Canvas c, P h, double animT) {
   c.save();
   c.translate(h.x, h.y);
   c.rotate(-0.2);
-  _fs(c, Path()..addRRect(RRect.fromLTRBR(-3, -13, 4, 0, const Radius.circular(1.5))), const Color(0xFF252A37),
-      const Color(0xFF111111), 1);
+  _fs(
+    c,
+    Path()..addRRect(RRect.fromLTRBR(-3, -13, 4, 0, const Radius.circular(1.5))),
+    const Color(0xFF252A37),
+    const Color(0xFF111111),
+    1,
+  );
   fillRect(c, -2, -11.5, 5, 9, const Color(0xFF5A8DEE));
   if (animT % 1.2 < 0.12) {
     for (var k = 0; k < 8; k++) {
       final a = k * math.pi / 4;
-      line(c, -10 + math.cos(a) * 3, -8 + math.sin(a) * 3, -10 + math.cos(a) * 9, -8 + math.sin(a) * 9,
-          const Color(0xFFFFF59D), 1.6);
+      line(
+        c,
+        -10 + math.cos(a) * 3,
+        -8 + math.sin(a) * 3,
+        -10 + math.cos(a) * 9,
+        -8 + math.sin(a) * 9,
+        const Color(0xFFFFF59D),
+        1.6,
+      );
     }
   }
   c.restore();
@@ -640,8 +721,15 @@ void _drawStatus(Canvas c, Fighter f, Rig j, double animT) {
       final rot = animT * 2 + k;
       for (var m = 0; m < 3; m++) {
         final a = rot + m * math.pi / 3;
-        line(c, x - math.cos(a) * 3.2, y - math.sin(a) * 3.2, x + math.cos(a) * 3.2, y + math.sin(a) * 3.2,
-            const Color(0xE67CC6F0), 1.2);
+        line(
+          c,
+          x - math.cos(a) * 3.2,
+          y - math.sin(a) * 3.2,
+          x + math.cos(a) * 3.2,
+          y + math.sin(a) * 3.2,
+          const Color(0xE67CC6F0),
+          1.2,
+        );
       }
     }
   }
@@ -649,14 +737,15 @@ void _drawStatus(Canvas c, Fighter f, Rig j, double animT) {
     for (final side in [-1.0, 1.0]) {
       final x = j.head.x + side * 15, y = j.head.y;
       _strokeP(
-          c,
-          Path()
-            ..moveTo(x, y - 8)
-            ..lineTo(x + side * 4, y - 3)
-            ..lineTo(x - side * 1, y)
-            ..lineTo(x + side * 4, y + 6),
-          const Color(0xFFFFD23F),
-          1.6);
+        c,
+        Path()
+          ..moveTo(x, y - 8)
+          ..lineTo(x + side * 4, y - 3)
+          ..lineTo(x - side * 1, y)
+          ..lineTo(x + side * 4, y + 6),
+        const Color(0xFFFFD23F),
+        1.6,
+      );
     }
   }
   if (f.burnT > 0) {
@@ -664,12 +753,13 @@ void _drawStatus(Canvas c, Fighter f, Rig j, double animT) {
       final x = j.hip.x + (k - 1) * 8, y = j.hip.y + 6 - k * 14;
       final h = 6 + math.sin(animT * 18 + k * 2) * 2;
       _fillP(
-          c,
-          Path()
-            ..moveTo(x - 3, y)
-            ..quadraticBezierTo(x, y - h * 1.6, x + 3, y)
-            ..close(),
-          k.isEven ? const Color(0xCCFF9F1C) : const Color(0xCCE4572E));
+        c,
+        Path()
+          ..moveTo(x - 3, y)
+          ..quadraticBezierTo(x, y - h * 1.6, x + 3, y)
+          ..close(),
+        k.isEven ? const Color(0xCCFF9F1C) : const Color(0xCCE4572E),
+      );
     }
   }
 }
@@ -746,7 +836,14 @@ void paintFighter(Canvas c, Fighter f, double animT, {bool editing = false}) {
     c.save();
     c.translate(j.handW.x, j.handW.y);
     c.rotate(p.th);
-    drawInk(c, f.wStrokes, rgb(look.weaponInk.color), 7, shader: weaponShader(look.weaponInk, f.wStrokes, animT), cache: !editing);
+    drawInk(
+      c,
+      f.wStrokes,
+      rgb(look.weaponInk.color),
+      7,
+      shader: weaponShader(look.weaponInk, f.wStrokes, animT),
+      cache: !editing,
+    );
     c.restore();
   }
   dot(c, j.handW.x, j.handW.y, 4.4, far);

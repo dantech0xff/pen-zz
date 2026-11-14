@@ -31,8 +31,14 @@ _InkPaths _pathsFor(Strokes st, bool cache) {
     if (hit != null && hit.paths.length == st.length) return hit;
   }
   final out = _InkPaths(
-    [for (final s in st) if (s.length >= 2) pathOfStroke(s)],
-    [for (final s in st) if (s.length >= 2) isClosed(s)],
+    [
+      for (final s in st)
+        if (s.length >= 2) pathOfStroke(s),
+    ],
+    [
+      for (final s in st)
+        if (s.length >= 2) isClosed(s),
+    ],
   );
   if (cache) _pathCache[st] = out;
   return out;
@@ -174,7 +180,18 @@ Path dashed(Path source, double dash, double gap) {
 }
 
 void dashedLine(Canvas c, double x0, double y0, double x1, double y1, Color col, double w, double dash, double gap) {
-  strokePath(c, dashed(Path()..moveTo(x0, y0)..lineTo(x1, y1), dash, gap), col, w);
+  strokePath(
+    c,
+    dashed(
+      Path()
+        ..moveTo(x0, y0)
+        ..lineTo(x1, y1),
+      dash,
+      gap,
+    ),
+    col,
+    w,
+  );
 }
 
 void dashedCircle(Canvas c, double x, double y, double r, Color col, double w, double dash, double gap) {

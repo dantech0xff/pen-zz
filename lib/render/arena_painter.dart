@@ -124,10 +124,11 @@ void paintDoodles(Canvas c, ArenaTheme th, double half) {
       line(c, -30, -285, 30, -285, col, 2);
       for (var k = 0; k < 4; k++) {
         strokePath(
-            c,
-            Path()..addOval(Rect.fromCenter(center: Offset(l + 50, -220), width: 60.0 + k * 26, height: 30.0 + k * 14)),
-            col,
-            1.5);
+          c,
+          Path()..addOval(Rect.fromCenter(center: Offset(l + 50, -220), width: 60.0 + k * 26, height: 30.0 + k * 14)),
+          col,
+          1.5,
+        );
       }
       t('Hà Nội •', r - 40, -240, 18);
     case Doodle.bio:
@@ -142,16 +143,28 @@ void paintDoodles(Canvas c, ArenaTheme th, double half) {
       final rr = math.Random(3);
       for (var k = 0; k < 7; k++) {
         final x = -half + rr.nextDouble() * half * 2, y = -330 + rr.nextDouble() * 160;
-        dot(c, x, y, 8 + rr.nextDouble() * 14, withAlpha(rgb([0xFF595E, 0xFFCA3A, 0x8AC926, 0x1982C4, 0xC77DFF][k % 5]), 0.18));
+        dot(
+          c,
+          x,
+          y,
+          8 + rr.nextDouble() * 14,
+          withAlpha(rgb([0xFF595E, 0xFFCA3A, 0x8AC926, 0x1982C4, 0xC77DFF][k % 5]), 0.18),
+        );
       }
       t('Màu nước', l + 40, -200, 20, -0.05);
     case Doodle.sport:
       for (var k = 0; k < 3; k++) {
         strokePath(
-            c,
-            Path()..addRRect(RRect.fromRectAndRadius(Rect.fromCenter(center: const Offset(0, -270), width: 260.0 + k * 40, height: 70.0 + k * 22), const Radius.circular(60))),
-            col,
-            1.5);
+          c,
+          Path()..addRRect(
+            RRect.fromRectAndRadius(
+              Rect.fromCenter(center: const Offset(0, -270), width: 260.0 + k * 40, height: 70.0 + k * 22),
+              const Radius.circular(60),
+            ),
+          ),
+          col,
+          1.5,
+        );
       }
       t('1 - 0', r - 40, -210, 22);
     case Doodle.code:
@@ -203,7 +216,18 @@ void paintPlatform(Canvas c, ArenaDef arena, double half, double animT) {
   final th = arena.theme, rules = arena.rules;
   final cliff = _cliff(half);
   if (half < rules.half - 1) {
-    strokePath(c, dashed(Path()..moveTo(-rules.half, 0)..lineTo(rules.half, 0), 6, 8), withAlpha(Pal.red, 0.35), 2);
+    strokePath(
+      c,
+      dashed(
+        Path()
+          ..moveTo(-rules.half, 0)
+          ..lineTo(rules.half, 0),
+        6,
+        8,
+      ),
+      withAlpha(Pal.red, 0.35),
+      2,
+    );
   }
   fillPath(c, cliff, withAlpha(rgb(th.platform), 0.9));
   c.save();
@@ -228,8 +252,12 @@ void paintPlatform(Canvas c, ArenaDef arena, double half, double animT) {
     strokePath(c, path, const Color(0xCC5A3510), 1.5);
     for (var x = x0 + 10; x < x1 - 6; x += 22) {
       final b = (animT * 0.7 + x * 0.013) % 1;
-      strokePath(c, Path()..addOval(Rect.fromCircle(center: Offset(x, -6 - b * 6), radius: 2 + b * 2)),
-          Color.fromRGBO(90, 53, 16, 0.6 * (1 - b)), 1);
+      strokePath(
+        c,
+        Path()..addOval(Rect.fromCircle(center: Offset(x, -6 - b * 6), radius: 2 + b * 2)),
+        Color.fromRGBO(90, 53, 16, 0.6 * (1 - b)),
+        1,
+      );
     }
   }
   final paint = [0xFF8FB1, 0x6EC6F0, 0xFFCA3A];
@@ -258,14 +286,15 @@ void paintPlatform(Canvas c, ArenaDef arena, double half, double animT) {
 /// Range bracket on the ground: `]` for the player, `[` for the opponent; bold when in range.
 void paintRangeTick(Canvas c, double x, Color col, bool hot, double f) {
   strokePath(
-      c,
-      Path()
-        ..moveTo(x - f * 9, -20)
-        ..lineTo(x, -20)
-        ..lineTo(x, 14)
-        ..lineTo(x - f * 9, 14),
-      withAlpha(col, hot ? 0.95 : 0.4),
-      hot ? 4.5 : 3);
+    c,
+    Path()
+      ..moveTo(x - f * 9, -20)
+      ..lineTo(x, -20)
+      ..lineTo(x, 14)
+      ..lineTo(x - f * 9, 14),
+    withAlpha(col, hot ? 0.95 : 0.4),
+    hot ? 4.5 : 3,
+  );
 }
 
 /// Wind streaks across the screen and an arrow showing direction and strength.

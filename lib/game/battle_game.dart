@@ -56,12 +56,12 @@ class HudState {
 }
 
 Color _fxStatusColor(InkFx fx) => switch (fx) {
-      InkFx.ice => const Color(0xFF2A8FD0),
-      InkFx.fire => const Color(0xFFE8541C),
-      InkFx.shock => const Color(0xFF4A7FF0),
-      InkFx.leech => const Color(0xFF9B1D4F),
-      _ => Pal.pencil,
-    };
+  InkFx.ice => const Color(0xFF2A8FD0),
+  InkFx.fire => const Color(0xFFE8541C),
+  InkFx.shock => const Color(0xFF4A7FF0),
+  InkFx.leech => const Color(0xFF9B1D4F),
+  _ => Pal.pencil,
+};
 
 /// Runs a [Battle] at a fixed 120 Hz step and draws it like the web game's arena canvas.
 class BattleGame extends Game with KeyboardEvents {
@@ -234,8 +234,18 @@ class BattleGame extends Game with KeyboardEvents {
     }
     if (battle.half < arena.rules.half - 1 && battle.phase == Phase.fight && _r.nextDouble() < dt * 6) {
       for (final s in [-1.0, 1.0]) {
-        fx.parts.add(Part(PartKind.blot, s * battle.half + _r.nextDouble() * 6 * s, 4, const Color(0xFF8A6D2F), 0.8,
-            vx: s * (20 + _r.nextDouble() * 40), vy: 60, r: 2 + _r.nextDouble() * 3));
+        fx.parts.add(
+          Part(
+            PartKind.blot,
+            s * battle.half + _r.nextDouble() * 6 * s,
+            4,
+            const Color(0xFF8A6D2F),
+            0.8,
+            vx: s * (20 + _r.nextDouble() * 40),
+            vy: 60,
+            r: 2 + _r.nextDouble() * 3,
+          ),
+        );
       }
     }
     _updateCam(dt);
@@ -284,7 +294,8 @@ class BattleGame extends Game with KeyboardEvents {
     paintDoodles(c, arena.theme, arena.rules.half);
     paintPlatform(c, arena, battle.half, animT);
     final p = battle.p, b = battle.b;
-    final showRanges = battle.phase != Phase.done && battle.phase != Phase.over && p.state != FState.fall && b.state != FState.fall;
+    final showRanges =
+        battle.phase != Phase.done && battle.phase != Phase.over && p.state != FState.fall && b.state != FState.fall;
     if (showRanges) {
       final d = b.x - p.x;
       paintRangeTick(c, p.x + p.w.reach, rgb(p.look.body), d <= p.w.reach + 21, 1);
@@ -294,8 +305,8 @@ class BattleGame extends Game with KeyboardEvents {
       final fade = f.state == FState.strike
           ? 1.0
           : f.state == FState.recover
-              ? clampD(1 - f.t / 0.15, 0, 1)
-              : 0.0;
+          ? clampD(1 - f.t / 0.15, 0, 1)
+          : 0.0;
       drawTrail(c, f.look.fx, fxColorOf(f.look, animT), f.trail, fade, animT);
     }
     for (final f in [b, p]) {
@@ -320,8 +331,17 @@ class BattleGame extends Game with KeyboardEvents {
     }
     for (final pop in fx.pops) {
       final s = toS(pop.x, pop.y);
-      drawText(c, pop.text, s.dx, s.dy, pop.size, pop.col,
-          family: Fonts.display, outline: 5, alpha: clampD(pop.life / Pop.max * 1.6, 0, 1));
+      drawText(
+        c,
+        pop.text,
+        s.dx,
+        s.dy,
+        pop.size,
+        pop.col,
+        family: Fonts.display,
+        outline: 5,
+        alpha: clampD(pop.life / Pop.max * 1.6, 0, 1),
+      );
     }
     paintWind(c, _size, battle.windNow, animT);
     if (_banner.isNotEmpty) {

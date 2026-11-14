@@ -13,25 +13,24 @@ BattleSide playerSide({
   required Points pts,
   required Map<Slot, String> eq,
   int? aiLevel,
-}) =>
-    BattleSide(
-      wStrokes: w,
-      sStrokes: s,
-      w: boostW(weaponStats(w), pts, inkFxOf(eq[Slot.inkW] ?? sameInk)),
-      s: boostS(shieldStats(s), pts),
-      look: lookFor(eq),
-      pts: pts,
-      aiLevel: aiLevel,
-    );
+}) => BattleSide(
+  wStrokes: w,
+  sStrokes: s,
+  w: boostW(weaponStats(w), pts, inkFxOf(eq[Slot.inkW] ?? sameInk)),
+  s: boostS(shieldStats(s), pts),
+  look: lookFor(eq),
+  pts: pts,
+  aiLevel: aiLevel,
+);
 
 /// An opponent's side; its colours avoid the player's own inks.
 BattleSide opponentSide(OppSpec o, Map<Slot, String> playerEq) => BattleSide(
-      wStrokes: o.wStrokes,
-      sStrokes: o.sStrokes,
-      w: o.w,
-      s: o.s ?? boostS(shieldStats(o.sStrokes), o.pts),
-      look: lookFor(o.eq, versus: playerEq),
-      pts: o.pts,
-      aiLevel: o.aiL,
-      windMul: botWindMul(o.aiL),
-    );
+  wStrokes: o.wStrokes,
+  sStrokes: o.sStrokes,
+  w: o.w,
+  s: o.s ?? boostS(shieldStats(o.sStrokes), o.pts),
+  look: lookFor(o.eq, versus: playerEq),
+  pts: o.pts,
+  aiLevel: o.aiL,
+  windMul: botWindMul(o.aiL),
+);

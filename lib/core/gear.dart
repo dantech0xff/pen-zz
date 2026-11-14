@@ -13,10 +13,10 @@ const double walkBase = 100;
 String lenClass(double n) => n < 110
     ? 'ngắn'
     : n < 160
-        ? 'vừa'
-        : n < 250
-            ? 'dài'
-            : 'quá dài';
+    ? 'vừa'
+    : n < 250
+    ? 'dài'
+    : 'quá dài';
 
 class Dims {
   const Dims(this.len, this.wid);
@@ -108,22 +108,29 @@ class WeaponStats {
   double get cycle => windup + strike + recover;
   String get cls => lenClass(len);
 
-  WeaponStats copyWith({double? atk, double? windup, double? strike, double? recover, double? pMul, double? dMul, InkFx? fx}) =>
-      WeaponStats(
-        ink: ink,
-        atk: atk ?? this.atk,
-        len: len,
-        wid: wid,
-        windup: windup ?? this.windup,
-        strike: strike ?? this.strike,
-        recover: recover ?? this.recover,
-        pts: pts,
-        tip: tip,
-        reach: reach,
-        pMul: pMul ?? this.pMul,
-        dMul: dMul ?? this.dMul,
-        fx: fx ?? this.fx,
-      );
+  WeaponStats copyWith({
+    double? atk,
+    double? windup,
+    double? strike,
+    double? recover,
+    double? pMul,
+    double? dMul,
+    InkFx? fx,
+  }) => WeaponStats(
+    ink: ink,
+    atk: atk ?? this.atk,
+    len: len,
+    wid: wid,
+    windup: windup ?? this.windup,
+    strike: strike ?? this.strike,
+    recover: recover ?? this.recover,
+    pts: pts,
+    tip: tip,
+    reach: reach,
+    pMul: pMul ?? this.pMul,
+    dMul: dMul ?? this.dMul,
+    fx: fx ?? this.fx,
+  );
 }
 
 /// Attack equals ink; swing time grows with the square of the length and a little with width.
@@ -176,19 +183,19 @@ class ShieldStats {
   final double h, w, cx, cy, coverage, raise, lower, parryWin;
 
   ShieldStats copyWith({double? def, double? raise, double? lower}) => ShieldStats(
-        ink: ink,
-        def: def ?? this.def,
-        pts: pts,
-        has: has,
-        h: h,
-        w: w,
-        cx: cx,
-        cy: cy,
-        coverage: coverage,
-        raise: raise ?? this.raise,
-        lower: lower ?? this.lower,
-        parryWin: parryWin,
-      );
+    ink: ink,
+    def: def ?? this.def,
+    pts: pts,
+    has: has,
+    h: h,
+    w: w,
+    cx: cx,
+    cy: cy,
+    coverage: coverage,
+    raise: raise ?? this.raise,
+    lower: lower ?? this.lower,
+    parryWin: parryWin,
+  );
 }
 
 /// Defence equals ink; raising time grows with the square of the height.

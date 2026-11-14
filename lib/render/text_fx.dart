@@ -29,15 +29,31 @@ TextPainter textPainter(String text, double size, Color color, {String family = 
 }
 
 /// Text centred at (x, y); [outline] draws a light rim first so it reads on any background.
-void drawText(Canvas c, String text, double x, double y, double size, Color color,
-    {String family = Fonts.body, double outline = 0, Color outlineColor = Pal.body, double alpha = 1}) {
+void drawText(
+  Canvas c,
+  String text,
+  double x,
+  double y,
+  double size,
+  Color color, {
+  String family = Fonts.body,
+  double outline = 0,
+  Color outlineColor = Pal.body,
+  double alpha = 1,
+}) {
   final col = withAlpha(color, alpha);
   if (outline > 0) {
-    final rim = textPainter(text, size, outlineColor, family: family, foreground: Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = outline
-      ..strokeJoin = StrokeJoin.round
-      ..color = withAlpha(outlineColor, alpha));
+    final rim = textPainter(
+      text,
+      size,
+      outlineColor,
+      family: family,
+      foreground: Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = outline
+        ..strokeJoin = StrokeJoin.round
+        ..color = withAlpha(outlineColor, alpha),
+    );
     rim.paint(c, Offset(x - rim.width / 2, y - rim.height / 2));
   }
   final tp = textPainter(text, size, col, family: family);

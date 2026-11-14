@@ -95,26 +95,36 @@ Strokes botWeapon(GearTemplate t, int aiL, Rng rng) {
 }
 
 List<String> _earlierWeapons(int chapterIndex) => [
-      for (var c = 0; c < chapterIndex; c++) ...[...chapters[c].weapons, chapters[c].bossWeapon],
-    ];
+  for (var c = 0; c < chapterIndex; c++) ...[...chapters[c].weapons, chapters[c].bossWeapon],
+];
 
 String _some(Rng rng, List<Item> list, double p, int maxPrice) {
-  final pool = [for (final it in list.skip(1)) if (it.price <= maxPrice) it.id];
+  final pool = [
+    for (final it in list.skip(1))
+      if (it.price <= maxPrice) it.id,
+  ];
   return pool.isNotEmpty && rng.next() < p ? rng.pick(pool) : list.first.id;
 }
 
 Map<Slot, String> _botLook(Rng rng, LevelDef lv) {
   final s = lv.stage;
-  final effectInks = [for (final it in weaponInks) if (!it.rainbow) it.id];
+  final effectInks = [
+    for (final it in weaponInks)
+      if (!it.rainbow) it.id,
+  ];
   if (lv.boss) {
     final tier = lv.chapterIndex;
     return {
-      Slot.hat: rng.pick(tier >= 6
-          ? ['vuong-mien', 'hao-quang', 'sung-quy', 'cuop-bien']
-          : ['vuong-mien', 'phu-thuy', 'bao-hiem', 'cao-boi', 'non-coi']),
-      Slot.cape: rng.pick(tier >= 6
-          ? ['phi-phong-vang', 'canh-doi', 'canh-thien-than', 'ao-choang-lua', 'ao-choang-bang']
-          : ['phi-phong-do', 'ao-choang-den', 'ao-choang-sao', 'phi-phong-vang']),
+      Slot.hat: rng.pick(
+        tier >= 6
+            ? ['vuong-mien', 'hao-quang', 'sung-quy', 'cuop-bien']
+            : ['vuong-mien', 'phu-thuy', 'bao-hiem', 'cao-boi', 'non-coi'],
+      ),
+      Slot.cape: rng.pick(
+        tier >= 6
+            ? ['phi-phong-vang', 'canh-doi', 'canh-thien-than', 'ao-choang-lua', 'ao-choang-bang']
+            : ['phi-phong-do', 'ao-choang-den', 'ao-choang-sao', 'phi-phong-vang'],
+      ),
       Slot.glass: rng.pick(['khong-kinh', 'kinh-ram', 'kinh-pixel', 'mat-na', 'kinh-3d']),
       Slot.ink: rng.pick(['muc-den', 'muc-tim', 'muc-man', 'muc-nau']),
       Slot.inkW: tier >= 1 && rng.chance(0.6) ? rng.pick(effectInks) : rng.pick([sameInk, 'nhu-vang']),
@@ -132,8 +142,16 @@ Map<Slot, String> _botLook(Rng rng, LevelDef lv) {
     Slot.ink: 'muc-xanh',
     Slot.inkW: rng.chance(effectChance) ? rng.pick(effectInks) : sameInk,
     Slot.inkS: sameInk,
-    Slot.fx: s >= 8 ? rng.pick([for (final it in hitFxs) if (it.price <= maxPrice) it.id]) : 'muc',
-    Slot.taunt: rng.pick([for (final it in taunts) if (it.price <= maxPrice) it.id]),
+    Slot.fx: s >= 8
+        ? rng.pick([
+            for (final it in hitFxs)
+              if (it.price <= maxPrice) it.id,
+          ])
+        : 'muc',
+    Slot.taunt: rng.pick([
+      for (final it in taunts)
+        if (it.price <= maxPrice) it.id,
+    ]),
   };
 }
 
@@ -163,8 +181,8 @@ OppSpec stageOpponent(int stage) {
   final name = lv.chapterBoss
       ? ch.boss
       : lv.miniBoss
-          ? ch.miniBoss
-          : rng.pick(ch.bots);
+      ? ch.miniBoss
+      : rng.pick(ch.bots);
   return OppSpec(
     kind: OppKind.stage,
     name: name,
@@ -199,18 +217,23 @@ OppSpec practiceOpponent(int stage) {
 }
 
 /// The player's own gear and points, driven by the AI.
-OppSpec ghostOpponent({required Strokes w, required Strokes s, required int lvl, required Points pts, required Map<Slot, String> eq}) =>
-    OppSpec(
-      kind: OppKind.ghost,
-      name: 'Bóng ma của bạn',
-      lvl: lvl,
-      aiL: (1 + lvl ~/ 3).clamp(1, 6),
-      pts: pts.copy(),
-      eq: Map.of(eq),
-      wStrokes: cloneSt(w),
-      sStrokes: cloneSt(s),
-      wName: 'vũ khí tự vẽ',
-    );
+OppSpec ghostOpponent({
+  required Strokes w,
+  required Strokes s,
+  required int lvl,
+  required Points pts,
+  required Map<Slot, String> eq,
+}) => OppSpec(
+  kind: OppKind.ghost,
+  name: 'Bóng ma của bạn',
+  lvl: lvl,
+  aiL: (1 + lvl ~/ 3).clamp(1, 6),
+  pts: pts.copy(),
+  eq: Map.of(eq),
+  wStrokes: cloneSt(w),
+  sStrokes: cloneSt(s),
+  wName: 'vũ khí tự vẽ',
+);
 
 /// Bot draws its shield after seeing the player's weapon; higher levels aim for a defence
 /// above the player's attack.
@@ -223,7 +246,10 @@ void botPickShield(OppSpec o, WeaponStats pw, Rng rng) {
   final chapterShields = o.stage > 0 ? LevelDef(o.stage).chapter.shields : chapters.first.shields;
   var pool = o.shieldId != null ? [o.shieldId!] : chapterShields;
   if (o.shieldId == null && pw.reach > 200) {
-    pool = [for (final t in shieldTemplates) if (t.tall) t.id];
+    pool = [
+      for (final t in shieldTemplates)
+        if (t.tall) t.id,
+    ];
   }
   var id = rng.pick(pool);
   var st = templateOf(id).strokes;

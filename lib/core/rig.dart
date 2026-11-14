@@ -77,59 +77,69 @@ class Pose {
     this.dy = 0,
     this.rot = 0,
     this.sc = 1,
-  })  : hWx = hWx ?? hand0.x,
-        hWy = hWy ?? hand0.y,
-        hSx = hSx ?? shLow.x,
-        hSy = hSy ?? shLow.y;
+  }) : hWx = hWx ?? hand0.x,
+       hWy = hWy ?? hand0.y,
+       hSx = hSx ?? shLow.x,
+       hSy = hSy ?? shLow.y;
 
   double hipX, hipY, lean, head, fFx, fFy, fBx, fBy, hWx, hWy, hSx, hSy, arc, th, dy, rot, sc;
 
   Pose copy() => Pose(
-        hipX: hipX,
-        hipY: hipY,
-        lean: lean,
-        head: head,
-        fFx: fFx,
-        fFy: fFy,
-        fBx: fBx,
-        fBy: fBy,
-        hWx: hWx,
-        hWy: hWy,
-        hSx: hSx,
-        hSy: hSy,
-        arc: arc,
-        th: th,
-        dy: dy,
-        rot: rot,
-        sc: sc,
-      );
+    hipX: hipX,
+    hipY: hipY,
+    lean: lean,
+    head: head,
+    fFx: fFx,
+    fFy: fFy,
+    fBx: fBx,
+    fBy: fBy,
+    hWx: hWx,
+    hWy: hWy,
+    hSx: hSx,
+    hSy: hSy,
+    arc: arc,
+    th: th,
+    dy: dy,
+    rot: rot,
+    sc: sc,
+  );
 
   static Pose mix(Pose p, Pose q, double u) => Pose(
-        hipX: lerpD(p.hipX, q.hipX, u),
-        hipY: lerpD(p.hipY, q.hipY, u),
-        lean: lerpD(p.lean, q.lean, u),
-        head: lerpD(p.head, q.head, u),
-        fFx: lerpD(p.fFx, q.fFx, u),
-        fFy: lerpD(p.fFy, q.fFy, u),
-        fBx: lerpD(p.fBx, q.fBx, u),
-        fBy: lerpD(p.fBy, q.fBy, u),
-        hWx: lerpD(p.hWx, q.hWx, u),
-        hWy: lerpD(p.hWy, q.hWy, u),
-        hSx: lerpD(p.hSx, q.hSx, u),
-        hSy: lerpD(p.hSy, q.hSy, u),
-        arc: lerpD(p.arc, q.arc, u),
-        th: lerpD(p.th, q.th, u),
-        dy: lerpD(p.dy, q.dy, u),
-        rot: lerpD(p.rot, q.rot, u),
-        sc: lerpD(p.sc, q.sc, u),
-      );
+    hipX: lerpD(p.hipX, q.hipX, u),
+    hipY: lerpD(p.hipY, q.hipY, u),
+    lean: lerpD(p.lean, q.lean, u),
+    head: lerpD(p.head, q.head, u),
+    fFx: lerpD(p.fFx, q.fFx, u),
+    fFy: lerpD(p.fFy, q.fFy, u),
+    fBx: lerpD(p.fBx, q.fBx, u),
+    fBy: lerpD(p.fBy, q.fBy, u),
+    hWx: lerpD(p.hWx, q.hWx, u),
+    hWy: lerpD(p.hWy, q.hWy, u),
+    hSx: lerpD(p.hSx, q.hSx, u),
+    hSy: lerpD(p.hSy, q.hSy, u),
+    arc: lerpD(p.arc, q.arc, u),
+    th: lerpD(p.th, q.th, u),
+    dy: lerpD(p.dy, q.dy, u),
+    rot: lerpD(p.rot, q.rot, u),
+    sc: lerpD(p.sc, q.sc, u),
+  );
 }
 
 final Pose restPose = Pose();
 final Pose windPose = Pose(hipX: -5, hipY: -44, lean: -0.16, fFx: 12, fFy: -4, arc: 1, th: thWind);
 final Pose endPose = Pose(hipX: 11, hipY: -41, lean: 0.42, fFx: 31, fFy: 0, fBx: -14, fBy: 0, arc: 1, th: thEnd);
-final Pose hurtPose =
-    Pose(hipX: -9, hipY: -45, lean: -0.48, head: -0.45, fFx: 24, fFy: -10, fBx: -14, fBy: 0, hWx: 8, hWy: -96);
+final Pose hurtPose = Pose(
+  hipX: -9,
+  hipY: -45,
+  lean: -0.48,
+  head: -0.45,
+  fFx: 24,
+  fFy: -10,
+  fBx: -14,
+  fBy: 0,
+  hWx: 8,
+  hWy: -96,
+);
 
 Pose strikeBody(double th) {
   final p = Pose.mix(windPose, endPose, clampD((th - thWind) / swingArc, 0, 1));
@@ -137,8 +147,7 @@ Pose strikeBody(double th) {
   return p;
 }
 
-P shoulderOf(Pose p) =>
-    P(p.hipX + math.sin(p.lean) * Len.torso * 0.88, p.hipY - math.cos(p.lean) * Len.torso * 0.88);
+P shoulderOf(Pose p) => P(p.hipX + math.sin(p.lean) * Len.torso * 0.88, p.hipY - math.cos(p.lean) * Len.torso * 0.88);
 
 /// Grip position while striking; depends only on the swing angle.
 P strikeHand(double th) {

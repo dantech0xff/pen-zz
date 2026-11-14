@@ -206,24 +206,24 @@ class StarGoal {
   final int value;
 
   String get text => switch (kind) {
-        GoalKind.hits => 'Trúng ít nhất $value đòn',
-        GoalKind.blocks => 'Chặn ít nhất $value đòn',
-        GoalKind.parries => 'Đỡ chuẩn ít nhất $value lần',
-        GoalKind.headHits => 'Trúng đầu ít nhất $value lần',
-        GoalKind.lowDamage => 'Kết thúc trận với % dưới $value%',
-        GoalKind.fastWin => 'Thắng trong $value giây',
-        GoalKind.noShield => 'Thắng mà không giơ khiên',
-      };
+    GoalKind.hits => 'Trúng ít nhất $value đòn',
+    GoalKind.blocks => 'Chặn ít nhất $value đòn',
+    GoalKind.parries => 'Đỡ chuẩn ít nhất $value lần',
+    GoalKind.headHits => 'Trúng đầu ít nhất $value lần',
+    GoalKind.lowDamage => 'Kết thúc trận với % dưới $value%',
+    GoalKind.fastWin => 'Thắng trong $value giây',
+    GoalKind.noShield => 'Thắng mà không giơ khiên',
+  };
 
   bool met(MatchStats st) => switch (kind) {
-        GoalKind.hits => st.hits >= value,
-        GoalKind.blocks => st.blocks >= value,
-        GoalKind.parries => st.parries >= value,
-        GoalKind.headHits => st.headHits >= value,
-        GoalKind.lowDamage => st.playerDmg < value,
-        GoalKind.fastWin => st.fightTime < value,
-        GoalKind.noShield => !st.usedShield,
-      };
+    GoalKind.hits => st.hits >= value,
+    GoalKind.blocks => st.blocks >= value,
+    GoalKind.parries => st.parries >= value,
+    GoalKind.headHits => st.headHits >= value,
+    GoalKind.lowDamage => st.playerDmg < value,
+    GoalKind.fastWin => st.fightTime < value,
+    GoalKind.noShield => !st.usedShield,
+  };
 }
 
 StarGoal goalFor(int stage) {
@@ -279,6 +279,6 @@ class LevelDef {
   String? get unlocks => chapterBoss
       ? chapter.bossWeapon
       : miniBoss
-          ? chapter.miniShield
-          : null;
+      ? chapter.miniShield
+      : null;
 }

@@ -25,12 +25,9 @@ Battle stageBattle(int stage, {int seed = 1, int playerAi = 5, String inkW = sam
   final me = playerSide(w: proxyWeapon(), s: proxyShield(), pts: expectedPoints(stage), eq: eq, aiLevel: playerAi);
   final o = stageOpponent(stage);
   botPickShield(o, me.w, Rng(seed));
-  return Battle(BattleSetup(
-    player: me,
-    opponent: opponentSide(o, eq),
-    rules: rules ?? LevelDef(stage).arena.rules,
-    seed: seed,
-  ));
+  return Battle(
+    BattleSetup(player: me, opponent: opponentSide(o, eq), rules: rules ?? LevelDef(stage).arena.rules, seed: seed),
+  );
 }
 
 void main() {
@@ -80,17 +77,19 @@ void main() {
   test('walking never takes a fighter over the edge', () {
     final me = playerSide(w: proxyWeapon(), s: proxyShield(), pts: Points(), eq: Map.of(defaultEquip));
     final idleBot = opponentSide(
-        OppSpec(
-            kind: OppKind.practice,
-            name: 'x',
-            lvl: 1,
-            aiL: 1,
-            pts: Points(),
-            eq: Map.of(defaultEquip),
-            wStrokes: const [],
-            wName: 'x',
-            sStrokes: const []),
-        defaultEquip);
+      OppSpec(
+        kind: OppKind.practice,
+        name: 'x',
+        lvl: 1,
+        aiL: 1,
+        pts: Points(),
+        eq: Map.of(defaultEquip),
+        wStrokes: const [],
+        wName: 'x',
+        sStrokes: const [],
+      ),
+      defaultEquip,
+    );
     final g = Battle(BattleSetup(player: me, opponent: idleBot, rules: const ArenaRules(), seed: 1));
     g.inBack = true;
     for (var i = 0; i < 120 * 12; i++) {
@@ -103,17 +102,19 @@ void main() {
   test('crumbling arenas shrink the floor', () {
     final me = playerSide(w: proxyWeapon(), s: proxyShield(), pts: Points(), eq: Map.of(defaultEquip));
     final idleBot = opponentSide(
-        OppSpec(
-            kind: OppKind.practice,
-            name: 'x',
-            lvl: 1,
-            aiL: 1,
-            pts: Points(),
-            eq: Map.of(defaultEquip),
-            wStrokes: const [],
-            wName: 'x',
-            sStrokes: const []),
-        defaultEquip);
+      OppSpec(
+        kind: OppKind.practice,
+        name: 'x',
+        lvl: 1,
+        aiL: 1,
+        pts: Points(),
+        eq: Map.of(defaultEquip),
+        wStrokes: const [],
+        wName: 'x',
+        sStrokes: const [],
+      ),
+      defaultEquip,
+    );
     final rules = arenaOf('thanh-co').rules;
     final g = Battle(BattleSetup(player: me, opponent: idleBot, rules: rules, seed: 1));
     for (var i = 0; i < 120 * 30; i++) {

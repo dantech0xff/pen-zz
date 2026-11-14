@@ -36,7 +36,13 @@ class BattleSide {
 }
 
 class BattleSetup {
-  const BattleSetup({required this.player, required this.opponent, required this.rules, required this.seed, this.roundsToWin = 2});
+  const BattleSetup({
+    required this.player,
+    required this.opponent,
+    required this.rules,
+    required this.seed,
+    this.roundsToWin = 2,
+  });
 
   final BattleSide player;
   final BattleSide opponent;
@@ -95,9 +101,7 @@ const double _windDrift = 24;
 
 /// Fixed-step simulation of a best-of-three duel; same rules as the web game plus arena rules.
 class Battle {
-  Battle(this.setup)
-      : rng = Rng(setup.seed),
-        rules = setup.rules {
+  Battle(this.setup) : rng = Rng(setup.seed), rules = setup.rules {
     _startRound();
   }
 
@@ -144,18 +148,18 @@ class Battle {
   double get shrinkMin => rules.shrinks ? rules.shrinkMin : 130;
 
   Fighter _mk(BattleSide side, bool isOpp) => Fighter(
-        look: side.look,
-        isBot: isOpp,
-        f: isOpp ? -1 : 1,
-        x: isOpp ? startX : -startX,
-        w: side.w,
-        s: side.s,
-        wStrokes: side.wStrokes,
-        sStrokes: side.sStrokes,
-        walkSp: walkBase * mulWalk(side.pts) * gearWalk(side.w, side.s),
-        windMul: side.windMul,
-        tough: toughness(side.pts),
-      );
+    look: side.look,
+    isBot: isOpp,
+    f: isOpp ? -1 : 1,
+    x: isOpp ? startX : -startX,
+    w: side.w,
+    s: side.s,
+    wStrokes: side.wStrokes,
+    sStrokes: side.sStrokes,
+    walkSp: walkBase * mulWalk(side.pts) * gearWalk(side.w, side.s),
+    windMul: side.windMul,
+    tough: toughness(side.pts),
+  );
 
   void _startRound() {
     p = _mk(setup.player, false);
@@ -352,8 +356,19 @@ class Battle {
         a.pendingAtk = false;
         _shove(a, -dir * (30 + a.w.knock(a.tough) * 0.35));
         hitstop = 0.13;
-        events.add(BattleEvent(EvKind.parry,
-            x: res.x, y: res.y, side: _side(d), dir: -dir, label: 'ĐỠ CHUẨN!', color: d.look.body, size: 28, shake: 8));
+        events.add(
+          BattleEvent(
+            EvKind.parry,
+            x: res.x,
+            y: res.y,
+            side: _side(d),
+            dir: -dir,
+            label: 'ĐỠ CHUẨN!',
+            color: d.look.body,
+            size: 28,
+            shake: 8,
+          ),
+        );
         if (!d.isBot) stats.parries++;
       } else {
         // Block: weapon attack against shield defence; the weaker side is pushed by the difference.
@@ -377,7 +392,9 @@ class Battle {
           color = pencilColor;
         }
         hitstop = 0.05;
-        events.add(BattleEvent(EvKind.block,
+        events.add(
+          BattleEvent(
+            EvKind.block,
             x: res.x,
             y: res.y,
             side: _side(d),
@@ -385,7 +402,9 @@ class Battle {
             label: label,
             color: color,
             size: 22,
-            shake: 3 + math.min(6, push / 25)));
+            shake: 3 + math.min(6, push / 25),
+          ),
+        );
         if (!d.isBot) stats.blocks++;
       }
       return;
@@ -403,7 +422,9 @@ class Battle {
     d.hopV = -math.min(520.0, 160 + dist * 1.6);
     hitstop = 0.05 + math.min(0.09, kp / 1800);
     final shownDmg = jsRound(dmg);
-    events.add(BattleEvent(EvKind.hit,
+    events.add(
+      BattleEvent(
+        EvKind.hit,
         x: res.x,
         y: res.y,
         side: _side(d),
@@ -414,10 +435,21 @@ class Battle {
         size: res.head ? 22 : 26,
         shake: math.min(16, 3 + kp / 14),
         fx: a.look.fx,
-        inkFx: a.w.fx));
+        inkFx: a.w.fx,
+      ),
+    );
     if (d.s.has && d.r > 0.02 && d.r < 1) {
-      events.add(BattleEvent(EvKind.status,
-          x: d.x, y: d.y - 168, side: _side(d), label: d.blockHeld ? 'CHƯA KỊP ĐỠ' : 'HẠ KHIÊN SỚM', color: pencilColor, size: 18));
+      events.add(
+        BattleEvent(
+          EvKind.status,
+          x: d.x,
+          y: d.y - 168,
+          side: _side(d),
+          label: d.blockHeld ? 'CHƯA KỊP ĐỠ' : 'HẠ KHIÊN SỚM',
+          color: pencilColor,
+          size: 18,
+        ),
+      );
     }
     _applyInk(a, d, dmg);
     if (!a.isBot) {
@@ -445,15 +477,27 @@ class Battle {
       case InkFx.leech:
         final heal = dmg * leechRatio;
         a.dmg = math.max(0, a.dmg - heal);
-        events.add(BattleEvent(EvKind.status,
-            x: a.x, y: a.y - 150, side: _side(a), label: 'HỒI ${jsRound(heal)}%', color: 0x9B1D4F, size: 18, inkFx: InkFx.leech));
+        events.add(
+          BattleEvent(
+            EvKind.status,
+            x: a.x,
+            y: a.y - 150,
+            side: _side(a),
+            label: 'HỒI ${jsRound(heal)}%',
+            color: 0x9B1D4F,
+            size: 18,
+            inkFx: InkFx.leech,
+          ),
+        );
       case InkFx.stone:
       case InkFx.wind:
       case InkFx.none:
         break;
     }
     if (label != null) {
-      events.add(BattleEvent(EvKind.status, x: d.x, y: d.y - 150, side: _side(d), label: label, size: 18, inkFx: a.w.fx));
+      events.add(
+        BattleEvent(EvKind.status, x: d.x, y: d.y - 150, side: _side(d), label: label, size: 18, inkFx: a.w.fx),
+      );
     }
   }
 
@@ -481,8 +525,15 @@ class Battle {
       if (f.r >= 1 && prev < 1) {
         f.raisedAt = now;
         final j = rigOf(f, now);
-        events.add(BattleEvent(EvKind.shieldUp,
-            x: f.x + f.f * (j.handS.x + f.s.cx), y: f.y + f.hop + j.handS.y + f.s.cy, side: _side(f), color: f.look.shieldInk));
+        events.add(
+          BattleEvent(
+            EvKind.shieldUp,
+            x: f.x + f.f * (j.handS.x + f.s.cx),
+            y: f.y + f.hop + j.handS.y + f.s.cy,
+            side: _side(f),
+            color: f.look.shieldInk,
+          ),
+        );
       }
       if (!f.isBot && f.r > 0.3) stats.usedShield = true;
     } else {
@@ -588,11 +639,8 @@ class Battle {
     f.walking = false;
     final edge = half - 8;
     if (f.state == FState.idle && f.moveDir != 0 && e.state != FState.fall && phase == Phase.fight) {
-      final sp = f.walkSp *
-          (f.moveDir > 0 ? 1 : 0.8) *
-          (f.r > 0.5 ? 0.35 : 1) *
-          mudAt(f.x) *
-          (f.chilled ? chillWalk : 1);
+      final sp =
+          f.walkSp * (f.moveDir > 0 ? 1 : 0.8) * (f.r > 0.5 ? 0.35 : 1) * mudAt(f.x) * (f.chilled ? chillWalk : 1);
       var nx = f.x + f.f * f.moveDir * sp * dt;
       if (f.moveDir > 0) {
         final lim = e.x - f.f * 46;

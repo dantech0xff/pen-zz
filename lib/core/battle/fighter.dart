@@ -56,8 +56,8 @@ Look lookFor(Map<Slot, String> eq, {Map<Slot, String>? versus}) {
     weapon = iw == sameInk
         ? WeaponInk(body)
         : weaponInks.any((i) => i.id == iw)
-            ? _special(iw)
-            : WeaponInk(_isBodyInk(iw) ? inkColor(iw) : body);
+        ? _special(iw)
+        : WeaponInk(_isBodyInk(iw) ? inkColor(iw) : body);
     final isd = get(Slot.inkS);
     shield = isd == sameInk || !_isBodyInk(isd) ? body : inkColor(isd);
   } else {
@@ -101,8 +101,8 @@ class Fighter {
     this.walkSp = walkBase,
     this.windMul = 1,
     this.tough = 1,
-  })  : w = w ?? emptyWeapon,
-        s = s ?? emptyShield;
+  }) : w = w ?? emptyWeapon,
+       s = s ?? emptyShield;
 
   final Look look;
   final bool isBot;

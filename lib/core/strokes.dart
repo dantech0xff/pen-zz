@@ -56,13 +56,13 @@ Float32List resample(Strokes st, [double step = 5]) {
 Strokes cloneSt(Strokes st) => [for (final s in st) List<double>.of(s)];
 
 Strokes scaleSt(Strokes st, double k) => [
-      for (final s in st) [for (final v in s) v * k],
-    ];
+  for (final s in st) [for (final v in s) v * k],
+];
 
 /// Rounds coordinates to 0.1 to keep saves small.
 Strokes roundSt(Strokes st) => [
-      for (final s in st) [for (final v in s) (v * 10).roundToDouble() / 10],
-    ];
+  for (final s in st) [for (final v in s) (v * 10).roundToDouble() / 10],
+];
 
 /// Hand-drawn jitter for template gear, ported from the web game.
 Strokes wobble(Strokes st, double amt, Rng rng) => [for (final s in st) _wobbleOne(s, amt, rng)];
@@ -184,31 +184,24 @@ Stroke seg(double x0, double y0, double x1, double y1) => [x0, y0, x1, y1];
 
 Stroke closedPoly(List<double> xy) => [...xy, xy[0], xy[1]];
 
-Stroke rectPts(double x0, double y0, double x1, double y1) =>
-    closedPoly([x0, y0, x1, y0, x1, y1, x0, y1]);
+Stroke rectPts(double x0, double y0, double x1, double y1) => closedPoly([x0, y0, x1, y0, x1, y1, x0, y1]);
 
 /// Circle as a closed polygon whose last point equals the first (like `circ` in the web game).
 Stroke circlePts(double cx, double cy, double r, int n) => [
-      for (var i = 0; i <= n; i++) ...[
-        cx + math.cos(i / n * math.pi * 2) * r,
-        cy + math.sin(i / n * math.pi * 2) * r,
-      ],
-    ];
+  for (var i = 0; i <= n; i++) ...[cx + math.cos(i / n * math.pi * 2) * r, cy + math.sin(i / n * math.pi * 2) * r],
+];
 
 Stroke ellipsePts(double cx, double cy, double rx, double ry, int n) => [
-      for (var i = 0; i <= n; i++) ...[
-        cx + math.cos(i / n * math.pi * 2) * rx,
-        cy + math.sin(i / n * math.pi * 2) * ry,
-      ],
-    ];
+  for (var i = 0; i <= n; i++) ...[cx + math.cos(i / n * math.pi * 2) * rx, cy + math.sin(i / n * math.pi * 2) * ry],
+];
 
 /// Arc from [a0] to [a1] degrees (canvas angles: 90 points down).
 Stroke arcPts(double cx, double cy, double r, double a0, double a1, int n) => [
-      for (var i = 0; i <= n; i++) ...[
-        cx + math.cos((a0 + (a1 - a0) * i / n) * deg) * r,
-        cy + math.sin((a0 + (a1 - a0) * i / n) * deg) * r,
-      ],
-    ];
+  for (var i = 0; i <= n; i++) ...[
+    cx + math.cos((a0 + (a1 - a0) * i / n) * deg) * r,
+    cy + math.sin((a0 + (a1 - a0) * i / n) * deg) * r,
+  ],
+];
 
 Stroke starPts(double cx, double cy, double outer, double inner, int points) {
   final out = <double>[];
