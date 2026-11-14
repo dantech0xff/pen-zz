@@ -10,12 +10,12 @@ Khi chưa có khoá thật, game vẫn chạy: quảng cáo dùng ID thử của
 |---|---|---|
 | Thưởng nhân đôi | Thẻ kết quả trận | Mỗi trận một lần, khi trận có thưởng |
 | Thưởng xu miễn phí | Cửa hàng | 3 lượt mỗi ngày, mỗi lượt 60 + 6 × số màn đã qua xu |
-| Chen giữa | Khi rời thẻ kết quả | Chỉ sau khi qua màn 3, cứ 3 trận một lần, cách nhau ít nhất 150 giây |
+| Chen giữa | Khi rời thẻ kết quả | Chỉ sau khi qua màn 3, cứ 3 trận một lần, cách quảng cáo toàn màn hình trước đó (kể cả quảng cáo có thưởng) và lúc mở game ít nhất 150 giây |
 | Banner | Dưới sảnh | Một banner cố định ở đáy màn hình |
 
 Mua "Gỡ quảng cáo" sẽ tắt banner và quảng cáo chen giữa. Quảng cáo có thưởng vẫn còn vì người chơi tự chọn xem. Các con số nằm trong `AdRules` ở `lib/core/store_catalog.dart`.
 
-Người chơi từ 13 tuổi trở lên. Game hiện thông điệp xin đồng ý của Google (UMP) trước khi tải quảng cáo. Khi UMP yêu cầu, phần Cài đặt có nút "Tuỳ chọn quyền riêng tư cho quảng cáo".
+Người chơi từ 13 tuổi trở lên, nên quảng cáo bị giới hạn ở mức nội dung T (Teen). Game hiện thông điệp xin đồng ý của Google (UMP) trước khi tải quảng cáo. Khi UMP yêu cầu, phần Cài đặt có nút "Tuỳ chọn quyền riêng tư cho quảng cáo".
 
 ## Sản phẩm
 
@@ -86,7 +86,10 @@ Với iOS (cần máy Mac): sửa `GADApplicationIdentifier` trong `ios/Runner/I
 
 Vài điều cần biết:
 
-- Gói xu không cộng lại khi cài lại app. Game nhớ lần đầu bản lưu gặp cửa hàng (`storeSince`) và bỏ qua giao dịch cũ hơn mốc đó. Giao dịch vừa mua xong thì luôn được cộng.
+- Gói xu được ghi theo mã giao dịch của RevenueCat, lấy từ lịch sử mua mà RevenueCat trả về. Mỗi mã chỉ cộng một lần, mua bao nhiêu lần cũng vậy. Mã đơn hàng của Google trong kết quả mua không dùng tới, vì nó không bao giờ xuất hiện trong lịch sử.
+- Gói xu không cộng lại khi cài lại app. Lần đầu bản lưu gặp cửa hàng, game ghi lại giờ của máy chủ cửa hàng (`storeSince`), không dùng giờ trên điện thoại. Gói xu mua trước mốc đó thuộc lần cài cũ nên được bỏ qua.
 - Thanh toán đang chờ (ví dụ trả tiền mặt ở cửa hàng tiện lợi) được cộng khi RevenueCat báo giao dịch hoàn tất.
+- Trường hợp hiếm: người chơi đã bị trừ tiền nhưng app chưa nhận được xác nhận (mất mạng đúng lúc đó), rồi xoá app và cài lại. Gói xu đó sẽ không được cộng. Hãy tra giao dịch trên RevenueCat rồi bù cho người chơi.
 - Xoá tiến trình vẫn giữ đồ đã mua, trạng thái gỡ quảng cáo và lịch sử giao dịch đã cộng.
+- Bản web không có cửa hàng, nhưng vẫn tải file JavaScript của RevenueCat (khoảng 1 MB) đi kèm gói `purchases_flutter`, vì gói này có bản web. Game không gọi tới file đó.
 - Chưa có: thu hồi đồ trang trí khi hoàn tiền (riêng gỡ quảng cáo thì theo entitlement nên sẽ bật lại quảng cáo), gói đăng ký, server riêng.
