@@ -47,12 +47,14 @@ class PreMatchScreen extends StatelessWidget {
     final shieldTxt = !ps.has
         ? 'Bạn chưa có khiên.'
         : def > oAtk + 4
-            ? 'Khiên của bạn thủ $def > công $oAtk: đỡ thì đứng vững.'
-            : def < oAtk - 4
-                ? 'Khiên của bạn thủ $def < công $oAtk: đỡ vẫn bị ép lùi $push px.'
-                : 'Khiên của bạn thủ ngang công của đối thủ.';
+        ? 'Khiên của bạn thủ $def > công $oAtk: đỡ thì đứng vững.'
+        : def < oAtk - 4
+        ? 'Khiên của bạn thủ $def < công $oAtk: đỡ vẫn bị ép lùi $push px.'
+        : 'Khiên của bạn thủ ngang công của đối thủ.';
     final fx = inkFxOf(o.eq[Slot.inkW] ?? sameInk);
-    final fxTxt = fx == InkFx.none ? '' : ' Vũ khí của nó dùng mực ${inkFxSpec(fx).title.toLowerCase()}: ${inkFxSpec(fx).desc}';
+    final fxTxt = fx == InkFx.none
+        ? ''
+        : ' Vũ khí của nó dùng mực ${inkFxSpec(fx).title.toLowerCase()}: ${inkFxSpec(fx).desc}';
     final note = switch (o.kind) {
       OppKind.stage =>
         '${o.name} cầm ${o.wName}, công $oAtk. $shieldTxt${_blockHint(ps, o)} Nó vẽ khiên sau khi thấy vũ khí của bạn.$fxTxt',
@@ -72,56 +74,78 @@ class PreMatchScreen extends StatelessWidget {
     final box = gearBox([s.w, o.wStrokes]);
     final bits = lv == null ? 0 : s.stars[o.stage - 1];
     return ScreenFrame(
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        ScreenHeader(title: title, onBack: nav.back),
-        Text('Sân ${nav.arena.name}: ${nav.arena.ruleText}', style: T.body(15, Pal.ink)),
-        const SizedBox(height: 4),
-        Text(note, style: T.body(15)),
-        const SizedBox(height: 8),
-        Expanded(
-          child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-            Expanded(
-              child: _Card(
-                color: rgb(myLook.body),
-                name: 'Bạn · cấp ${s.lvl}',
-                stats: statLines(pw, ps, s.pts),
-                painter: _Thumb(Fighter(look: myLook, wStrokes: s.w), box, false),
-              ),
-            ),
-            Padding(padding: const EdgeInsets.symmetric(horizontal: 6), child: Text('vs', style: T.display(24, Pal.pencil))),
-            Expanded(
-              child: _Card(
-                color: rgb(opLook.body),
-                name: '${o.name} · cấp ${o.lvl}',
-                stats: statLines(o.w, o.s, o.pts),
-                painter: _Thumb(Fighter(look: opLook, wStrokes: o.wStrokes), box, true),
-                rotate: 0.02,
-              ),
-            ),
-          ]),
-        ),
-        const SizedBox(height: 6),
-        Text(reward, textAlign: TextAlign.center, style: T.body(16)),
-        if (lv != null) ...[
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ScreenHeader(title: title, onBack: nav.back),
+          Text('Sân ${nav.arena.name}: ${nav.arena.ruleText}', style: T.body(15, Pal.ink)),
           const SizedBox(height: 4),
-          Wrap(alignment: WrapAlignment.center, spacing: 10, children: [
-            _Goal('Thắng', bits & starWin != 0),
-            _Goal('Thắng 2-0', bits & starFlawless != 0),
-            _Goal(lv.goal.text, bits & starGoal != 0),
-          ]),
-          if (lv.unlocks != null)
-            Text('Hạ trùm để mở mẫu ${lv.miniBoss ? 'khiên' : 'vũ khí'} của nó.',
-                textAlign: TextAlign.center, style: T.body(14, Pal.ink)),
+          Text(note, style: T.body(15)),
+          const SizedBox(height: 8),
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: _Card(
+                    color: rgb(myLook.body),
+                    name: 'Bạn · cấp ${s.lvl}',
+                    stats: statLines(pw, ps, s.pts),
+                    painter: _Thumb(Fighter(look: myLook, wStrokes: s.w), box, false),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: Text('vs', style: T.display(24, Pal.pencil)),
+                ),
+                Expanded(
+                  child: _Card(
+                    color: rgb(opLook.body),
+                    name: '${o.name} · cấp ${o.lvl}',
+                    stats: statLines(o.w, o.s, o.pts),
+                    painter: _Thumb(Fighter(look: opLook, wStrokes: o.wStrokes), box, true),
+                    rotate: 0.02,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(reward, textAlign: TextAlign.center, style: T.body(16)),
+          if (lv != null) ...[
+            const SizedBox(height: 4),
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 10,
+              children: [
+                _Goal('Thắng', bits & starWin != 0),
+                _Goal('Thắng 2-0', bits & starFlawless != 0),
+                _Goal(lv.goal.text, bits & starGoal != 0),
+              ],
+            ),
+            if (lv.unlocks != null)
+              Text(
+                'Hạ trùm để mở mẫu ${lv.miniBoss ? 'khiên' : 'vũ khí'} của nó.',
+                textAlign: TextAlign.center,
+                style: T.body(14, Pal.ink),
+              ),
+          ],
+          const SizedBox(height: 8),
+          SketchButton(label: 'Vào trận', primary: true, big: true, onTap: nav.startBattle),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: SketchButton(label: 'Sửa khiên', onTap: () => nav.openEditor(DrawMode.shield, DrawFrom.pre)),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: SketchButton(label: 'Sửa vũ khí', onTap: () => nav.openEditor(DrawMode.weapon, DrawFrom.pre)),
+              ),
+            ],
+          ),
         ],
-        const SizedBox(height: 8),
-        SketchButton(label: 'Vào trận', primary: true, big: true, onTap: nav.startBattle),
-        const SizedBox(height: 8),
-        Row(children: [
-          Expanded(child: SketchButton(label: 'Sửa khiên', onTap: () => nav.openEditor(DrawMode.shield, DrawFrom.pre))),
-          const SizedBox(width: 8),
-          Expanded(child: SketchButton(label: 'Sửa vũ khí', onTap: () => nav.openEditor(DrawMode.weapon, DrawFrom.pre))),
-        ]),
-      ]),
+      ),
     );
   }
 }
@@ -132,11 +156,14 @@ class _Goal extends StatelessWidget {
   final bool done;
 
   @override
-  Widget build(BuildContext context) => Row(mainAxisSize: MainAxisSize.min, children: [
-        StarIcon(on: done, size: 16, offColor: Pal.pencil),
-        const SizedBox(width: 2),
-        Text(text, style: T.body(14, done ? const Color(0xFFB58500) : Pal.pencil)),
-      ]);
+  Widget build(BuildContext context) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      StarIcon(on: done, size: 16, offColor: Pal.pencil),
+      const SizedBox(width: 2),
+      Text(text, style: T.body(14, done ? const Color(0xFFB58500) : Pal.pencil)),
+    ],
+  );
 }
 
 class _Card extends StatelessWidget {
@@ -148,15 +175,21 @@ class _Card extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SketchCard(
-        color: color,
-        rotate: rotate,
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          AspectRatio(aspectRatio: 1 / 1.15, child: CustomPaint(painter: painter)),
-          Text(name, textAlign: TextAlign.center, style: T.display(15, color), maxLines: 2),
-          Text(stats, textAlign: TextAlign.center, style: T.body(14)),
-        ]),
-      );
+    color: color,
+    rotate: rotate,
+    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AspectRatio(
+          aspectRatio: 1 / 1.15,
+          child: CustomPaint(painter: painter),
+        ),
+        Text(name, textAlign: TextAlign.center, style: T.display(15, color), maxLines: 2),
+        Text(stats, textAlign: TextAlign.center, style: T.body(14)),
+      ],
+    ),
+  );
 }
 
 class _Thumb extends CustomPainter {

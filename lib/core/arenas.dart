@@ -138,7 +138,14 @@ const List<ArenaDef> arenas = [
     'thanh-co',
     'Thành cổ',
     ArenaRules(shrinkStart: 18, shrinkSpeed: 7, shrinkMin: 150),
-    ArenaTheme(paper: 0xF6EBD3, line: 0xE0CBA0, kind: PaperKind.sepia, doodle: Doodle.history, ink: 0x7A4A2A, platform: 0xF1E2C2),
+    ArenaTheme(
+      paper: 0xF6EBD3,
+      line: 0xE0CBA0,
+      kind: PaperKind.sepia,
+      doodle: Doodle.history,
+      ink: 0x7A4A2A,
+      platform: 0xF1E2C2,
+    ),
     'Thành cổ: sau 18 giây sàn sụt dần từ hai mép.',
   ),
   ArenaDef(
@@ -173,7 +180,14 @@ const List<ArenaDef> arenas = [
     'man-hinh',
     'Màn hình',
     ArenaRules(half: 290, shrinkStart: 15, shrinkSpeed: 8, shrinkMin: 140),
-    ArenaTheme(paper: 0xEEF3FF, line: 0xC3CFF0, kind: PaperKind.pixel, doodle: Doodle.code, ink: 0x2D4FB8, platform: 0xF5F8FF),
+    ArenaTheme(
+      paper: 0xEEF3FF,
+      line: 0xC3CFF0,
+      kind: PaperKind.pixel,
+      doodle: Doodle.code,
+      ink: 0x2D4FB8,
+      platform: 0xF5F8FF,
+    ),
     'Sàn hẹp và co dần sau 15 giây.',
   ),
   ArenaDef(

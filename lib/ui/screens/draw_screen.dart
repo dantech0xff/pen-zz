@@ -23,9 +23,14 @@ import '../widgets.dart';
 
 /// Ids that can become blueprints: starters plus every boss and mini-boss unlock.
 List<GearTemplate> blueprintTemplates(GearKind kind) {
-  final unlockable = {for (final c in chapters) ...[c.bossWeapon, c.miniShield]};
+  final unlockable = {
+    for (final c in chapters) ...[c.bossWeapon, c.miniShield],
+  };
   final list = kind == GearKind.weapon ? weaponTemplates : shieldTemplates;
-  return [for (final t in list) if (t.starter || unlockable.contains(t.id)) t];
+  return [
+    for (final t in list)
+      if (t.starter || unlockable.contains(t.id)) t,
+  ];
 }
 
 String unlockHint(String id) {
@@ -133,9 +138,9 @@ class _DrawScreenState extends State<DrawScreen> {
   }
 
   void _setMode(DrawMode m) => setState(() {
-        mode = m;
-        _warn = null;
-      });
+    mode = m;
+    _warn = null;
+  });
 
   void _done() {
     final nav = NavScope.read(context);
@@ -182,28 +187,31 @@ class _DrawScreenState extends State<DrawScreen> {
           height: MediaQuery.of(ctx).size.height * 0.62,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              Text(weapon ? 'Mẫu vũ khí' : 'Mẫu khiên', style: T.display(21)),
-              Text('Chọn mẫu để vẽ sẵn vào khung rồi sửa tiếp. Hạ trùm để mở thêm mẫu.', style: T.body(15)),
-              const SizedBox(height: 8),
-              Expanded(
-                child: GridView.count(
-                  crossAxisCount: 3,
-                  mainAxisSpacing: 8,
-                  crossAxisSpacing: 8,
-                  childAspectRatio: 0.85,
-                  children: [
-                    for (final t in blueprintTemplates(kind))
-                      _BlueprintTile(
-                        t: t,
-                        unlocked: g.save.blueprints.contains(t.id),
-                        color: rgb(weapon ? look.weaponInk.color : look.shieldInk),
-                        onTap: () => Navigator.pop(ctx, t),
-                      ),
-                  ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(weapon ? 'Mẫu vũ khí' : 'Mẫu khiên', style: T.display(21)),
+                Text('Chọn mẫu để vẽ sẵn vào khung rồi sửa tiếp. Hạ trùm để mở thêm mẫu.', style: T.body(15)),
+                const SizedBox(height: 8),
+                Expanded(
+                  child: GridView.count(
+                    crossAxisCount: 3,
+                    mainAxisSpacing: 8,
+                    crossAxisSpacing: 8,
+                    childAspectRatio: 0.85,
+                    children: [
+                      for (final t in blueprintTemplates(kind))
+                        _BlueprintTile(
+                          t: t,
+                          unlocked: g.save.blueprints.contains(t.id),
+                          color: rgb(weapon ? look.weaponInk.color : look.shieldInk),
+                          onTap: () => Navigator.pop(ctx, t),
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-            ]),
+              ],
+            ),
           ),
         ),
       ),
@@ -238,9 +246,11 @@ class _DrawScreenState extends State<DrawScreen> {
     if (!eS.has) {
       text = 'Chưa có khiên: đòn công $bAtk của ${o.name} trúng là văng.';
     } else if (def > bAtk + 4) {
-      text = 'Thủ $def > công $bAtk của ${o.name}: bạn đỡ thì đứng vững, nó bị dội lại ${(diff / toughness(o.pts)).round()} px.';
+      text =
+          'Thủ $def > công $bAtk của ${o.name}: bạn đỡ thì đứng vững, nó bị dội lại ${(diff / toughness(o.pts)).round()} px.';
     } else if (def < bAtk - 4) {
-      text = 'Thủ $def < công $bAtk của ${o.name}: mỗi lần đỡ bạn vẫn bị ép lùi ${(diff / toughness(g.save.pts)).round()} px.';
+      text =
+          'Thủ $def < công $bAtk của ${o.name}: mỗi lần đỡ bạn vẫn bị ép lùi ${(diff / toughness(g.save.pts)).round()} px.';
     } else {
       text = 'Thủ $def ngang công $bAtk của ${o.name}: đỡ thì cả hai đứng yên.';
     }
@@ -263,162 +273,200 @@ class _DrawScreenState extends State<DrawScreen> {
           ]
         : [
             StatItem('Phòng thủ', eS.has ? '${eS.def.round()}' : '-', eS.def / 600),
-            StatItem('Giơ khiên', eS.has ? '${(eS.raise * 1000).round()} ms' : '-', eS.has ? 1 - (eS.raise - 0.08) / 0.6 : 0),
+            StatItem(
+              'Giơ khiên',
+              eS.has ? '${(eS.raise * 1000).round()} ms' : '-',
+              eS.has ? 1 - (eS.raise - 0.08) / 0.6 : 0,
+            ),
             StatItem('Độ phủ', '${(eS.coverage * 100).round()}%', eS.coverage),
             StatItem('Cao × rộng', eS.has ? '${eS.h.round()} × ${eS.w.round()}' : '-', (eS.h + eS.w) / 320),
           ];
-    items.add(StatItem(
+    items.add(
+      StatItem(
         'Đi lại',
-        ok ? '×${gw.toStringAsFixed(2)} · vũ khí ×${walkW(eW).toStringAsFixed(2)}, khiên ×${walkS(eS).toStringAsFixed(2)}' : '-',
+        ok
+            ? '×${gw.toStringAsFixed(2)} · vũ khí ×${walkW(eW).toStringAsFixed(2)}, khiên ×${walkS(eS).toStringAsFixed(2)}'
+            : '-',
         (gw - 0.5) / 0.75,
-        wide: true));
+        wide: true,
+      ),
+    );
     final boosted = pts.total > 0;
     final matchup = _matchup(o);
-    final tip = _warn ??
+    final tip =
+        _warn ??
         (weapon
             ? 'Đặt bút từ bàn tay. Mực càng nhiều thì công càng cao. Càng dài thì với càng xa, nhưng ra đòn chậm hơn và đi lại cũng chậm hơn.'
             : 'Vẽ trong vòng nét đứt quanh tay khiên. Mực càng nhiều thì thủ càng cao. Khiên càng cao thì giơ càng chậm, đi lại càng chậm, và chỉ chặn được khi đã giơ hẳn lên.');
     final left = math.max(0.0, inkLeft);
     final reserved = weapon ? inkOf(s) : inkOf(w);
     return ScreenFrame(
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        ScreenHeader(
-          title: first ? (weapon ? 'Vẽ vũ khí' : 'Vẽ khiên') : 'Sửa đồ',
-          onBack: _back,
-          trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-            if (!first)
-              Segmented<DrawMode>(
-                options: const {DrawMode.weapon: 'Vũ khí', DrawMode.shield: 'Khiên'},
-                value: mode,
-                onChanged: _setMode,
-              ),
-            const SizedBox(width: 6),
-            SketchButton(label: 'Mẫu', compact: true, onTap: _pickBlueprint),
-          ]),
-        ),
-        Text(tip, style: T.body(15, _warn != null ? Pal.red : Pal.pencil)),
-        const SizedBox(height: 4),
-        Expanded(
-          child: LayoutBuilder(builder: (context, c) {
-            final side = math.min(c.maxWidth, math.min(440.0, c.maxHeight));
-            _dK = side / drawW;
-            return Center(
-              child: SizedBox(
-                width: side,
-                height: side,
-                child: Stack(children: [
-                  Positioned.fill(
-                    child: Listener(
-                      behavior: HitTestBehavior.opaque,
-                      onPointerDown: (e) {
-                        if (_pointer != null) return;
-                        _pointer = e.pointer;
-                        _begin(_toLocal(e.localPosition));
-                      },
-                      onPointerMove: (e) {
-                        if (e.pointer == _pointer) _move(_toLocal(e.localPosition));
-                      },
-                      onPointerUp: (e) {
-                        if (e.pointer != _pointer) return;
-                        _pointer = null;
-                        _drawing = null;
-                        _changed();
-                      },
-                      onPointerCancel: (e) {
-                        if (e.pointer != _pointer) return;
-                        _pointer = null;
-                        _drawing = null;
-                      },
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.4),
-                          borderRadius: cardRadius,
-                          border: Border.all(color: const Color(0x59474B55), width: 2),
-                        ),
-                        child: CustomPaint(
-                          painter: _EditorPainter(w: w, s: s, weapon: weapon, look: lookFor(g.save.eq), eW: eW, dK: _dK),
-                        ),
-                      ),
-                    ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ScreenHeader(
+            title: first ? (weapon ? 'Vẽ vũ khí' : 'Vẽ khiên') : 'Sửa đồ',
+            onBack: _back,
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (!first)
+                  Segmented<DrawMode>(
+                    options: const {DrawMode.weapon: 'Vũ khí', DrawMode.shield: 'Khiên'},
+                    value: mode,
+                    onChanged: _setMode,
                   ),
-                  if (!weapon && widget.from == DrawFrom.pre && o != null)
-                    Positioned(
-                      top: 6,
-                      right: 6,
-                      width: 96,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xEBFFFDF7),
-                          border: Border.all(color: Pal.red, width: 1.5),
-                          borderRadius: sketchRadius,
-                        ),
-                        child: Column(children: [
-                          SizedBox(
-                            width: 86,
-                            height: 86,
-                            child: CustomPaint(
-                              painter: _ThumbPainter(
-                                Fighter(look: lookFor(o.eq, versus: g.save.eq), wStrokes: o.wStrokes),
-                                gearBox([o.wStrokes]),
-                                true,
+                const SizedBox(width: 6),
+                SketchButton(label: 'Mẫu', compact: true, onTap: _pickBlueprint),
+              ],
+            ),
+          ),
+          Text(tip, style: T.body(15, _warn != null ? Pal.red : Pal.pencil)),
+          const SizedBox(height: 4),
+          Expanded(
+            child: LayoutBuilder(
+              builder: (context, c) {
+                final side = math.min(c.maxWidth, math.min(440.0, c.maxHeight));
+                _dK = side / drawW;
+                return Center(
+                  child: SizedBox(
+                    width: side,
+                    height: side,
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: Listener(
+                            behavior: HitTestBehavior.opaque,
+                            onPointerDown: (e) {
+                              if (_pointer != null) return;
+                              _pointer = e.pointer;
+                              _begin(_toLocal(e.localPosition));
+                            },
+                            onPointerMove: (e) {
+                              if (e.pointer == _pointer) _move(_toLocal(e.localPosition));
+                            },
+                            onPointerUp: (e) {
+                              if (e.pointer != _pointer) return;
+                              _pointer = null;
+                              _drawing = null;
+                              _changed();
+                            },
+                            onPointerCancel: (e) {
+                              if (e.pointer != _pointer) return;
+                              _pointer = null;
+                              _drawing = null;
+                            },
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.4),
+                                borderRadius: cardRadius,
+                                border: Border.all(color: const Color(0x59474B55), width: 2),
+                              ),
+                              child: CustomPaint(
+                                painter: _EditorPainter(
+                                  w: w,
+                                  s: s,
+                                  weapon: weapon,
+                                  look: lookFor(g.save.eq),
+                                  eW: eW,
+                                  dK: _dK,
+                                ),
                               ),
                             ),
                           ),
-                          Text('${o.name}: công ${o.w.atk.round()}',
-                              textAlign: TextAlign.center, style: T.body(13, Pal.red), maxLines: 2),
-                        ]),
-                      ),
+                        ),
+                        if (!weapon && widget.from == DrawFrom.pre && o != null)
+                          Positioned(
+                            top: 6,
+                            right: 6,
+                            width: 96,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xEBFFFDF7),
+                                border: Border.all(color: Pal.red, width: 1.5),
+                                borderRadius: sketchRadius,
+                              ),
+                              child: Column(
+                                children: [
+                                  SizedBox(
+                                    width: 86,
+                                    height: 86,
+                                    child: CustomPaint(
+                                      painter: _ThumbPainter(
+                                        Fighter(
+                                          look: lookFor(o.eq, versus: g.save.eq),
+                                          wStrokes: o.wStrokes,
+                                        ),
+                                        gearBox([o.wStrokes]),
+                                        true,
+                                      ),
+                                    ),
+                                  ),
+                                  Text(
+                                    '${o.name}: công ${o.w.atk.round()}',
+                                    textAlign: TextAlign.center,
+                                    style: T.body(13, Pal.red),
+                                    maxLines: 2,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
-                ]),
-              ),
-            );
-          }),
-        ),
-        const SizedBox(height: 6),
-        InkTube(left: left / inkMax, reserved: reserved / inkMax, label: 'còn ${left.round()}', flash: _flash),
-        const SizedBox(height: 6),
-        StatGrid(items: items),
-        if (boosted)
-          Text(
-            'Đã tính điểm nâng cấp: công ×${mulAtk(pts).toStringAsFixed(2)}, thủ ×${mulDef(pts).toStringAsFixed(2)}, thời gian ×${mulTime(pts).toStringAsFixed(2)}.',
-            style: T.body(14),
-          ),
-        if (matchup != null)
-          Text(matchup, style: T.body(15, !eS.has || eS.def < (o?.w.atk ?? 0) - 4 ? Pal.red : Pal.pencil)),
-        const SizedBox(height: 6),
-        Row(children: [
-          SketchButton(
-            label: 'Hoàn tác',
-            onTap: cur.isEmpty
-                ? null
-                : () {
-                    cur.removeLast();
-                    _drawing = null;
-                    _changed();
-                  },
-          ),
-          const SizedBox(width: 8),
-          SketchButton(
-            label: 'Xóa hết',
-            onTap: cur.isEmpty
-                ? null
-                : () {
-                    cur.clear();
-                    _drawing = null;
-                    _changed();
-                  },
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: SketchButton(
-              label: first ? (weapon ? 'Tiếp: vẽ khiên' : 'Xong, vào màn ${g.save.stage + 1}') : 'Lưu đồ',
-              primary: true,
-              onTap: _done,
+                  ),
+                );
+              },
             ),
           ),
-        ]),
-      ]),
+          const SizedBox(height: 6),
+          InkTube(left: left / inkMax, reserved: reserved / inkMax, label: 'còn ${left.round()}', flash: _flash),
+          const SizedBox(height: 6),
+          StatGrid(items: items),
+          if (boosted)
+            Text(
+              'Đã tính điểm nâng cấp: công ×${mulAtk(pts).toStringAsFixed(2)}, thủ ×${mulDef(pts).toStringAsFixed(2)}, thời gian ×${mulTime(pts).toStringAsFixed(2)}.',
+              style: T.body(14),
+            ),
+          if (matchup != null)
+            Text(matchup, style: T.body(15, !eS.has || eS.def < (o?.w.atk ?? 0) - 4 ? Pal.red : Pal.pencil)),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              SketchButton(
+                label: 'Hoàn tác',
+                onTap: cur.isEmpty
+                    ? null
+                    : () {
+                        cur.removeLast();
+                        _drawing = null;
+                        _changed();
+                      },
+              ),
+              const SizedBox(width: 8),
+              SketchButton(
+                label: 'Xóa hết',
+                onTap: cur.isEmpty
+                    ? null
+                    : () {
+                        cur.clear();
+                        _drawing = null;
+                        _changed();
+                      },
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: SketchButton(
+                  label: first ? (weapon ? 'Tiếp: vẽ khiên' : 'Xong, vào màn ${g.save.stage + 1}') : 'Lưu đồ',
+                  primary: true,
+                  onTap: _done,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -432,25 +480,27 @@ class _BlueprintTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => GestureDetector(
-        onTap: unlocked ? onTap : null,
-        child: Container(
-          padding: const EdgeInsets.all(6),
-          decoration: BoxDecoration(
-            color: unlocked ? const Color(0xFFFFFDF7) : const Color(0x14474B55),
-            border: Border.all(color: unlocked ? Pal.ink : const Color(0x66474B55), width: 2),
-            borderRadius: sketchRadius,
+    onTap: unlocked ? onTap : null,
+    child: Container(
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: unlocked ? const Color(0xFFFFFDF7) : const Color(0x14474B55),
+        border: Border.all(color: unlocked ? Pal.ink : const Color(0x66474B55), width: 2),
+        borderRadius: sketchRadius,
+      ),
+      child: Column(
+        children: [
+          Expanded(
+            child: unlocked
+                ? CustomPaint(painter: _StrokesPainter(t.strokes, color), size: Size.infinite)
+                : Center(child: Text('?', style: T.display(30, const Color(0x66474B55)))),
           ),
-          child: Column(children: [
-            Expanded(
-              child: unlocked
-                  ? CustomPaint(painter: _StrokesPainter(t.strokes, color), size: Size.infinite)
-                  : Center(child: Text('?', style: T.display(30, const Color(0x66474B55)))),
-            ),
-            Text(t.name, textAlign: TextAlign.center, style: T.display(13), maxLines: 1, overflow: TextOverflow.ellipsis),
-            if (!unlocked) Text(unlockHint(t.id), textAlign: TextAlign.center, style: T.body(11), maxLines: 2),
-          ]),
-        ),
-      );
+          Text(t.name, textAlign: TextAlign.center, style: T.display(13), maxLines: 1, overflow: TextOverflow.ellipsis),
+          if (!unlocked) Text(unlockHint(t.id), textAlign: TextAlign.center, style: T.body(11), maxLines: 2),
+        ],
+      ),
+    ),
+  );
 }
 
 class _StrokesPainter extends CustomPainter {
@@ -479,20 +529,36 @@ class _ThumbPainter extends CustomPainter {
 }
 
 class _EditorPainter extends CustomPainter {
-  _EditorPainter({required this.w, required this.s, required this.weapon, required this.look, required this.eW, required this.dK});
+  _EditorPainter({
+    required this.w,
+    required this.s,
+    required this.weapon,
+    required this.look,
+    required this.eW,
+    required this.dK,
+  });
   final Strokes w, s;
   final bool weapon;
   final Look look;
   final WeaponStats eW;
   final double dK;
 
-  void _label(Canvas c, String text, double x, double y, Color col, {double size = 14, bool right = false, bool center = false}) {
+  void _label(
+    Canvas c,
+    String text,
+    double x,
+    double y,
+    Color col, {
+    double size = 14,
+    bool right = false,
+    bool center = false,
+  }) {
     final tp = textPainter(text, size, col);
     final dx = center
         ? x - tp.width / 2
         : right
-            ? x - tp.width
-            : x;
+        ? x - tp.width
+        : x;
     tp.paint(c, Offset(dx, y - tp.height / 2));
   }
 
@@ -525,8 +591,15 @@ class _EditorPainter extends CustomPainter {
     if (weapon && eW.ink > 0) {
       final x = math.min(drawW - 6, feet.x + eW.reach);
       dashedLine(c, x, feet.y - 118, x, feet.y, Pal.red, 2, 6, 5);
-      _label(c, 'tầm đánh${feet.x + eW.reach > drawW ? ' →' : ''} (${eW.cls})', x, feet.y - 126, Pal.red,
-          right: x > drawW - 80, center: x <= drawW - 80);
+      _label(
+        c,
+        'tầm đánh${feet.x + eW.reach > drawW ? ' →' : ''} (${eW.cls})',
+        x,
+        feet.y - 126,
+        Pal.red,
+        right: x > drawW - 80,
+        center: x <= drawW - 80,
+      );
     }
     c.restore();
   }

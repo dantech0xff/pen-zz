@@ -114,17 +114,17 @@ class _PenAppState extends State<PenApp> {
 
   @override
   Widget build(BuildContext context) => AppScope(
-        controller: widget.controller,
-        child: NavScope(
-          nav: _nav,
-          child: MaterialApp(
-            title: 'Bút Chiến',
-            debugShowCheckedModeBanner: false,
-            theme: appTheme(),
-            home: const _Shell(),
-          ),
-        ),
-      );
+    controller: widget.controller,
+    child: NavScope(
+      nav: _nav,
+      child: MaterialApp(
+        title: 'Bút Chiến',
+        debugShowCheckedModeBanner: false,
+        theme: appTheme(),
+        home: const _Shell(),
+      ),
+    ),
+  );
 }
 
 class _Shell extends StatelessWidget {

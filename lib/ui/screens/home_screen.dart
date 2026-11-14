@@ -37,150 +37,177 @@ class _HomeScreenState extends State<HomeScreen> {
     final need = xpNeed(s.lvl);
     final selLv = LevelDef(sel);
     return ScreenFrame(
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Row(children: [
-          Transform.rotate(
-            angle: -2 * math.pi / 180,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.transparent, Colors.transparent, Pal.hl, Pal.hl, Colors.transparent],
-                  stops: [0, 0.54, 0.54, 0.92, 0.92],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Transform.rotate(
+                angle: -2 * math.pi / 180,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Colors.transparent, Colors.transparent, Pal.hl, Pal.hl, Colors.transparent],
+                      stops: [0, 0.54, 0.54, 0.92, 0.92],
+                    ),
+                  ),
+                  child: Text('Bút Chiến', style: T.display(25)),
                 ),
               ),
-              child: Text('Bút Chiến', style: T.display(25)),
-            ),
-          ),
-          const Spacer(),
-          CoinChip(coins: s.coins),
-          const SizedBox(width: 6),
-          IconButton(
-            tooltip: 'Cài đặt',
-            onPressed: () => showSettingsSheet(context),
-            icon: const Icon(Icons.settings_outlined, color: Pal.pencil),
-          ),
-        ]),
-        Row(children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-            decoration: BoxDecoration(color: Pal.ink, borderRadius: BorderRadius.circular(999)),
-            child: Text('Cấp ${s.lvl}', style: T.display(17, Colors.white)),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              InkBar(value: s.xp / need),
-              const SizedBox(height: 2),
-              Text('${s.xp}/$need kinh nghiệm', style: T.body(13)),
-            ]),
-          ),
-          const SizedBox(width: 10),
-          const StarIcon(on: true, size: 18),
-          Text(' ${s.totalStars}/${levelCount * 3}', style: T.body(15, Pal.ink)),
-        ]),
-        Expanded(
-          child: GestureDetector(
-            onTap: () {
-              if (s.w.isEmpty) return;
-              Sfx.instance.play('tap', volume: 0.4);
-              setState(() => _tauntAt = 0);
-            },
-            child: Animated(builder: (t, dt) {
-              if (_tauntAt >= 0) {
-                _tauntAt += dt;
-                if (_tauntAt > 2.6) _tauntAt = -1;
-              }
-              return _HeroPainter(g, t, _tauntAt);
-            }),
-          ),
-        ),
-        Text(
-          g.hasGear ? 'Chạm vào nhân vật để xem ăn mừng.' : 'Vẽ vũ khí và khiên của bạn để bắt đầu.',
-          textAlign: TextAlign.center,
-          style: T.body(13, const Color(0xFF6B7080)),
-        ),
-        const SizedBox(height: 4),
-        Row(children: [
-          _MiniBtn('‹', ch > 0 ? () => setState(() => nav.selStage = (ch - 1) * 10 + 1) : null),
-          Expanded(
-            child: Column(children: [
-              Text(chapter.name, style: T.display(17)),
-              Text('Sân ${chapter.arena.name} · qua ${(s.stage - ch * 10).clamp(0, 10)}/10 · $chStars/30 sao',
-                  style: T.body(13), maxLines: 1, overflow: TextOverflow.ellipsis),
-            ]),
-          ),
-          _MiniBtn('›', ch < lastCh ? () => setState(() => nav.selStage = math.min(next, (ch + 1) * 10 + 1)) : null),
-        ]),
-        const SizedBox(height: 4),
-        GridView.count(
-          crossAxisCount: 5,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 4,
-          crossAxisSpacing: 6,
-          childAspectRatio: 1.15,
-          children: [
-            for (var i = 1; i <= 10; i++)
-              _Node(
-                stage: ch * 10 + i,
-                done: ch * 10 + i <= s.stage,
-                current: ch * 10 + i == next,
-                selected: ch * 10 + i == sel,
-                enabled: ch * 10 + i <= next,
-                stars: s.stars[ch * 10 + i - 1],
-                onTap: () => setState(() => nav.selStage = ch * 10 + i),
+              const Spacer(),
+              CoinChip(coins: s.coins),
+              const SizedBox(width: 6),
+              IconButton(
+                tooltip: 'Cài đặt',
+                onPressed: () => showSettingsSheet(context),
+                icon: const Icon(Icons.settings_outlined, color: Pal.pencil),
               ),
-          ],
-        ),
-        Text(chapter.arena.ruleText, textAlign: TextAlign.center, style: T.body(13, const Color(0xFF6B7080))),
-        const SizedBox(height: 6),
-        SketchButton(
-          label: !g.hasGear ? 'Vẽ đồ đầu tiên' : 'Đánh màn $sel${selLv.boss ? ' (trùm)' : ''}',
-          primary: true,
-          big: true,
-          onTap: () => g.hasGear ? nav.openStage(sel) : nav.openEditor(DrawMode.weapon, DrawFrom.first),
-        ),
-        const SizedBox(height: 8),
-        Row(children: [
+            ],
+          ),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                decoration: BoxDecoration(color: Pal.ink, borderRadius: BorderRadius.circular(999)),
+                child: Text('Cấp ${s.lvl}', style: T.display(17, Colors.white)),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    InkBar(value: s.xp / need),
+                    const SizedBox(height: 2),
+                    Text('${s.xp}/$need kinh nghiệm', style: T.body(13)),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              const StarIcon(on: true, size: 18),
+              Text(' ${s.totalStars}/${levelCount * 3}', style: T.body(15, Pal.ink)),
+            ],
+          ),
           Expanded(
-            child: SketchButton(
-              label: 'Luyện tập',
-              subtitle: 'bot, bóng ma, chọn sân',
-              onTap: g.hasGear ? () => nav.go(Scr.practice) : null,
+            child: GestureDetector(
+              onTap: () {
+                if (s.w.isEmpty) return;
+                Sfx.instance.play('tap', volume: 0.4);
+                setState(() => _tauntAt = 0);
+              },
+              child: Animated(
+                builder: (t, dt) {
+                  if (_tauntAt >= 0) {
+                    _tauntAt += dt;
+                    if (_tauntAt > 2.6) _tauntAt = -1;
+                  }
+                  return _HeroPainter(g, t, _tauntAt);
+                },
+              ),
             ),
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: SketchButton(
-              label: 'Nâng cấp',
-              subtitle: s.free > 0 ? '${s.free} điểm chưa cộng' : 'sức mạnh, thủ, tốc độ',
-              alert: s.free > 0,
-              onTap: g.hasGear ? () => nav.go(Scr.upgrade) : null,
-            ),
+          Text(
+            g.hasGear ? 'Chạm vào nhân vật để xem ăn mừng.' : 'Vẽ vũ khí và khiên của bạn để bắt đầu.',
+            textAlign: TextAlign.center,
+            style: T.body(13, const Color(0xFF6B7080)),
           ),
-        ]),
-        const SizedBox(height: 8),
-        Row(children: [
-          Expanded(
-            child: SketchButton(
-              label: 'Tủ đồ',
-              subtitle: 'mũ, áo choàng, kính, mực',
-              onTap: g.hasGear ? () => nav.go(Scr.shop) : null,
-            ),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              _MiniBtn('‹', ch > 0 ? () => setState(() => nav.selStage = (ch - 1) * 10 + 1) : null),
+              Expanded(
+                child: Column(
+                  children: [
+                    Text(chapter.name, style: T.display(17)),
+                    Text(
+                      'Sân ${chapter.arena.name} · qua ${(s.stage - ch * 10).clamp(0, 10)}/10 · $chStars/30 sao',
+                      style: T.body(13),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              _MiniBtn(
+                '›',
+                ch < lastCh ? () => setState(() => nav.selStage = math.min(next, (ch + 1) * 10 + 1)) : null,
+              ),
+            ],
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: SketchButton(
-              label: 'Sửa đồ',
-              subtitle: 'vẽ lại vũ khí, khiên',
-              onTap: g.hasGear ? () => nav.openEditor(DrawMode.weapon, DrawFrom.home) : null,
-            ),
+          const SizedBox(height: 4),
+          GridView.count(
+            crossAxisCount: 5,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: 4,
+            crossAxisSpacing: 6,
+            childAspectRatio: 1.15,
+            children: [
+              for (var i = 1; i <= 10; i++)
+                _Node(
+                  stage: ch * 10 + i,
+                  done: ch * 10 + i <= s.stage,
+                  current: ch * 10 + i == next,
+                  selected: ch * 10 + i == sel,
+                  enabled: ch * 10 + i <= next,
+                  stars: s.stars[ch * 10 + i - 1],
+                  onTap: () => setState(() => nav.selStage = ch * 10 + i),
+                ),
+            ],
           ),
-        ]),
-      ]),
+          Text(chapter.arena.ruleText, textAlign: TextAlign.center, style: T.body(13, const Color(0xFF6B7080))),
+          const SizedBox(height: 6),
+          SketchButton(
+            label: !g.hasGear ? 'Vẽ đồ đầu tiên' : 'Đánh màn $sel${selLv.boss ? ' (trùm)' : ''}',
+            primary: true,
+            big: true,
+            onTap: () => g.hasGear ? nav.openStage(sel) : nav.openEditor(DrawMode.weapon, DrawFrom.first),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: SketchButton(
+                  label: 'Luyện tập',
+                  subtitle: 'bot, bóng ma, chọn sân',
+                  onTap: g.hasGear ? () => nav.go(Scr.practice) : null,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: SketchButton(
+                  label: 'Nâng cấp',
+                  subtitle: s.free > 0 ? '${s.free} điểm chưa cộng' : 'sức mạnh, thủ, tốc độ',
+                  alert: s.free > 0,
+                  onTap: g.hasGear ? () => nav.go(Scr.upgrade) : null,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: SketchButton(
+                  label: 'Tủ đồ',
+                  subtitle: 'mũ, áo choàng, kính, mực',
+                  onTap: g.hasGear ? () => nav.go(Scr.shop) : null,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: SketchButton(
+                  label: 'Sửa đồ',
+                  subtitle: 'vẽ lại vũ khí, khiên',
+                  onTap: g.hasGear ? () => nav.openEditor(DrawMode.weapon, DrawFrom.home) : null,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -192,9 +219,9 @@ class _MiniBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => TextButton(
-        onPressed: onTap,
-        child: Text(label, style: T.display(22, onTap == null ? const Color(0x40474B55) : Pal.ink)),
-      );
+    onPressed: onTap,
+    child: Text(label, style: T.display(22, onTap == null ? const Color(0x40474B55) : Pal.ink)),
+  );
 }
 
 class _Node extends StatelessWidget {
@@ -220,27 +247,35 @@ class _Node extends StatelessWidget {
       opacity: enabled ? 1 : 0.35,
       child: GestureDetector(
         onTap: enabled ? onTap : null,
-        child: Column(children: [
-          Expanded(
-            child: AspectRatio(
-              aspectRatio: 1,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: done ? Pal.ink : const Color(0xFFFFFDF7),
-                  shape: boss ? BoxShape.rectangle : BoxShape.circle,
-                  borderRadius: boss ? BorderRadius.circular(7) : null,
-                  border: Border.all(color: selected ? Pal.red : (done ? Pal.ink : Pal.pencil), width: selected ? 2.6 : 2),
-                  boxShadow: current ? const [BoxShadow(color: Pal.hl, spreadRadius: 3)] : null,
+        child: Column(
+          children: [
+            Expanded(
+              child: AspectRatio(
+                aspectRatio: 1,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: done ? Pal.ink : const Color(0xFFFFFDF7),
+                    shape: boss ? BoxShape.rectangle : BoxShape.circle,
+                    borderRadius: boss ? BorderRadius.circular(7) : null,
+                    border: Border.all(
+                      color: selected ? Pal.red : (done ? Pal.ink : Pal.pencil),
+                      width: selected ? 2.6 : 2,
+                    ),
+                    boxShadow: current ? const [BoxShadow(color: Pal.hl, spreadRadius: 3)] : null,
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(boss ? 'T' : '$stage', style: boss ? T.display(14, fg) : T.body(14, fg)),
                 ),
-                alignment: Alignment.center,
-                child: Text(boss ? 'T' : '$stage', style: boss ? T.display(14, fg) : T.body(14, fg)),
               ),
             ),
-          ),
-          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            for (final bit in [starWin, starFlawless, starGoal]) StarIcon(on: stars & bit != 0, size: 11),
-          ]),
-        ]),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                for (final bit in [starWin, starFlawless, starGoal]) StarIcon(on: stars & bit != 0, size: 11),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -262,16 +297,28 @@ class _HeroPainter extends CustomPainter {
     c.save();
     c.translate(tx, ty);
     c.scale(k, k);
-    c.drawLine(Offset(box[0], 1.5), Offset(box[2], 1.5), Paint()
-      ..color = const Color(0x73474B55)
-      ..strokeWidth = 2.4);
+    c.drawLine(
+      Offset(box[0], 1.5),
+      Offset(box[2], 1.5),
+      Paint()
+        ..color = const Color(0x73474B55)
+        ..strokeWidth = 2.4,
+    );
     final f = Fighter(look: lookFor(s.eq), wStrokes: s.w, sStrokes: s.s)
       ..th = math.sin(t * 2) * 0.05
       ..taunting = tauntAt >= 0
       ..tauntT = math.max(0, tauntAt);
     paintFighter(c, f, t);
     c.restore();
-    if (tauntAt >= 0) drawBubble(c, tx + 10 * k, ty - 150 * k, tauntSay(s.eq[Slot.taunt] ?? 'vay-tay'), rgb(inkColor(s.eq[Slot.ink]!)), size.width);
+    if (tauntAt >= 0)
+      drawBubble(
+        c,
+        tx + 10 * k,
+        ty - 150 * k,
+        tauntSay(s.eq[Slot.taunt] ?? 'vay-tay'),
+        rgb(inkColor(s.eq[Slot.ink]!)),
+        size.width,
+      );
   }
 
   @override

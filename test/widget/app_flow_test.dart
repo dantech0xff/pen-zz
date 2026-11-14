@@ -62,11 +62,14 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     final g = GameController();
     await g.load();
-    g.saveGear([
-      [0, 10, 3, -120],
-    ], [
-      [10, -40, 10, 40],
-    ]);
+    g.saveGear(
+      [
+        [0, 10, 3, -120],
+      ],
+      [
+        [10, -40, 10, 40],
+      ],
+    );
     g.save.coins = 1000;
     await tester.pumpWidget(PenApp(controller: g));
     await tester.pumpAndSettle();

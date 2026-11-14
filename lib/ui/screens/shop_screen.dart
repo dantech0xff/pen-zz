@@ -42,18 +42,18 @@ class _ShopScreenState extends State<ShopScreen> {
   final _Preview pv = _Preview();
 
   Slot get slot => switch (tab) {
-        ShopTab.hat => Slot.hat,
-        ShopTab.cape => Slot.cape,
-        ShopTab.glass => Slot.glass,
-        ShopTab.ink => inkSlot,
-        ShopTab.fx => Slot.fx,
-        ShopTab.taunt => Slot.taunt,
-      };
+    ShopTab.hat => Slot.hat,
+    ShopTab.cape => Slot.cape,
+    ShopTab.glass => Slot.glass,
+    ShopTab.ink => inkSlot,
+    ShopTab.fx => Slot.fx,
+    ShopTab.taunt => Slot.taunt,
+  };
 
   void _select(String id) => setState(() {
-        sel = id;
-        pv.reset();
-      });
+    sel = id;
+    pv.reset();
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -79,87 +79,100 @@ class _ShopScreenState extends State<ShopScreen> {
     final eq = Map<Slot, String>.of(s.eq)..[slot] = selId;
     String? desc;
     if (slot == Slot.inkW && it.special) {
-      desc = it.fx == InkFx.none ? 'Mực đặc biệt chỉ để đẹp, không có hiệu ứng đánh.' : 'Mực ${inkFxSpec(it.fx).title.toLowerCase()}: ${inkFxSpec(it.fx).desc}';
+      desc = it.fx == InkFx.none
+          ? 'Mực đặc biệt chỉ để đẹp, không có hiệu ứng đánh.'
+          : 'Mực ${inkFxSpec(it.fx).title.toLowerCase()}: ${inkFxSpec(it.fx).desc}';
     }
     return ScreenFrame(
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Row(children: [
-          Expanded(child: ScreenHeader(title: 'Tủ đồ', onBack: nav.home)),
-          CoinChip(coins: s.coins),
-        ]),
-        GridView.count(
-          crossAxisCount: 3,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 6,
-          crossAxisSpacing: 6,
-          childAspectRatio: 3.2,
-          children: [
-            for (final t in ShopTab.values)
-              GestureDetector(
-                onTap: () => setState(() {
-                  tab = t;
-                  sel = null;
-                  pv.reset();
-                }),
-                child: Container(
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: t == tab ? Pal.ink : Colors.transparent,
-                    border: Border.all(color: t == tab ? Pal.ink : Pal.pencil, width: 2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(_tabNames[t]!, style: T.body(15, t == tab ? Colors.white : Pal.pencil)),
-                ),
-              ),
-          ],
-        ),
-        if (tab == ShopTab.ink) ...[
-          const SizedBox(height: 6),
-          Segmented<Slot>(
-            options: const {Slot.ink: 'Người', Slot.inkW: 'Vũ khí', Slot.inkS: 'Khiên'},
-            value: inkSlot,
-            onChanged: (v) => setState(() {
-              inkSlot = v;
-              sel = null;
-            }),
-          ),
-        ],
-        const SizedBox(height: 6),
-        Container(
-          height: 180,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.4),
-            border: Border.all(color: const Color(0x59474B55), width: 2),
-            borderRadius: BorderRadius.circular(14),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: Animated(builder: (t, dt) => _PreviewPainter(g, pv, tab, slot, eq, selId, dt)),
-        ),
-        if (desc != null) Padding(padding: const EdgeInsets.only(top: 4), child: Text(desc, style: T.body(14, Pal.ink))),
-        const SizedBox(height: 6),
-        Expanded(
-          child: GridView.count(
-            crossAxisCount: 2,
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
-            childAspectRatio: 2.6,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
             children: [
-              for (final i in items)
-                _ItemTile(
-                  item: i,
-                  bodyInk: inkColor(s.eq[Slot.ink]!),
-                  selected: i.id == selId,
-                  equipped: current == i.id,
-                  owned: g.owns(i.id),
-                  onTap: () => _select(i.id),
+              Expanded(
+                child: ScreenHeader(title: 'Tủ đồ', onBack: nav.home),
+              ),
+              CoinChip(coins: s.coins),
+            ],
+          ),
+          GridView.count(
+            crossAxisCount: 3,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: 6,
+            crossAxisSpacing: 6,
+            childAspectRatio: 3.2,
+            children: [
+              for (final t in ShopTab.values)
+                GestureDetector(
+                  onTap: () => setState(() {
+                    tab = t;
+                    sel = null;
+                    pv.reset();
+                  }),
+                  child: Container(
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: t == tab ? Pal.ink : Colors.transparent,
+                      border: Border.all(color: t == tab ? Pal.ink : Pal.pencil, width: 2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(_tabNames[t]!, style: T.body(15, t == tab ? Colors.white : Pal.pencil)),
+                  ),
                 ),
             ],
           ),
-        ),
-        const SizedBox(height: 6),
-        SketchButton(label: buyLabel, primary: true, big: true, onTap: buy),
-      ]),
+          if (tab == ShopTab.ink) ...[
+            const SizedBox(height: 6),
+            Segmented<Slot>(
+              options: const {Slot.ink: 'Người', Slot.inkW: 'Vũ khí', Slot.inkS: 'Khiên'},
+              value: inkSlot,
+              onChanged: (v) => setState(() {
+                inkSlot = v;
+                sel = null;
+              }),
+            ),
+          ],
+          const SizedBox(height: 6),
+          Container(
+            height: 180,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.4),
+              border: Border.all(color: const Color(0x59474B55), width: 2),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Animated(builder: (t, dt) => _PreviewPainter(g, pv, tab, slot, eq, selId, dt)),
+          ),
+          if (desc != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(desc, style: T.body(14, Pal.ink)),
+            ),
+          const SizedBox(height: 6),
+          Expanded(
+            child: GridView.count(
+              crossAxisCount: 2,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+              childAspectRatio: 2.6,
+              children: [
+                for (final i in items)
+                  _ItemTile(
+                    item: i,
+                    bodyInk: inkColor(s.eq[Slot.ink]!),
+                    selected: i.id == selId,
+                    equipped: current == i.id,
+                    owned: g.owns(i.id),
+                    onTap: () => _select(i.id),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 6),
+          SketchButton(label: buyLabel, primary: true, big: true, onTap: buy),
+        ],
+      ),
     );
   }
 }
@@ -185,14 +198,16 @@ class _ItemTile extends StatelessWidget {
     Gradient? grad;
     if (item.grad != null) grad = LinearGradient(colors: [for (final c in item.grad!) rgb(c)]);
     if (item.rainbow) {
-      grad = const LinearGradient(colors: [
-        Color(0xFFE53935),
-        Color(0xFFFB8C00),
-        Color(0xFFFDD835),
-        Color(0xFF43A047),
-        Color(0xFF1E88E5),
-        Color(0xFF8E24AA),
-      ]);
+      grad = const LinearGradient(
+        colors: [
+          Color(0xFFE53935),
+          Color(0xFFFB8C00),
+          Color(0xFFFDD835),
+          Color(0xFF43A047),
+          Color(0xFF1E88E5),
+          Color(0xFF8E24AA),
+        ],
+      );
     }
     return GestureDetector(
       onTap: onTap,
@@ -204,39 +219,49 @@ class _ItemTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: selected ? const [BoxShadow(color: Pal.hl, spreadRadius: 3)] : null,
         ),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
-          Row(children: [
-            if (swatch) ...[
-              Container(
-                width: 13,
-                height: 13,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: grad == null ? rgb(item.color ?? bodyInk) : null,
-                  gradient: grad,
-                  border: Border.all(color: const Color(0x2E000000), width: 1.5),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              children: [
+                if (swatch) ...[
+                  Container(
+                    width: 13,
+                    height: 13,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: grad == null ? rgb(item.color ?? bodyInk) : null,
+                      gradient: grad,
+                      border: Border.all(color: const Color(0x2E000000), width: 1.5),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                ],
+                Expanded(
+                  child: Text(item.name, style: T.display(14), maxLines: 1, overflow: TextOverflow.ellipsis),
                 ),
-              ),
-              const SizedBox(width: 6),
-            ],
-            Expanded(child: Text(item.name, style: T.display(14), maxLines: 1, overflow: TextOverflow.ellipsis)),
-          ]),
-          Row(children: [
-            if (equipped)
-              Text('Đang dùng', style: T.body(14, Pal.ink))
-            else if (owned)
-              Text('Đã có', style: T.body(14))
-            else ...[
-              const CoinIcon(size: 13),
-              const SizedBox(width: 4),
-              Text(fmtNum(item.price), style: T.body(14)),
-            ],
-            if (item.fx != InkFx.none) ...[
-              const Spacer(),
-              Text(inkFxSpec(item.fx).title, style: T.body(13, Pal.red)),
-            ],
-          ]),
-        ]),
+              ],
+            ),
+            Row(
+              children: [
+                if (equipped)
+                  Text('Đang dùng', style: T.body(14, Pal.ink))
+                else if (owned)
+                  Text('Đã có', style: T.body(14))
+                else ...[
+                  const CoinIcon(size: 13),
+                  const SizedBox(width: 4),
+                  Text(fmtNum(item.price), style: T.body(14)),
+                ],
+                if (item.fx != InkFx.none) ...[
+                  const Spacer(),
+                  Text(inkFxSpec(item.fx).title, style: T.body(13, Pal.red)),
+                ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -25,12 +25,12 @@ const BorderRadius cardRadius = BorderRadius.only(
 );
 
 ThemeData appTheme() => ThemeData(
-      useMaterial3: true,
-      scaffoldBackgroundColor: Pal.paper,
-      colorScheme: ColorScheme.fromSeed(seedColor: Pal.ink, surface: Pal.paper),
-      fontFamily: Fonts.body,
-      splashFactory: NoSplash.splashFactory,
-      highlightColor: Colors.transparent,
-      bottomSheetTheme: const BottomSheetThemeData(backgroundColor: Pal.paper, showDragHandle: true),
-      dialogTheme: const DialogThemeData(backgroundColor: Pal.paper),
-    );
+  useMaterial3: true,
+  scaffoldBackgroundColor: Pal.paper,
+  colorScheme: ColorScheme.fromSeed(seedColor: Pal.ink, surface: Pal.paper),
+  fontFamily: Fonts.body,
+  splashFactory: NoSplash.splashFactory,
+  highlightColor: Colors.transparent,
+  bottomSheetTheme: const BottomSheetThemeData(backgroundColor: Pal.paper, showDragHandle: true),
+  dialogTheme: const DialogThemeData(backgroundColor: Pal.paper),
+);
