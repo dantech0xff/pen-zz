@@ -1,0 +1,92 @@
+# Mua trong app và quảng cáo
+
+Bản Android và iOS có mua trong app qua RevenueCat và quảng cáo AdMob. Bản web chỉ để chơi thử nội bộ nên không có hai phần này.
+
+Khi chưa có khoá thật, game vẫn chạy: quảng cáo dùng ID thử của Google (bấm thoải mái, không ra tiền), còn cửa hàng báo "chưa sẵn sàng".
+
+## Quảng cáo
+
+| Loại | Ở đâu | Luật |
+|---|---|---|
+| Thưởng nhân đôi | Thẻ kết quả trận | Mỗi trận một lần, khi trận có thưởng |
+| Thưởng xu miễn phí | Cửa hàng | 3 lượt mỗi ngày, mỗi lượt 60 + 6 × số màn đã qua xu |
+| Chen giữa | Khi rời thẻ kết quả | Chỉ sau khi qua màn 3, cứ 3 trận một lần, cách nhau ít nhất 150 giây |
+| Banner | Dưới sảnh | Một banner cố định ở đáy màn hình |
+
+Mua "Gỡ quảng cáo" sẽ tắt banner và quảng cáo chen giữa. Quảng cáo có thưởng vẫn còn vì người chơi tự chọn xem. Các con số nằm trong `AdRules` ở `lib/core/store_catalog.dart`.
+
+Người chơi từ 13 tuổi trở lên. Game hiện thông điệp xin đồng ý của Google (UMP) trước khi tải quảng cáo. Khi UMP yêu cầu, phần Cài đặt có nút "Tuỳ chọn quyền riêng tư cho quảng cáo".
+
+## Sản phẩm
+
+| Mã sản phẩm | Loại | Entitlement RevenueCat | Nội dung |
+|---|---|---|---|
+| `pz_remove_ads` | Mua một lần | `no_ads` | Tắt banner và quảng cáo chen giữa |
+| `pz_starter_pack` | Mua một lần | `starter_pack` | 2.000 xu và mực Nhũ ngọc |
+| `pz_set_royal` | Mua một lần | `set_royal` | Vương miện ngọc, áo choàng hoàng gia, mực vũ khí hoàng kim |
+| `pz_set_galaxy` | Mua một lần | `set_galaxy` | Mũ ngân hà, áo choàng ngân hà, mực vũ khí ngân hà |
+| `pz_coins_1000` | Tiêu hao | không có | 1.000 xu |
+| `pz_coins_3500` | Tiêu hao | không có | 3.500 xu |
+| `pz_coins_9000` | Tiêu hao | không có | 9.000 xu |
+
+Giá do bạn đặt trên Google Play và App Store; game hiện giá lấy từ cửa hàng theo đơn vị tiền của người chơi. Đồ độc quyền chỉ để trang trí, mực độc quyền không có hiệu ứng đánh, bot không bao giờ dùng đồ độc quyền.
+
+Danh sách sản phẩm nằm ở `storeProducts` trong `lib/core/store_catalog.dart`. Đổi mã hay thêm sản phẩm ở đó, rồi tạo lại đúng mã trên cửa hàng và RevenueCat.
+
+## Thiết lập
+
+### Google Play Console
+
+1. Tạo app với mã ứng dụng `io.github.dantech0xff.pen_zz`, bật Play App Signing và tạo khoá tải lên của riêng bạn.
+2. Tải một bản `.aab` lên kênh Thử nghiệm nội bộ. Google chỉ cho tạo và thử sản phẩm khi app đã có bản tải lên.
+3. Vào phần sản phẩm trong app (In-app products), tạo 7 mã ở bảng trên rồi kích hoạt.
+4. Thêm tài khoản Google dùng để thử vào License testing, để mua thử không mất tiền.
+
+### RevenueCat
+
+1. Tạo project, thêm app Google Play với package name ở trên, và kết nối tài khoản dịch vụ (service account) theo hướng dẫn của RevenueCat.
+2. Nhập 7 sản phẩm. Đặt 3 gói xu là Consumable, 4 sản phẩm còn lại là Non-consumable.
+3. Tạo 4 entitlement `no_ads`, `starter_pack`, `set_royal`, `set_galaxy`, gắn mỗi cái với sản phẩm tương ứng.
+4. Lấy Public SDK key của app Android (bắt đầu bằng `goog_`). Với iOS, thêm app App Store và lấy key bắt đầu bằng `appl_`.
+
+### AdMob
+
+1. Tạo app Android (và iOS), lấy App ID dạng `ca-app-pub-…~…`.
+2. Với mỗi nền tảng, tạo 3 đơn vị quảng cáo: Banner, Interstitial, Rewarded.
+3. Trong Privacy & messaging, tạo thông điệp GDPR cho người dùng châu Âu và Anh. Với iOS, tạo thêm thông điệp IDFA.
+4. Đăng `app-ads.txt` trên website của bạn để quảng cáo được trả giá tốt hơn.
+
+## Build kèm khoá thật
+
+App ID AdMob của Android là thuộc tính Gradle `admobAppId`. Các ID còn lại và khoá RevenueCat đi qua `--dart-define`:
+
+```bash
+flutter build appbundle --release -PadmobAppId=ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY --dart-define=RC_KEY_ANDROID=goog_xxxxxxxx --dart-define=ADMOB_BANNER_ANDROID=ca-app-pub-XXXXXXXXXXXXXXXX/1111111111 --dart-define=ADMOB_INTERSTITIAL_ANDROID=ca-app-pub-XXXXXXXXXXXXXXXX/2222222222 --dart-define=ADMOB_REWARDED_ANDROID=ca-app-pub-XXXXXXXXXXXXXXXX/3333333333
+```
+
+Thiếu `RC_KEY_ANDROID` thì cửa hàng báo chưa sẵn sàng. Thiếu một ID quảng cáo thì chỗ đó dùng quảng cáo thử. Khoá RevenueCat public và các ID AdMob vốn nằm sẵn trong app, không phải mật khẩu, nhưng không nên commit vào repo; để chúng trong một file `--dart-define-from-file` nằm ngoài git là gọn nhất.
+
+Với iOS (cần máy Mac): sửa `GADApplicationIdentifier` trong `ios/Runner/Info.plist`, thêm danh sách SKAdNetwork đầy đủ theo hướng dẫn của Google, bật In-App Purchase trong Signing & Capabilities của Xcode, rồi build với `RC_KEY_IOS` và các ID `ADMOB_*_IOS`.
+
+## Kiểm tra trước khi phát hành
+
+- Đừng bấm quảng cáo thật trên máy của mình. Dùng ID thử, hoặc khai báo máy của bạn là thiết bị thử trong AdMob.
+- Dùng tài khoản License testing để mua thử từng sản phẩm, bấm "Khôi phục giao dịch", rồi xoá app, cài lại và khôi phục.
+- Trên Play Console, điền Data safety (quảng cáo dùng mã quảng cáo, có mua hàng), thêm URL chính sách quyền riêng tư, và khai báo đối tượng từ 13 tuổi.
+
+## Trong code
+
+| Chỗ | Việc |
+|---|---|
+| `lib/core/store_catalog.dart` | Sản phẩm, entitlement, luật quảng cáo |
+| `lib/monetize/` | `AdsService`, `StoreService`, bản AdMob và RevenueCat; `services.dart` chọn bản rỗng cho web |
+| `lib/state/monetization.dart` | Nhân đôi thưởng, xu miễn phí, nhịp quảng cáo chen giữa, mua và khôi phục |
+| `GameController.applyStore` | Entitlement mở đồ và tắt quảng cáo; gói xu cộng đúng một lần cho mỗi giao dịch |
+| `lib/ui/screens/store_sheet.dart` | Màn cửa hàng |
+
+Vài điều cần biết:
+
+- Gói xu không cộng lại khi cài lại app. Game nhớ lần đầu bản lưu gặp cửa hàng (`storeSince`) và bỏ qua giao dịch cũ hơn mốc đó. Giao dịch vừa mua xong thì luôn được cộng.
+- Thanh toán đang chờ (ví dụ trả tiền mặt ở cửa hàng tiện lợi) được cộng khi RevenueCat báo giao dịch hoàn tất.
+- Xoá tiến trình vẫn giữ đồ đã mua, trạng thái gỡ quảng cáo và lịch sử giao dịch đã cộng.
+- Chưa có: thu hồi đồ trang trí khi hoàn tiền (riêng gỡ quảng cáo thì theo entitlement nên sẽ bật lại quảng cáo), gói đăng ký, server riêng.

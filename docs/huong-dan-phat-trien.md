@@ -44,7 +44,9 @@ flutter build apk --release
 flutter build web --release --no-web-resources-cdn
 ```
 
-Bản web build với `--no-web-resources-cdn` để CanvasKit nằm sẵn trong thư mục build, chơi được khi không có mạng. Nếu deploy vào một đường dẫn con (ví dụ GitHub Pages `/pen-zz/`), thêm `--base-href /pen-zz/`.
+Bản web build với `--no-web-resources-cdn` để CanvasKit nằm sẵn trong thư mục build, chơi được khi không có mạng. Nếu deploy vào một đường dẫn con (ví dụ GitHub Pages `/pen-zz/`), thêm `--base-href /pen-zz/`. Bản web chỉ để chơi thử nội bộ, không có mua trong app và quảng cáo.
+
+Bản Android và iOS có mua trong app (RevenueCat) và quảng cáo (AdMob). Build như trên thì dùng quảng cáo thử của Google và cửa hàng chưa mở. Cách tạo sản phẩm, lấy khoá và build bản thật nằm ở [kiem-tien.md](kiem-tien.md).
 
 APK release hiện ký bằng khoá debug của Flutter, chỉ dùng để cài thử. Trước khi đưa lên Google Play, cần tạo khoá ký riêng và đổi `applicationId` trong `android/app/build.gradle.kts`.
 
@@ -55,8 +57,9 @@ APK release hiện ký bằng khoá debug của Flutter, chỉ dùng để cài 
 | `lib/core` | Dart thuần, không phụ thuộc Flutter: hình học nét vẽ, bộ xương người que, chỉ số đồ, mô phỏng trận, AI, sân, màn, đối thủ, tủ đồ, lưu tiến trình |
 | `lib/render` | Vẽ bằng Canvas: người que và trang phục, hiệu ứng hạt, sân đấu, chữ |
 | `lib/game` | `BattleGame` chạy trên Flame: bước mô phỏng cố định 120 Hz, camera, hiệu ứng, âm thanh, rung |
-| `lib/state` | `GameController`: tiến trình, mua đồ, cộng điểm, phần thưởng, sao, mở khoá mẫu |
-| `lib/ui` | Các màn hình Flutter: sảnh, vẽ đồ, trước trận, trận đấu, nâng cấp, tủ đồ, luyện tập, cài đặt |
+| `lib/state` | `GameController`: tiến trình, mua đồ, cộng điểm, phần thưởng, sao, mở khoá mẫu. `Monetization`: luật quảng cáo, mua và khôi phục giao dịch |
+| `lib/monetize` | Quảng cáo AdMob và cửa hàng RevenueCat cho mobile; bản rỗng cho web và test |
+| `lib/ui` | Các màn hình Flutter: sảnh, vẽ đồ, trước trận, trận đấu, nâng cấp, tủ đồ, cửa hàng, luyện tập, cài đặt |
 | `tool` | Công cụ phụ trợ, xem mục dưới |
 | `test` | Test lõi game, so khớp với bản web, luồng giao diện |
 
