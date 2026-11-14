@@ -40,5 +40,6 @@ Gói đăng ký (subscription), server riêng xác minh giao dịch (RevenueCat 
 - `flutter analyze` sạch, `flutter test` qua 56/56. Test gồm luật kinh tế với cửa hàng giả theo đúng cách RevenueCat trả dữ liệu, và test chạy `RevenueCatStore` thật qua kênh SDK giả lập (mã đơn hàng trong kết quả mua khác mã RevenueCat trong lịch sử).
 - `flutter build apk --release` (56 MB) và `flutter build web --release` chạy thành công; bản web không chứa mã quảng cáo hay cửa hàng của game.
 - Review độc lập: `plans/reports/code-reviewer-261114-0922-iap-ads-review.md`. Đã sửa lỗi cộng xu hai lần, giới hạn sổ ghi 100 giao dịch, mốc cắt theo giờ máy, cài đặt tràn trên máy nhỏ, giá không tải lại, quảng cáo treo khi không hiện, nhịp quảng cáo reset khi mở lại game, thông báo mua sai, chữ xoá tiến trình, App ID rỗng, bấm khôi phục hai lần.
-- Còn lại: bản web vẫn tải file JavaScript của RevenueCat đi kèm gói (không gọi tới); chưa thử trên máy thật.
+- Bản web vẫn tải file JavaScript của RevenueCat đi kèm gói `purchases_flutter` (game không gọi tới). Người dùng chấp nhận ngày 14/11/2026 vì bản web chỉ dùng nội bộ; không cần bỏ gói khỏi bản web.
+- Còn lại: chưa thử trên máy thật.
 

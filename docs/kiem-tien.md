@@ -91,5 +91,5 @@ Vài điều cần biết:
 - Thanh toán đang chờ (ví dụ trả tiền mặt ở cửa hàng tiện lợi) được cộng khi RevenueCat báo giao dịch hoàn tất.
 - Trường hợp hiếm: người chơi đã bị trừ tiền nhưng app chưa nhận được xác nhận (mất mạng đúng lúc đó), rồi xoá app và cài lại. Gói xu đó sẽ không được cộng. Hãy tra giao dịch trên RevenueCat rồi bù cho người chơi.
 - Xoá tiến trình vẫn giữ đồ đã mua, trạng thái gỡ quảng cáo và lịch sử giao dịch đã cộng.
-- Bản web không có cửa hàng, nhưng vẫn tải file JavaScript của RevenueCat (khoảng 1 MB) đi kèm gói `purchases_flutter`, vì gói này có bản web. Game không gọi tới file đó.
+- Bản web không có cửa hàng, nhưng vẫn tải file JavaScript của RevenueCat (khoảng 1 MB) đi kèm gói `purchases_flutter`, vì gói này có bản web. Game không gọi tới file đó. Việc này đã được chấp nhận vì bản web chỉ dùng nội bộ.
 - Chưa có: thu hồi đồ trang trí khi hoàn tiền (riêng gỡ quảng cáo thì theo entitlement nên sẽ bật lại quảng cáo), gói đăng ký, server riêng.
