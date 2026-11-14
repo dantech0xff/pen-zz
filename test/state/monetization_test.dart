@@ -238,6 +238,21 @@ void main() {
       expect(g.save.eq[Slot.hat], 'vuong-mien-ngoc');
     });
 
+    test('remove ads stays on after the store switches to another account', () async {
+      final g = await freshGame();
+      final store = FakeStore();
+      final m = Monetization(game: g, ads: FakeAds(), store: store, clock: () => store.now);
+      await m.init();
+      await m.buy(product('pz_remove_ads'));
+      expect(g.save.noAds, isTrue);
+      // Linking an existing Google account (or deleting the account) moves the store to an
+      // account that does not hold the purchase yet.
+      await m.identify('google-player');
+      expect(store.entitlements, isEmpty);
+      expect(g.save.noAds, isTrue, reason: 'a player who paid never gets ads back');
+      expect(m.owned(product('pz_remove_ads')), isTrue);
+    });
+
     test('purchases survive a save round trip', () async {
       final g = await freshGame();
       final store = FakeStore();

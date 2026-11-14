@@ -15,22 +15,29 @@ int _compareProgress(SaveData a, SaveData b) {
   return 0;
 }
 
-/// Whether [cloud] should be the base of the merge rather than [local]: a newer reset
-/// (epoch) wins, then the save that got further. Ties keep the save on this phone.
-bool cloudLeads(SaveData local, SaveData cloud) =>
-    cloud.epoch != local.epoch ? cloud.epoch > local.epoch : _compareProgress(cloud, local) > 0;
+/// Whether [cloud] (the copy of account [uid]) should be the base of the merge rather than
+/// [local]. Between saves of the same account a newer reset (epoch) wins; otherwise, and
+/// for a save that belonged to another account, the save that got further wins. Ties keep
+/// the save on this phone.
+bool cloudLeads(SaveData local, SaveData cloud, {required String uid}) =>
+    local.account == uid && cloud.epoch != local.epoch ? cloud.epoch > local.epoch : _compareProgress(cloud, local) > 0;
 
 /// Merges the save on this phone with the copy in the cloud.
 ///
-/// The save that leads (see [cloudLeads]) is kept as it is, and real-money purchases found
+/// The save that leads (see [cloudLeads]) is kept, and real-money purchases found
 /// only in the other one are added to it: coin packs and the starter pack add their coins
 /// once, exclusive items and "remove ads" carry over. The daily free-coin views take the
 /// larger count, so merging never gives extra views. Sound and haptics stay as set on this
 /// phone.
-SaveData mergeSaves(SaveData local, SaveData cloud) {
-  final fromCloud = cloudLeads(local, cloud);
+SaveData mergeSaves(SaveData local, SaveData cloud, {required String uid}) {
+  final sameAccount = local.account == uid;
+  final fromCloud = cloudLeads(local, cloud, uid: uid);
   final base = fromCloud ? cloud : local, other = fromCloud ? local : cloud;
   final out = SaveData.fromJson(base.toJson());
+  // A reset counts only within one account: a save that came from another account takes the
+  // account's own epoch, so it can never reset the account's other phones.
+  out.epoch = sameAccount ? math.max(local.epoch, cloud.epoch) : cloud.epoch;
+  out.account = uid;
   for (final e in other.creditedTx.entries) {
     if (out.creditedTx.containsKey(e.key)) continue;
     out.creditedTx[e.key] = e.value;

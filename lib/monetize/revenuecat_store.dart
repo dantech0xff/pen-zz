@@ -12,9 +12,13 @@ class RevenueCatStore implements StoreService {
 
   final String apiKey;
   bool _ready = false, _offline = false;
+  Future<void>? _starting;
 
   /// Account id asked for before the store started; [init] signs in with it.
   String? _pendingUser;
+
+  /// App User ID the store is signed in with; null while anonymous.
+  String? _identified;
 
   @override
   bool get available => _ready;
@@ -37,19 +41,18 @@ class RevenueCatStore implements StoreService {
   );
 
   @override
-  Future<void> init(void Function(StoreSnapshot snapshot) onUpdate) async {
-    if (apiKey.isEmpty || _ready) return;
+  Future<void> init(void Function(StoreSnapshot snapshot) onUpdate) =>
+      _starting ??= apiKey.isEmpty ? Future.value() : _start(onUpdate);
+
+  Future<void> _start(void Function(StoreSnapshot snapshot) onUpdate) async {
     try {
       await Purchases.setLogLevel(kDebugMode ? LogLevel.debug : LogLevel.warn);
       final user = _pendingUser;
       await Purchases.configure(PurchasesConfiguration(apiKey)..appUserID = user);
+      _identified = user;
       _ready = true;
       Purchases.addCustomerInfoUpdateListener((info) => onUpdate(_snapshot(info)));
-      var info = await Purchases.getCustomerInfo();
-      // The account id may have arrived while the store was starting.
-      final later = _pendingUser;
-      if (later != null && later != user) info = (await Purchases.logIn(later)).customerInfo;
-      onUpdate(_snapshot(info));
+      onUpdate(_snapshot(await Purchases.getCustomerInfo()));
     } on PlatformException {
       // Offline or misconfigured: purchases already cached on the device still apply.
       _offline = !_ready;
@@ -97,12 +100,22 @@ class RevenueCatStore implements StoreService {
 
   @override
   Future<StoreSnapshot?> identify(String appUserId) async {
-    if (!_ready) {
-      _pendingUser = appUserId;
-      return null;
-    }
+    _pendingUser = appUserId;
+    final starting = _starting;
+    if (starting == null) return null; // [init] signs in with it.
+    await starting;
+    if (!_ready) return null;
     try {
-      return _snapshot((await Purchases.logIn(appUserId)).customerInfo);
+      var info = (await Purchases.logIn(appUserId)).customerInfo;
+      final before = _identified;
+      _identified = appUserId;
+      if (before != null && before != appUserId) {
+        // From one signed-in player to another (a switch to an existing Google account, or
+        // a new account after a deletion): RevenueCat keeps purchases with the old id until
+        // they are synced, so bring this phone's store purchases over to the new one.
+        info = (await Purchases.syncPurchasesForResult()).customerInfo;
+      }
+      return _snapshot(info);
     } on PlatformException {
       return null;
     }

@@ -58,6 +58,8 @@ void main() {
       switch (call.method) {
         case 'logIn':
           return {'customerInfo': customerInfo(history, now()), 'created': false};
+        case 'syncPurchasesForResult':
+          return customerInfo(history, now());
         case 'getCustomerInfo':
         case 'restorePurchases':
           return customerInfo(history, now());
@@ -134,5 +136,17 @@ void main() {
     await m.identify('uid-later');
     final login = calls.lastWhere((c) => c.method == 'logIn');
     expect((login.arguments as Map)['appUserID'], 'uid-later');
+    expect(
+      calls.map((c) => c.method),
+      contains('syncPurchasesForResult'),
+      reason: 'switching between two signed-in players brings this phone\'s purchases along',
+    );
+  });
+
+  test('signing in once from the anonymous store account needs no sync', () async {
+    final (_, m, _) = await start();
+    await m.identify('uid-1');
+    expect(calls.map((c) => c.method), contains('logIn'));
+    expect(calls.map((c) => c.method), isNot(contains('syncPurchasesForResult')));
   });
 }

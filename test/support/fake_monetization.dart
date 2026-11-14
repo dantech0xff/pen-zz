@@ -1,4 +1,8 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/widgets.dart';
+import 'package:pen_zz/core/save_data.dart';
 import 'package:pen_zz/core/store_catalog.dart';
 import 'package:pen_zz/monetize/ads_service.dart';
 import 'package:pen_zz/monetize/cloud_service.dart';
@@ -45,7 +49,14 @@ class FakeAds extends AdsService {
 /// snapshot carries the store server's clock. (The real purchase result also carries the
 /// store's order id, which never matches the history, so the game ignores it.)
 class FakeStore implements StoreService {
-  Set<String> entitlements = {};
+  /// Entitlements per store account (App User ID); '' is the anonymous account. Like
+  /// RevenueCat, purchases stay with the account they were made on.
+  final Map<String, Set<String>> accounts = {'': {}};
+
+  /// The store account the game is signed in with.
+  String account = '';
+
+  Set<String> get entitlements => accounts.putIfAbsent(account, () => {});
   final List<StoreTx> history = [];
   void Function(StoreSnapshot snapshot)? listener;
 
@@ -91,13 +102,16 @@ class FakeStore implements StoreService {
   @override
   Future<StoreSnapshot?> identify(String appUserId) async {
     identities.add(appUserId);
+    account = appUserId;
     return snapshot;
   }
 }
 
-/// A cloud with accounts and one saved document per account, like Firestore.
+/// A cloud with accounts and one document per account, like Firestore with its offline copy
+/// switched off: reads come from the server, writes are transactions on a revision, and
+/// nothing works offline.
 class FakeCloud extends CloudService {
-  FakeCloud({this.online = true, this.idPrefix = 'anon'});
+  FakeCloud({this.online = true, this.idPrefix = 'anon', Map<String, CloudDoc>? docs}) : docs = docs ?? {};
 
   /// The server is reachable.
   bool online;
@@ -105,8 +119,8 @@ class FakeCloud extends CloudService {
   /// Start of the anonymous ids this install gets, so two installs never share one.
   final String idPrefix;
 
-  /// Saved documents by player id.
-  final Map<String, String> docs = {};
+  /// Documents by player id (shared between "phones" when the same map is passed in).
+  final Map<String, CloudDoc> docs;
 
   /// Player id that owns a Google account, by account name.
   final Map<String, String> googleOwners = {};
@@ -114,13 +128,19 @@ class FakeCloud extends CloudService {
   /// Google account the player picks in the next [linkGoogle].
   String googleAccount = 'ban@example.com';
 
+  /// When set, [download] waits for it (a slow network).
+  Completer<void>? downloadGate;
+
   String? _uid;
   String? _google;
   int _next = 0;
-  int uploads = 0;
+  int uploads = 0, conflicts = 0;
 
   @override
   bool get available => true;
+
+  @override
+  bool get canLink => true;
 
   @override
   String? get uid => _uid;
@@ -135,6 +155,12 @@ class FakeCloud extends CloudService {
     if (!online) throw StateError('offline');
   }
 
+  /// Another phone of the same player saves [save] to the cloud.
+  void otherPhoneWrites(String uid, SaveData save) {
+    final now = docs[uid];
+    docs[uid] = CloudDoc(jsonEncode(save.toJson()), (now?.rev ?? 0) + 1);
+  }
+
   @override
   Future<void> init() async {
     if (_uid != null) return;
@@ -144,16 +170,24 @@ class FakeCloud extends CloudService {
   }
 
   @override
-  Future<String?> download() async {
+  Future<CloudDoc?> download() async {
+    final gate = downloadGate;
+    if (gate != null) await gate.future;
     _needOnline();
     return docs[_uid];
   }
 
   @override
-  Future<void> upload(String json) async {
+  Future<int> upload(String json, int rev) async {
     _needOnline();
-    docs[_uid!] = json;
+    final now = docs[_uid];
+    if ((now?.rev ?? 0) != rev) {
+      conflicts++;
+      throw CloudConflict(now ?? const CloudDoc(null, 0));
+    }
+    docs[_uid!] = CloudDoc(json, rev + 1);
     uploads++;
+    return rev + 1;
   }
 
   @override
@@ -162,6 +196,7 @@ class FakeCloud extends CloudService {
     final owner = googleOwners[googleAccount];
     _google = googleAccount;
     if (owner != null && owner != _uid) {
+      docs.remove(_uid); // the abandoned anonymous account's copy
       _uid = owner;
       notifyListeners();
       return const LinkedSwitched();
@@ -172,13 +207,13 @@ class FakeCloud extends CloudService {
   }
 
   @override
-  Future<bool> deleteAccount() async {
-    if (!online || _uid == null) return false;
+  Future<DeleteResult> deleteAccount() async {
+    if (!online || _uid == null) return DeleteResult.failed;
     docs.remove(_uid);
     googleOwners.removeWhere((_, owner) => owner == _uid);
     _google = null;
     _uid = '$idPrefix-${++_next}';
     notifyListeners();
-    return true;
+    return DeleteResult.deleted;
   }
 }

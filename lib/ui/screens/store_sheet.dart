@@ -40,9 +40,23 @@ class _StoreSheet extends StatefulWidget {
 class _StoreSheetState extends State<_StoreSheet> {
   String? _msg;
 
+  bool _linking = false;
+
   /// The player has paid for something, so losing the save would cost real money.
   static bool _boughtSomething(GameController g) =>
-      g.save.noAds || g.save.creditedPacks.isNotEmpty || g.save.creditedTx.isNotEmpty;
+      g.save.noAds ||
+      g.save.creditedPacks.isNotEmpty ||
+      g.save.creditedTx.isNotEmpty ||
+      g.save.owned.any((id) => itemIndex[id]?.exclusive ?? false);
+
+  Future<void> _link() async {
+    setState(() => _linking = true);
+    try {
+      await _run(() => linkGoogleAccount(context));
+    } finally {
+      if (mounted) setState(() => _linking = false);
+    }
+  }
 
   @override
   void initState() {
@@ -99,7 +113,7 @@ class _StoreSheetState extends State<_StoreSheet> {
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(_msg!, style: T.body(15, Pal.ink)),
                 ),
-              if (cloud.enabled && !cloud.linked && _boughtSomething(g))
+              if (cloud.canLink && !cloud.linked && _boughtSomething(g))
                 Padding(
                   padding: const EdgeInsets.only(top: 6),
                   child: SketchCard(
@@ -115,10 +129,10 @@ class _StoreSheetState extends State<_StoreSheet> {
                         SizedBox(
                           width: 112,
                           child: SketchButton(
-                            label: 'Liên kết',
+                            label: _linking ? 'Đang liên kết…' : 'Liên kết',
                             compact: true,
-                            primary: true,
-                            onTap: () => _run(() => linkGoogleAccount(context)),
+                            primary: !_linking,
+                            onTap: _linking ? null : _link,
                           ),
                         ),
                       ],

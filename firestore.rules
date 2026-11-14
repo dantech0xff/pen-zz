@@ -1,18 +1,30 @@
 rules_version = '2';
 
-// Bút Chiến keeps one document per player: players/{uid} = { save: <JSON string>, updatedAt }.
+// Bút Chiến keeps one document per player:
+//   players/{uid} = { save: <JSON string>, rev: <int>, updatedAt: <server time> }
 // Each signed-in player (anonymous or linked to Google) can only read, write and delete
-// their own document.
+// their own document. Every write raises `rev` by exactly one, so a phone can only write
+// on top of the revision it last read (the game merges first when another phone wrote).
 service cloud.firestore {
   match /databases/{database}/documents {
     match /players/{uid} {
-      allow read, delete: if request.auth != null && request.auth.uid == uid;
-      allow create, update: if request.auth != null
-        && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(['save', 'updatedAt'])
-        && request.resource.data.save is string
-        && request.resource.data.save.size() < 600000
-        && request.resource.data.updatedAt == request.time;
+      function isOwner() {
+        return request.auth != null && request.auth.uid == uid;
+      }
+
+      function isValidSave() {
+        let d = request.resource.data;
+        return d.keys().hasOnly(['save', 'rev', 'updatedAt'])
+          && d.save is string
+          && d.save.size() < 600000
+          && d.rev is int
+          && d.updatedAt == request.time;
+      }
+
+      allow read, delete: if isOwner();
+      allow create: if isOwner() && isValidSave() && request.resource.data.rev == 1;
+      allow update: if isOwner() && isValidSave()
+        && request.resource.data.rev == resource.data.get('rev', 0) + 1;
     }
   }
 }

@@ -181,6 +181,7 @@ class GameController extends ChangeNotifier {
       adDay: old.adDay,
       adCoinsUsed: old.adCoinsUsed,
       epoch: old.epoch + 1,
+      account: old.account,
     );
     save.owned.addAll(old.owned.where((id) => itemIndex[id]?.exclusive ?? false));
     _changed();
@@ -237,7 +238,9 @@ class GameController extends ChangeNotifier {
         save.storeSince = times.reduce((a, b) => a.isBefore(b) ? a : b).millisecondsSinceEpoch - 60 * 1000;
       }
     }
-    save.noAds = snap.entitlements.contains(Ent.noAds);
+    // "Gỡ quảng cáo" stays on once bought: a snapshot of another store account (after a
+    // switch or an account deletion) must not bring ads back to a player who paid.
+    if (snap.entitlements.contains(Ent.noAds)) save.noAds = true;
     for (final p in storeProducts) {
       final e = p.entitlement;
       if (e == null || !snap.entitlements.contains(e)) continue;

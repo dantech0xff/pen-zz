@@ -13,8 +13,10 @@ Future<String?> linkGoogleAccount(BuildContext context) async {
   return switch (await sync.linkGoogle()) {
     LinkedSame() => 'Đã liên kết Google. Cài lại hay đổi máy, liên kết lại tài khoản này là có tiến trình.',
     LinkedSwitched() =>
-      'Tài khoản Google này đã có tiến trình nên đã chuyển sang và gộp với máy này: '
-          'màn ${g.save.stage}, cấp ${g.save.lvl}.',
+      sync.synced
+          ? 'Tài khoản Google này đã có tiến trình nên đã chuyển sang và gộp với máy này: '
+                'màn ${g.save.stage}, cấp ${g.save.lvl}.'
+          : 'Đã chuyển sang tài khoản Google này. Game sẽ gộp tiến trình khi có mạng.',
     LinkCancelled() => null,
     LinkFailed(:final message) => message,
   };
@@ -28,17 +30,19 @@ class CloudPanel extends StatefulWidget {
   State<CloudPanel> createState() => _CloudPanelState();
 }
 
+enum _Action { link, delete }
+
 class _CloudPanelState extends State<CloudPanel> {
   String? _msg;
-  bool _busy = false;
+  _Action? _busy;
 
-  Future<void> _run(Future<String?> Function() action) async {
-    setState(() => _busy = true);
+  Future<void> _run(_Action action, Future<String?> Function() run) async {
+    setState(() => _busy = action);
     try {
-      final msg = await action();
+      final msg = await run();
       if (mounted && msg != null) setState(() => _msg = msg);
     } finally {
-      if (mounted) setState(() => _busy = false);
+      if (mounted) setState(() => _busy = null);
     }
   }
 
@@ -66,39 +70,47 @@ class _CloudPanelState extends State<CloudPanel> {
       ),
     );
     if (ok != true) return null;
-    return await sync.deleteAccount()
-        ? 'Đã xoá tài khoản và dữ liệu trên mây.'
-        : 'Chưa xoá được. Kiểm tra mạng rồi thử lại.';
+    return switch (await sync.deleteAccount()) {
+      DeleteResult.deleted => 'Đã xoá tài khoản và dữ liệu trên mây.',
+      DeleteResult.cancelled => null,
+      DeleteResult.failed => 'Chưa xoá được. Kiểm tra mạng rồi thử lại.',
+    };
   }
 
   @override
   Widget build(BuildContext context) {
     final sync = CloudScope.of(context);
     if (!sync.enabled) return const SizedBox.shrink();
-    final status = !sync.synced
-        ? 'Chưa kết nối được máy chủ. Tiến trình vẫn lưu trên máy này và sẽ lên mây khi có mạng.'
-        : sync.linked
-        ? 'Đã liên kết Google${sync.accountName == null ? '' : ' (${sync.accountName})'}. Tiến trình được lưu trên mây.'
-        : 'Tiến trình đang được sao lưu ẩn danh. Liên kết Google để giữ khi cài lại app hoặc đổi máy.';
+    final String status;
+    if (!sync.synced) {
+      status = 'Chưa kết nối được máy chủ. Tiến trình vẫn lưu trên máy này và sẽ lên mây khi có mạng.';
+    } else if (sync.linked) {
+      final name = sync.accountName;
+      status = 'Đã liên kết Google${name == null ? '' : ' ($name)'}. Tiến trình được lưu trên mây.';
+    } else {
+      status = sync.canLink
+          ? 'Tiến trình đang được sao lưu ẩn danh. Liên kết Google để giữ khi cài lại app hoặc đổi máy.'
+          : 'Tiến trình đang được sao lưu ẩn danh trên mây.';
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text('Lưu trên mây', style: T.display(18)),
         Text(status, style: T.body(15)),
         const SizedBox(height: 6),
-        if (!sync.linked) ...[
+        if (sync.canLink && !sync.linked) ...[
           SketchButton(
-            label: _busy ? 'Đang liên kết…' : 'Liên kết Google',
+            label: _busy == _Action.link ? 'Đang liên kết…' : 'Liên kết Google',
             primary: true,
-            onTap: _busy ? null : () => _run(() => linkGoogleAccount(context)),
+            onTap: _busy != null ? null : () => _run(_Action.link, () => linkGoogleAccount(context)),
           ),
           const SizedBox(height: 8),
         ],
         if (_msg != null) ...[Text(_msg!, style: T.body(15, Pal.ink)), const SizedBox(height: 8)],
         SketchButton(
-          label: 'Xoá tài khoản và dữ liệu trên mây',
+          label: _busy == _Action.delete ? 'Đang xoá…' : 'Xoá tài khoản và dữ liệu trên mây',
           color: Pal.red,
-          onTap: _busy || sync.cloud.uid == null ? null : () => _run(_delete),
+          onTap: _busy != null || sync.cloud.uid == null ? null : () => _run(_Action.delete, _delete),
         ),
         const SizedBox(height: 12),
       ],

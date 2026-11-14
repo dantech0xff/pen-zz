@@ -116,9 +116,18 @@ class _PenAppState extends State<PenApp> {
     _cloud.push();
   }
 
+  /// A match or the editor is open; the cloud waits to swap the save until they close.
+  bool _playing() => _nav.scr == Scr.battle || _nav.scr == Scr.draw;
+
+  void _navChanged() {
+    if (!_playing()) _cloud.idle();
+  }
+
   @override
   void initState() {
     super.initState();
+    _cloud.busy = _playing;
+    _nav.addListener(_navChanged);
     _life = AppLifecycleListener(onPause: _save, onDetach: _save, onResume: _cloud.connect);
     // The consent message needs a screen, so ads, the store and the cloud start after the
     // first frame.
@@ -130,6 +139,7 @@ class _PenAppState extends State<PenApp> {
 
   @override
   void dispose() {
+    _nav.removeListener(_navChanged);
     _life.dispose();
     if (widget.monetization == null) _money.dispose();
     if (widget.cloud == null) _cloud.dispose();

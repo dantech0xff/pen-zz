@@ -33,6 +33,7 @@ class SaveData {
     this.adCoinsUsed = 0,
     this.matchesSinceAd = 0,
     this.epoch = 0,
+    this.account = '',
   }) : pts = pts ?? Points(),
        creditedPacks = creditedPacks ?? {},
        creditedTx = creditedTx ?? {},
@@ -93,9 +94,14 @@ class SaveData {
   /// Finished matches since the last interstitial.
   int matchesSinceAd;
 
-  /// Goes up by one each time the player resets progress. When two saves are merged, the
-  /// one with the newer epoch wins, so a reset on one phone also applies to the others.
+  /// Goes up by one each time the player resets progress. When two saves of the same
+  /// account are merged, the one with the newer epoch wins, so a reset on one phone also
+  /// applies to the account's other phones.
   int epoch;
+
+  /// Cloud account (Firebase user id) this save was last merged with; empty before the first
+  /// merge. Epochs are only compared between saves of the same account.
+  String account;
 
   /// Upper bound when reading a save, against corrupt files only; no player gets near it.
   static const int maxCreditedTx = 100000;
@@ -129,6 +135,7 @@ class SaveData {
     'adCoinsUsed': adCoinsUsed,
     'matchesSinceAd': matchesSinceAd,
     'epoch': epoch,
+    'account': account,
   };
 
   /// Reads a save defensively: unknown or broken fields fall back to defaults.
@@ -186,12 +193,20 @@ class SaveData {
       for (final e in tx.entries.take(maxCreditedTx)) {
         if (e.key is String) out.creditedTx[e.key as String] = n(e.value, 0, 1000000, 0);
       }
+    } else if (tx is List) {
+      // Saves from before the coin amounts were kept: the ids still stop a second payment,
+      // and 0 keeps a merge from adding those coins to another save.
+      for (final id in tx.whereType<String>().take(maxCreditedTx)) {
+        out.creditedTx[id] = 0;
+      }
     }
     out.storeSince = n(data['storeSince'], 0, 1 << 52, 0);
     out.adDay = n(data['adDay'], 0, 99991231, 0);
     out.adCoinsUsed = n(data['adCoinsUsed'], 0, 1000, 0);
     out.matchesSinceAd = n(data['matchesSinceAd'], 0, 1000000, 0);
     out.epoch = n(data['epoch'], 0, 1000000, 0);
+    final account = data['account'];
+    if (account is String && account.length <= 128) out.account = account;
     return out;
   }
 }
