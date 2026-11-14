@@ -16,13 +16,15 @@ Tài khoản chỉ ẩn danh (chưa liên kết Google) sẽ mất khi xoá app,
 ## Đồng bộ chạy thế nào
 
 - Bản lưu trên máy là bản game dùng để chơi, nên game chơi offline được hoàn toàn.
-- Mỗi lần mở game (và khi quay lại app), game tải bản trên mây về và gộp với bản trên máy, một lần cho mỗi phiên và mỗi tài khoản. Trước khi gộp xong, game không tải gì lên, nên mở game lúc mất mạng không thể ghi đè một bản tốt hơn trên mây.
+- Mỗi lần mở game, khi quay lại app, và khi rời trận đấu hay màn vẽ, game đọc bản trên mây từ máy chủ rồi gộp với bản trên máy, một lần cho mỗi phiên và mỗi tài khoản. Bộ nhớ đệm offline của Firestore đã tắt, nên bản được đọc luôn là bản trên máy chủ, không phải bản sao do chính máy này để lại.
+- Trước khi gộp xong, game không tải gì lên. Trong trận đấu hay lúc đang vẽ đồ, việc gộp chờ đến khi người chơi rời màn đó, để bản lưu không bị đổi giữa chừng.
 - Sau khi gộp, mỗi thay đổi được tải lên sau khoảng 8 giây, và ngay khi app bị ẩn.
+- Mỗi lần ghi là một giao dịch kèm số phiên bản (`rev`). Nếu máy khác của cùng tài khoản đã ghi trước, game tải bản đó về, gộp, rồi mới ghi. Lúc mất mạng thì lần ghi thất bại ngay, không nằm chờ trong hàng đợi để rồi ghi đè lên bản của máy khác.
 
 Luật gộp (`lib/core/save_merge.dart`):
 
-1. Bản có lần "Xoá tiến trình" mới hơn thắng (số `epoch` trong bản lưu). Nhờ vậy xoá tiến trình trên một máy thì áp dụng cho cả tài khoản.
-2. Nếu không, bản qua nhiều màn hơn thắng; bằng nhau thì bản cấp cao hơn, rồi nhiều kinh nghiệm hơn, rồi nhiều trận hơn. Bằng hết thì giữ bản trên máy.
+1. Giữa hai bản của cùng một tài khoản, bản có lần "Xoá tiến trình" mới hơn thắng (số `epoch`). Nhờ vậy xoá tiến trình trên một máy thì áp dụng cho mọi máy của tài khoản. Bản lưu ghi tên tài khoản đã gộp gần nhất (`account`), nên lần xoá tiến trình trên một máy chưa liên kết không thể xoá tiến trình của tài khoản khi máy đó liên kết vào.
+2. Còn lại, bản qua nhiều màn hơn thắng; bằng nhau thì bản cấp cao hơn, rồi nhiều kinh nghiệm hơn, rồi nhiều trận hơn. Bằng hết thì giữ bản trên máy.
 3. Đồ mua bằng tiền thật luôn được gộp từ cả hai bản:
    - gói xu và gói khởi đầu chỉ có ở bản thua thì cộng xu vào bản thắng, mỗi giao dịch một lần;
    - đồ độc quyền và gỡ quảng cáo được giữ.
@@ -30,9 +32,13 @@ Luật gộp (`lib/core/save_merge.dart`):
 
 Tiến trình chơi của bản thua (màn, cấp, xu kiếm được, bản vẽ) bị bỏ, theo đúng lựa chọn "tự lấy bản tiến xa hơn".
 
+Khi liên kết vào một tài khoản Google đã có, tài khoản ẩn danh của máy này và bản lưu trên mây của nó bị xoá trước. Bản lưu trên máy vẫn giữ đủ và được gộp vào tài khoản Google.
+
 ## Mua hàng đi theo tài khoản
 
-RevenueCat dùng mã người chơi Firebase làm App User ID. Game gọi `logIn` sau khi đã gộp bản lưu, để mốc thời gian mua hàng đã đúng. Nhờ vậy, trường hợp hiếm "đã trả tiền gói xu nhưng mất mạng, rồi cài lại app" được giải quyết, miễn là người chơi đã liên kết Google:
+RevenueCat dùng mã người chơi Firebase làm App User ID. Game gọi `logIn` sau khi đã gộp bản lưu, để mốc thời gian mua hàng đã đúng. Khi đổi từ người chơi này sang người chơi khác (liên kết vào tài khoản đã có, hoặc tài khoản mới sau khi xoá), game gọi thêm `syncPurchasesForResult` để chuyển đồ đã mua trên cửa hàng của máy này sang mã mới. Trong RevenueCat, giữ cài đặt mặc định "Transfer to new App User ID" ở phần Project settings, Restore behavior. "Gỡ quảng cáo" đã mua thì không bị tắt khi đổi tài khoản.
+
+Nhờ vậy, trường hợp hiếm "đã trả tiền gói xu nhưng mất mạng, rồi cài lại app" được giải quyết, miễn là người chơi đã liên kết Google:
 
 1. Cài lại, liên kết lại tài khoản Google cũ.
 2. Game chuyển về mã người chơi cũ và gộp bản lưu cũ, trong đó có mốc `storeSince` và sổ giao dịch.
@@ -87,5 +93,5 @@ Thêm app iOS trong Firebase rồi điền `FB_APP_ID_IOS` và `GOOGLE_IOS_CLIEN
 ## Giới hạn
 
 - Người chơi có thể sửa bản lưu trên mây của chính mình (ví dụ cộng xu). Với game chơi một mình thì chấp nhận được; muốn chặn cần server riêng, nằm ngoài phạm vi.
-- Khi chuyển sang tài khoản Google đã có, tài khoản ẩn danh cũ và bản lưu của nó vẫn nằm lại trên Firestore. Bản lưu này nhỏ và không ai đọc tới.
-- Hai máy cùng chơi một lúc: bản tiến xa hơn thắng ở lần mở game sau, tiến trình của bản kia mất (đồ đã mua thì không mất).
+- Hai máy cùng chơi một lúc: mỗi lần ghi, bản tiến xa hơn thắng; tiến trình chơi của bản kia mất (đồ đã mua thì không mất).
+- Xoá tài khoản xoá bản lưu trên Firestore và tài khoản Firebase. Lịch sử giao dịch vẫn nằm ở RevenueCat và Google Play (cần cho đối soát và hoàn tiền); hãy ghi rõ điều này trong chính sách quyền riêng tư. Muốn xoá cả khách hàng trên RevenueCat thì cần gọi REST API của RevenueCat từ server, nằm ngoài phạm vi.

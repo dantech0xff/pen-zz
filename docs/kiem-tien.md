@@ -95,4 +95,5 @@ Vài điều cần biết:
 - RevenueCat dùng mã người chơi Firebase làm App User ID khi bản build có cấu hình Firebase, nên đồ đã mua đi theo tài khoản.
 - Xoá tiến trình vẫn giữ đồ đã mua, trạng thái gỡ quảng cáo và lịch sử giao dịch đã cộng.
 - Bản web không có cửa hàng, nhưng vẫn tải file JavaScript của RevenueCat (khoảng 1 MB) đi kèm gói `purchases_flutter`, vì gói này có bản web. Game không gọi tới file đó. Việc này đã được chấp nhận vì bản web chỉ dùng nội bộ.
-- Chưa có: thu hồi đồ trang trí khi hoàn tiền (riêng gỡ quảng cáo thì theo entitlement nên sẽ bật lại quảng cáo), gói đăng ký, server riêng.
+- Đồ đã mua không bị thu hồi khi hoàn tiền: đồ độc quyền và "Gỡ quảng cáo" giữ nguyên, để người đã trả tiền không bao giờ thấy quảng cáo quay lại khi đổi tài khoản. Trong RevenueCat, giữ Restore behavior là "Transfer to new App User ID" (mặc định).
+- Chưa có: gói đăng ký, server riêng.

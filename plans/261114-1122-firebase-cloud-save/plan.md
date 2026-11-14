@@ -1,6 +1,6 @@
 # Kế hoạch: lưu tiến trình lên Firebase
 
-Trạng thái: đang làm. Quyết định của người dùng (14/11/2026): lưu toàn bộ tiến trình lên Firebase; người chơi bắt đầu ẩn danh, liên kết Google để giữ tiến trình khi cài lại hoặc đổi máy; khi bản trên máy và bản trên mây khác nhau thì tự lấy bản tiến xa hơn, đồ mua bằng tiền thật và xu đã nạp luôn được gộp. Bản web (chỉ dùng nội bộ) không lưu lên mây.
+Trạng thái: xong phần code, chờ project Firebase thật (14/11/2026). Quyết định của người dùng (14/11/2026): lưu toàn bộ tiến trình lên Firebase; người chơi bắt đầu ẩn danh, liên kết Google để giữ tiến trình khi cài lại hoặc đổi máy; khi bản trên máy và bản trên mây khác nhau thì tự lấy bản tiến xa hơn, đồ mua bằng tiền thật và xu đã nạp luôn được gộp. Bản web (chỉ dùng nội bộ) không lưu lên mây.
 
 ## Kết quả cần đạt
 
@@ -34,3 +34,12 @@ Server riêng hoặc Cloud Functions, chống gian lận bản lưu trên mây, 
 3. `CloudSync`: đồng bộ lúc mở game, tải lên sau thay đổi và khi ẩn app, liên kết Google, xoá tài khoản; nối với RevenueCat.
 4. Giao diện: Cài đặt, nhắc liên kết trong cửa hàng.
 5. Luật Firestore, cấu hình, tài liệu; kiểm tra, build, review, đẩy code.
+
+## Kết quả
+
+- `flutter analyze` sạch, `flutter test` qua 83/83, gồm test luật gộp, đồng bộ với bản mây giả mô phỏng Firestore (đọc từ máy chủ, ghi theo phiên bản, không có hàng đợi offline), liên kết và xoá tài khoản, RevenueCat đổi tài khoản qua kênh SDK giả lập.
+- `flutter build apk --release` và `flutter build web --release` chạy thành công khi chưa có cấu hình Firebase; bản web không chứa mã lưu trên mây.
+- Review độc lập: `plans/reports/code-reviewer-261114-1122-cloud-save-review.md`, 15 lỗi, đã sửa hết. Hai lỗi mất dữ liệu (bộ nhớ đệm và hàng đợi ghi của Firestore; số lần xoá tiến trình so giữa hai tài khoản) được thay bằng đọc từ máy chủ, ghi theo phiên bản và epoch theo tài khoản.
+- Xoá tài khoản làm trong game theo quyết định của người dùng; link web cho Play Console ghi trong tài liệu.
+- Còn lại: chưa có project Firebase thật nên chưa thử trên máy; Sign in with Apple khi làm bản iOS.
+
