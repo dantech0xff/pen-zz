@@ -50,7 +50,7 @@ Bản Android và iOS có mua trong app (RevenueCat) và quảng cáo (AdMob). B
 
 Bản Android và iOS lưu tiến trình lên Firebase khi build kèm cấu hình Firebase; không có cấu hình thì chỉ lưu trên máy. Cách thiết lập nằm ở [luu-tren-may.md](luu-tren-may.md).
 
-APK release hiện ký bằng khoá debug của Flutter, chỉ dùng để cài thử. Trước khi đưa lên Google Play, cần tạo khoá ký riêng và đổi `applicationId` trong `android/app/build.gradle.kts`.
+Bản release ký bằng khoá trong `android/key.properties` (nằm ngoài git, gồm `storeFile`, `storePassword`, `keyAlias`, `keyPassword`). Không có file đó thì ký bằng khoá debug của Flutter, chỉ dùng để cài thử. Mã ứng dụng là `io.github.dantech0xff.pen_zz` (`applicationId` trong `android/app/build.gradle.kts`); đổi trước lần đầu đưa lên Google Play nếu muốn, vì sau đó không đổi được nữa.
 
 ## Cấu trúc mã
 

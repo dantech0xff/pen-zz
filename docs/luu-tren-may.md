@@ -9,7 +9,7 @@ Khi build không kèm cấu hình Firebase, phần lưu trên mây tắt hẳn: 
 - Mở game là có một tài khoản ẩn danh, tiến trình tự sao lưu. Không cần đăng nhập.
 - Cài đặt có mục "Lưu trên mây" với nút "Liên kết Google". Cửa hàng nhắc liên kết sau khi người chơi đã mua gì đó.
 - Cài lại app hoặc sang máy khác: bấm "Liên kết Google", chọn đúng tài khoản cũ, tiến trình quay về.
-- Có nút "Xoá tài khoản và dữ liệu trên mây". Google Play yêu cầu nút này với app cho tạo tài khoản. Tiến trình trên máy vẫn giữ và được sao lưu dưới một tài khoản ẩn danh mới.
+- Người chơi tự xoá tài khoản ngay trong game: Cài đặt, "Xoá tài khoản và dữ liệu trên mây". Game xoá bản lưu trên Firestore và tài khoản Firebase (cả liên kết Google). Tiến trình trên máy vẫn giữ và được sao lưu dưới một tài khoản ẩn danh mới.
 
 Tài khoản chỉ ẩn danh (chưa liên kết Google) sẽ mất khi xoá app, vì mã ẩn danh nằm trên máy. Đó là lý do game nhắc liên kết.
 
@@ -68,23 +68,10 @@ Trong Project settings, ở app Android, lấy:
 | `FB_APP_ID_ANDROID` | App ID của app Android, dạng `1:…:android:…` |
 | `GOOGLE_SERVER_CLIENT_ID` | OAuth client loại "Web application" mà Firebase tạo khi bật Google (Authentication, Google, Web SDK configuration, Web client ID) |
 
-Đây là các mã định danh vốn nằm trong app, không phải mật khẩu. Dữ liệu được bảo vệ bằng luật Firestore. Dù vậy, nên để chúng trong một file ngoài git và build bằng `--dart-define-from-file`:
+Đây là các mã định danh vốn nằm trong app, không phải mật khẩu; dữ liệu được bảo vệ bằng luật Firestore. Điền chúng vào `keys.json` (chép từ `keys.example.json`, file nằm ngoài git) rồi build như trong [kiem-tien.md](kiem-tien.md):
 
 ```bash
-flutter build appbundle --release --dart-define-from-file=../pen-zz-keys.json
-```
-
-File đó có thể chứa luôn khoá RevenueCat và ID AdMob (xem [kiem-tien.md](kiem-tien.md)), ví dụ:
-
-```json
-{
-  "FB_PROJECT_ID": "pen-zz-xxxx",
-  "FB_API_KEY": "AIza...",
-  "FB_SENDER_ID": "123456789012",
-  "FB_APP_ID_ANDROID": "1:123456789012:android:abcdef",
-  "GOOGLE_SERVER_CLIENT_ID": "123456789012-xxxx.apps.googleusercontent.com",
-  "RC_KEY_ANDROID": "goog_..."
-}
+flutter build appbundle --release --dart-define-from-file=keys.json -PadmobAppId=ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY
 ```
 
 ### iOS (cần máy Mac)
@@ -94,7 +81,7 @@ Thêm app iOS trong Firebase rồi điền `FB_APP_ID_IOS` và `GOOGLE_IOS_CLIEN
 ## Trước khi phát hành
 
 - Play Console, Data safety: khai báo thu thập mã người dùng (Firebase), email (khi liên kết Google) và tiến trình chơi; dữ liệu được mã hoá khi truyền; người dùng xoá được dữ liệu.
-- Google Play yêu cầu thêm một đường link web để người dùng xin xoá tài khoản mà không cần mở app. Tạo một trang (hoặc biểu mẫu, email) cho việc đó rồi điền vào Play Console.
+- Xoá tài khoản làm trong game (quyết định ngày 14/11/2026). Ngoài nút trong app, mục Data safety của Play Console vẫn bắt điền một đường link web để người đã gỡ app gửi yêu cầu xoá. Trang đó chỉ cần ghi tên game, các bước xoá trong game và một email hoặc biểu mẫu để gửi yêu cầu; bạn tra uid của người đó trong Firebase Authentication rồi xoá tài khoản và tài liệu `players/{uid}`.
 - Thử: liên kết Google trên máy A; xoá app, cài lại, liên kết lại; chơi trên máy B rồi mở máy A; xoá tiến trình trên một máy rồi mở máy kia; xoá tài khoản.
 
 ## Giới hạn

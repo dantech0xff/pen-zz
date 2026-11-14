@@ -58,13 +58,15 @@ Danh sách sản phẩm nằm ở `storeProducts` trong `lib/core/store_catalog.
 
 ## Build kèm khoá thật
 
-App ID AdMob của Android là thuộc tính Gradle `admobAppId`. Các ID còn lại và khoá RevenueCat đi qua `--dart-define`:
+1. Chép `keys.example.json` thành `keys.json` ở thư mục gốc repo (file này đã nằm trong `.gitignore`), rồi điền khoá RevenueCat, ID AdMob và cấu hình Firebase ([luu-tren-may.md](luu-tren-may.md)). Ô nào để trống thì phần đó dùng mặc định: thiếu `RC_KEY_ANDROID` thì cửa hàng báo chưa sẵn sàng, thiếu một ID quảng cáo thì chỗ đó dùng quảng cáo thử, thiếu cấu hình Firebase thì chỉ lưu trên máy.
+2. Để ký bằng khoá của bạn, tạo `android/key.properties` (cũng nằm ngoài git) với `storeFile`, `storePassword`, `keyAlias`, `keyPassword`. Không có file này thì bản release ký bằng khoá debug, chỉ dùng để cài thử.
+3. Build. App ID AdMob của Android đi qua thuộc tính Gradle `admobAppId`:
 
 ```bash
-flutter build appbundle --release -PadmobAppId=ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY --dart-define=RC_KEY_ANDROID=goog_xxxxxxxx --dart-define=ADMOB_BANNER_ANDROID=ca-app-pub-XXXXXXXXXXXXXXXX/1111111111 --dart-define=ADMOB_INTERSTITIAL_ANDROID=ca-app-pub-XXXXXXXXXXXXXXXX/2222222222 --dart-define=ADMOB_REWARDED_ANDROID=ca-app-pub-XXXXXXXXXXXXXXXX/3333333333
+flutter build appbundle --release --dart-define-from-file=keys.json -PadmobAppId=ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY
 ```
 
-Thiếu `RC_KEY_ANDROID` thì cửa hàng báo chưa sẵn sàng. Thiếu một ID quảng cáo thì chỗ đó dùng quảng cáo thử. Khoá RevenueCat public và các ID AdMob vốn nằm sẵn trong app, không phải mật khẩu, nhưng không nên commit vào repo; để chúng trong một file `--dart-define-from-file` nằm ngoài git là gọn nhất.
+Khoá RevenueCat public và các ID AdMob vốn nằm sẵn trong app, không phải mật khẩu, nhưng không nên commit vào repo.
 
 Với iOS (cần máy Mac): sửa `GADApplicationIdentifier` trong `ios/Runner/Info.plist`, thêm danh sách SKAdNetwork đầy đủ theo hướng dẫn của Google, bật In-App Purchase trong Signing & Capabilities của Xcode, rồi build với `RC_KEY_IOS` và các ID `ADMOB_*_IOS`.
 
