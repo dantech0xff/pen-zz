@@ -212,19 +212,21 @@ class GameController extends ChangeNotifier {
     _changed();
   }
 
-  /// Remembers when this save first reached the store; see [SaveData.storeSince].
-  void markStoreSeen(DateTime now) {
-    if (save.storeSince != 0) return;
-    save.storeSince = now.millisecondsSinceEpoch;
-    _changed();
-  }
-
-  /// Applies what the store reports. Entitlements unlock their items and switch ads off; a
-  /// one-time pack's coins are credited once; coin packs are credited once per transaction,
-  /// skipping ones bought before this save reached the store (an older install) unless
-  /// [purchasedTx] names the purchase that just finished. Returns the coins credited.
-  int applyStore(StoreSnapshot snap, {String? purchasedTx}) {
+  /// Applies what the store reports and returns the coins credited.
+  ///
+  /// Entitlements unlock their items and switch ads off, and a one-time pack's coins are paid
+  /// once. Coin packs are paid once per RevenueCat transaction id. The first snapshot this save
+  /// sees sets [SaveData.storeSince] from the store's clock (or [purchaseTime], if earlier),
+  /// and coin packs bought before it belong to an older install, so they are not paid again.
+  int applyStore(StoreSnapshot snap, {DateTime? purchaseTime}) {
     var credited = 0;
+    if (save.storeSince == 0) {
+      final times = [snap.serverTime, purchaseTime].whereType<DateTime>();
+      if (times.isNotEmpty) {
+        // A minute of slack so a purchase made right at the first contact still counts.
+        save.storeSince = times.reduce((a, b) => a.isBefore(b) ? a : b).millisecondsSinceEpoch - 60 * 1000;
+      }
+    }
     save.noAds = snap.entitlements.contains(Ent.noAds);
     for (final p in storeProducts) {
       final e = p.entitlement;
@@ -235,17 +237,15 @@ class GameController extends ChangeNotifier {
         credited += p.coins;
       }
     }
-    // Ten minutes of slack for a device clock that runs ahead of the store's.
-    final since = save.storeSince - 10 * 60 * 1000;
-    for (final t in snap.transactions) {
-      final p = productById(t.productId);
-      if (p == null || p.kind != ProductKind.consumable || save.creditedTx.contains(t.id)) continue;
-      final fresh = t.id == purchasedTx || (t.time != null && t.time!.millisecondsSinceEpoch >= since);
-      if (!fresh) continue;
-      save.creditedTx.add(t.id);
-      if (save.creditedTx.length > SaveData.maxCreditedTx) save.creditedTx.removeAt(0);
-      save.coins += p.coins;
-      credited += p.coins;
+    final since = save.storeSince;
+    if (since > 0) {
+      for (final t in snap.transactions) {
+        final p = productById(t.productId), time = t.time;
+        if (p == null || p.kind != ProductKind.consumable || time == null) continue;
+        if (time.millisecondsSinceEpoch < since || !save.creditedTx.add(t.id)) continue;
+        save.coins += p.coins;
+        credited += p.coins;
+      }
     }
     _changed();
     return credited;

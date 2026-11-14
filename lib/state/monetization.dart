@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 
+import '../core/mathx.dart';
 import '../core/store_catalog.dart';
 import '../monetize/ads_service.dart';
 import '../monetize/store_service.dart';
@@ -10,6 +11,9 @@ class Monetization extends ChangeNotifier {
   Monetization({required this.game, required this.ads, required this.store, DateTime Function()? clock})
     : _clock = clock ?? DateTime.now {
     ads.addListener(notifyListeners);
+    // A session starts as if an ad had just closed, so a restart never brings an
+    // interstitial sooner than the usual gap.
+    _lastFullScreenAd = _clock();
   }
 
   /// No ads and no store: the web build and widget tests.
@@ -21,8 +25,9 @@ class Monetization extends ChangeNotifier {
   final DateTime Function() _clock;
 
   Map<String, String> _prices = const {};
+  bool _loadingPrices = false;
   String? _busy;
-  DateTime? _lastInterstitial;
+  late DateTime _lastFullScreenAd;
   final Set<MatchReward> _doubled = {};
 
   /// Starts consent and the ad SDK, then the store. Call once the first frame is up, because
@@ -34,14 +39,14 @@ class Monetization extends ChangeNotifier {
 
   Future<void> _initStore() async {
     if (store is NoStore) return;
-    game.markStoreSeen(_clock());
     await store.init(_apply);
-    _prices = await store.prices([for (final p in storeProducts) p.id]);
+    await refreshPrices();
   }
 
-  void _apply(StoreSnapshot snap, {String? purchasedTx}) {
-    game.applyStore(snap, purchasedTx: purchasedTx);
+  int _apply(StoreSnapshot snap, {DateTime? purchaseTime}) {
+    final coins = game.applyStore(snap, purchaseTime: purchaseTime);
     notifyListeners();
+    return coins;
   }
 
   /// This build has ads or a store at all: false on the web build, which shows neither.
@@ -56,9 +61,16 @@ class Monetization extends ChangeNotifier {
 
   bool doubled(MatchReward r) => _doubled.contains(r);
 
+  /// Rewarded ads count as full-screen ads, so an interstitial never follows one straight away.
+  Future<bool> _watchRewarded() async {
+    final earned = await ads.showRewarded();
+    _lastFullScreenAd = _clock();
+    return earned;
+  }
+
   /// Shows a rewarded ad and, if it was watched, pays the match reward again.
   Future<bool> doubleReward(MatchReward r) async {
-    if (!canDouble(r) || !await ads.showRewarded()) return false;
+    if (!canDouble(r) || !await _watchRewarded()) return false;
     _doubled.add(r);
     game.addBonus(coins: r.coins, xp: r.xp);
     notifyListeners();
@@ -75,7 +87,7 @@ class Monetization extends ChangeNotifier {
 
   /// Shows a rewarded ad for free coins. Returns the coins given, or 0.
   Future<int> claimFreeCoins() async {
-    if (!ads.available || freeCoinsLeft <= 0 || !await ads.showRewarded()) return 0;
+    if (!ads.available || freeCoinsLeft <= 0 || !await _watchRewarded()) return 0;
     final coins = freeCoinsAmount;
     game.creditAdCoins(dayKey(_clock()), coins);
     notifyListeners();
@@ -86,14 +98,13 @@ class Monetization extends ChangeNotifier {
     final s = game.save;
     if (!ads.available || s.noAds || s.stage < AdRules.interstitialFromStage) return false;
     if (s.matchesSinceAd < AdRules.interstitialEvery) return false;
-    final last = _lastInterstitial;
-    return last == null || _clock().difference(last) >= AdRules.interstitialGap;
+    return _clock().difference(_lastFullScreenAd) >= AdRules.interstitialGap;
   }
 
   /// Call when the player leaves a result card; shows an interstitial when one is due.
   Future<void> afterMatch() async {
     if (!interstitialDue || !await ads.showInterstitial()) return;
-    _lastInterstitial = _clock();
+    _lastFullScreenAd = _clock();
     game.resetAdCounter();
   }
 
@@ -104,6 +115,22 @@ class Monetization extends ChangeNotifier {
   String get storeUnavailableReason => store.unavailableReason;
 
   String? priceOf(StoreProductDef p) => _prices[p.id];
+
+  /// The store answered with prices. False after starting offline, until [refreshPrices] works.
+  bool get pricesLoaded => _prices.isNotEmpty;
+
+  /// Fetches prices again while some are missing, for example after starting offline.
+  Future<void> refreshPrices() async {
+    if (!store.available || _loadingPrices || _prices.length == storeProducts.length) return;
+    _loadingPrices = true;
+    try {
+      final fresh = await store.prices([for (final p in storeProducts) p.id]);
+      if (fresh.isNotEmpty) _prices = fresh;
+    } finally {
+      _loadingPrices = false;
+      notifyListeners();
+    }
+  }
 
   /// The product being bought right now, if any.
   String? get busy => _busy;
@@ -122,9 +149,17 @@ class Monetization extends ChangeNotifier {
     notifyListeners();
     try {
       switch (await store.buy(p.id)) {
-        case PurchaseDone(:final transactionId, :final snapshot):
-          _apply(snapshot, purchasedTx: transactionId);
-          return 'Đã mua ${p.title.toLowerCase()}. Cảm ơn bạn!';
+        case PurchaseDone(:final snapshot, :final purchaseTime):
+          final coins = _apply(snapshot, purchaseTime: purchaseTime);
+          if (p.kind == ProductKind.consumable) {
+            return coins > 0
+                ? 'Đã nhận ${fmtNum(coins)} xu. Cảm ơn bạn!'
+                : 'Đã thanh toán. Xu sẽ được cộng ngay khi cửa hàng xác nhận giao dịch.';
+          }
+          return snapshot.entitlements.contains(p.entitlement)
+              ? 'Đã mua ${p.title.toLowerCase()}. Cảm ơn bạn!'
+              : 'Đã thanh toán nhưng cửa hàng chưa xác nhận. Vài phút nữa hãy bấm "Khôi phục giao dịch"; '
+                    'nếu vẫn chưa có, hãy liên hệ hỗ trợ.';
         case PurchaseCancelled():
           return null;
         case PurchasePending():
@@ -138,12 +173,21 @@ class Monetization extends ChangeNotifier {
     }
   }
 
-  /// Restores one-time purchases. Returns a message for the player.
-  Future<String> restore() async {
-    final snap = await store.restore();
-    if (snap == null) return 'Không khôi phục được. Kiểm tra mạng rồi thử lại.';
-    _apply(snap);
-    return snap.entitlements.isEmpty ? 'Không tìm thấy giao dịch nào để khôi phục.' : 'Đã khôi phục giao dịch.';
+  /// Restores one-time purchases. Returns a message for the player, or null while another
+  /// purchase or restore is still running.
+  Future<String?> restore() async {
+    if (_busy != null) return null;
+    _busy = 'restore';
+    notifyListeners();
+    try {
+      final snap = await store.restore();
+      if (snap == null) return 'Không khôi phục được. Kiểm tra mạng rồi thử lại.';
+      _apply(snap);
+      return snap.entitlements.isEmpty ? 'Không tìm thấy giao dịch nào để khôi phục.' : 'Đã khôi phục giao dịch.';
+    } finally {
+      _busy = null;
+      notifyListeners();
+    }
   }
 
   @override

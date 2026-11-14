@@ -19,14 +19,19 @@ class RevenueCatStore implements StoreService {
   @override
   String get unavailableReason {
     if (apiKey.isEmpty) return 'Cửa hàng chưa sẵn sàng: bản build này chưa có khoá RevenueCat.';
-    if (_offline) return 'Chưa kết nối được cửa hàng. Kiểm tra mạng rồi mở lại game.';
+    if (_offline) return 'Chưa kết nối được cửa hàng. Kiểm tra mạng rồi mở lại cửa hàng.';
     return 'Cửa hàng đang kết nối.';
   }
 
-  static StoreSnapshot _snapshot(CustomerInfo info) => StoreSnapshot(info.entitlements.active.keys.toSet(), [
-    for (final t in info.nonSubscriptionTransactions)
-      StoreTx(t.transactionIdentifier, t.productIdentifier, DateTime.tryParse(t.purchaseDate)),
-  ]);
+  /// History entries carry RevenueCat's ids, which stay the same in every snapshot.
+  static StoreSnapshot _snapshot(CustomerInfo info) => StoreSnapshot(
+    info.entitlements.active.keys.toSet(),
+    transactions: [
+      for (final t in info.nonSubscriptionTransactions)
+        StoreTx(t.transactionIdentifier, t.productIdentifier, DateTime.tryParse(t.purchaseDate)),
+    ],
+    serverTime: DateTime.tryParse(info.requestDate),
+  );
 
   @override
   Future<void> init(void Function(StoreSnapshot snapshot) onUpdate) async {
@@ -48,8 +53,10 @@ class RevenueCatStore implements StoreService {
     if (!_ready) return const {};
     try {
       final products = await Purchases.getProducts(productIds, productCategory: ProductCategory.nonSubscription);
+      _offline = false;
       return {for (final p in products) p.identifier: p.priceString};
     } on PlatformException {
+      _offline = true;
       return const {};
     }
   }
@@ -61,14 +68,9 @@ class RevenueCatStore implements StoreService {
       final products = await Purchases.getProducts([productId], productCategory: ProductCategory.nonSubscription);
       if (products.isEmpty) return const PurchaseFailed('Món này chưa có trên cửa hàng.');
       final r = await Purchases.purchase(PurchaseParams.storeProduct(products.first));
-      final tx = r.storeTransaction;
-      final snap = _snapshot(r.customerInfo);
-      // Make sure the finished purchase is in the list even if the history lags behind.
-      final txs = [
-        ...snap.transactions.where((t) => t.id != tx.transactionIdentifier),
-        StoreTx(tx.transactionIdentifier, tx.productIdentifier, DateTime.tryParse(tx.purchaseDate) ?? DateTime.now()),
-      ];
-      return PurchaseDone(tx.transactionIdentifier, StoreSnapshot(snap.entitlements, txs));
+      // The result's transaction carries the store's order id, which never appears in the
+      // history, so only the history (RevenueCat ids) is used to credit coins.
+      return PurchaseDone(_snapshot(r.customerInfo), purchaseTime: DateTime.tryParse(r.storeTransaction.purchaseDate));
     } on PlatformException catch (e) {
       return switch (PurchasesErrorHelper.getErrorCode(e)) {
         PurchasesErrorCode.purchaseCancelledError => const PurchaseCancelled(),

@@ -52,6 +52,20 @@ void main() {
     expect(find.text('Tủ đồ'), findsOneWidget);
   });
 
+  testWidgets('settings fit a small phone with restore and privacy options', (tester) async {
+    final (_, _, ads) = await boot(tester);
+    ads.privacy = true;
+    await tester.tap(find.byTooltip('Cài đặt'));
+    await settle(tester);
+    expect(find.text('Khôi phục giao dịch'), findsOneWidget);
+    expect(find.text('Tuỳ chọn quyền riêng tư cho quảng cáo'), findsOneWidget);
+    await tester.ensureVisible(find.text('Xoá tiến trình'));
+    await settle(tester);
+    await tester.tap(find.text('Xoá tiến trình'));
+    await settle(tester);
+    expect(find.text('Xoá toàn bộ tiến trình?'), findsOneWidget);
+  });
+
   testWidgets('buying "remove ads" takes the banner away', (tester) async {
     final (_, m, _) = await boot(tester);
     await m.buy(productById('pz_remove_ads')!);
@@ -80,7 +94,7 @@ void main() {
     await tester.tap(buyButtonOf('Túi xu'));
     await settle(tester);
     expect(g.save.coins, AdRules.freeCoins(0) + 1000);
-    expect(find.text('Đã mua túi xu. Cảm ơn bạn!'), findsOneWidget);
+    expect(find.text('Đã nhận 1.000 xu. Cảm ơn bạn!'), findsOneWidget);
   });
 
   testWidgets('an exclusive item in the wardrobe leads to its outfit in the store', (tester) async {

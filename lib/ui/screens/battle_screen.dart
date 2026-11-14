@@ -63,8 +63,11 @@ class _BattleScreenState extends State<BattleScreen> {
 
   /// Leaves the result card, showing an interstitial first when one is due.
   Future<void> _leave(VoidCallback go) async {
-    await MonetizationScope.read(context).afterMatch();
-    if (mounted) go();
+    try {
+      await MonetizationScope.read(context).afterMatch();
+    } finally {
+      if (mounted) go();
+    }
   }
 
   Future<void> _double(MatchReward r) async {

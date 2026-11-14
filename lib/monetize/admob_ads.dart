@@ -51,6 +51,10 @@ class AdMobAds extends AdsService {
     final info = ConsentInformation.instance;
     _privacy = await info.getPrivacyOptionsRequirementStatus() == PrivacyOptionsRequirementStatus.required;
     if (!_available && await info.canRequestAds()) {
+      // The game is for players aged 13 and over: no ads rated above Teen.
+      await MobileAds.instance.updateRequestConfiguration(
+        RequestConfiguration(maxAdContentRating: MaxAdContentRating.t),
+      );
       await MobileAds.instance.initialize();
       _available = true;
       _loadRewarded();
@@ -92,23 +96,45 @@ class AdMobAds extends AdsService {
     );
   }
 
-  /// Disposes a full-screen ad and completes [closed] when it is closed or fails to show.
-  FullScreenContentCallback<T> _closer<T extends Ad>(Completer<void> closed) => FullScreenContentCallback<T>(
-    onAdDismissedFullScreenContent: (ad) {
-      ad.dispose();
+  /// Shows a full-screen ad and waits until it is closed. Returns whether it appeared.
+  ///
+  /// If the SDK never reports the ad on screen (for example when no activity is attached),
+  /// it gives up after a few seconds so ads keep working and the player can move on.
+  Future<bool> _present<T extends AdWithoutView>(
+    T ad,
+    void Function(FullScreenContentCallback<T> callback) attach,
+    Future<void> Function() show,
+  ) async {
+    final appeared = Completer<bool>(), closed = Completer<void>();
+    void finish(Ad a) {
+      a.dispose();
+      if (!appeared.isCompleted) appeared.complete(false);
       if (!closed.isCompleted) closed.complete();
-    },
-    onAdFailedToShowFullScreenContent: (ad, _) {
-      ad.dispose();
-      if (!closed.isCompleted) closed.complete();
-    },
-  );
+    }
 
-  Future<void> _whileShowing(Future<void> Function() run) async {
+    attach(
+      FullScreenContentCallback<T>(
+        onAdShowedFullScreenContent: (_) {
+          if (!appeared.isCompleted) appeared.complete(true);
+        },
+        onAdDismissedFullScreenContent: finish,
+        onAdFailedToShowFullScreenContent: (a, _) => finish(a),
+      ),
+    );
     _showing = true;
     notifyListeners();
     try {
-      await run();
+      await show();
+      final shown = await appeared.future.timeout(const Duration(seconds: 5), onTimeout: () => false);
+      if (shown) {
+        await closed.future;
+      } else {
+        ad.dispose();
+      }
+      return shown;
+    } catch (_) {
+      ad.dispose();
+      return false;
     } finally {
       _showing = false;
       notifyListeners();
@@ -120,14 +146,16 @@ class AdMobAds extends AdsService {
     final ad = _rewarded;
     if (!_available || _showing || ad == null) return false;
     _rewarded = null;
-    final closed = Completer<void>();
     var earned = false;
-    ad.fullScreenContentCallback = _closer<RewardedAd>(closed);
-    await _whileShowing(() async {
-      await ad.show(onUserEarnedReward: (_, _) => earned = true);
-      await closed.future;
-    });
-    _loadRewarded();
+    try {
+      await _present<RewardedAd>(
+        ad,
+        (c) => ad.fullScreenContentCallback = c,
+        () => ad.show(onUserEarnedReward: (_, _) => earned = true),
+      );
+    } finally {
+      _loadRewarded();
+    }
     return earned;
   }
 
@@ -136,14 +164,11 @@ class AdMobAds extends AdsService {
     final ad = _interstitial;
     if (!_available || _showing || ad == null) return false;
     _interstitial = null;
-    final closed = Completer<void>();
-    ad.fullScreenContentCallback = _closer<InterstitialAd>(closed);
-    await _whileShowing(() async {
-      await ad.show();
-      await closed.future;
-    });
-    _loadInterstitial();
-    return true;
+    try {
+      return await _present<InterstitialAd>(ad, (c) => ad.fullScreenContentCallback = c, ad.show);
+    } finally {
+      _loadInterstitial();
+    }
   }
 
   @override

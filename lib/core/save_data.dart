@@ -27,14 +27,14 @@ class SaveData {
     this.losses = 0,
     this.noAds = false,
     Set<String>? creditedPacks,
-    List<String>? creditedTx,
+    Set<String>? creditedTx,
     this.storeSince = 0,
     this.adDay = 0,
     this.adCoinsUsed = 0,
     this.matchesSinceAd = 0,
   }) : pts = pts ?? Points(),
        creditedPacks = creditedPacks ?? {},
-       creditedTx = creditedTx ?? [],
+       creditedTx = creditedTx ?? {},
        stars = stars ?? List<int>.filled(levelCount, 0),
        owned =
            owned ??
@@ -77,11 +77,12 @@ class SaveData {
   /// One-time products whose coins were already credited (the starter pack).
   Set<String> creditedPacks;
 
-  /// Coin-pack transactions already credited, newest last.
-  List<String> creditedTx;
+  /// RevenueCat ids of coin-pack purchases already credited. Never trimmed: the store lists
+  /// every past purchase, so a forgotten id would be paid again.
+  Set<String> creditedTx;
 
-  /// When this save first reached the store (ms since epoch). Coin packs bought before it
-  /// belong to an older install and are not credited again.
+  /// The store's clock (ms since epoch) when this save first reached the store. Coin packs
+  /// bought before it belong to an older install and are not credited again.
   int storeSince;
 
   /// Day (yyyymmdd) and count of rewarded "free coins" views.
@@ -90,8 +91,8 @@ class SaveData {
   /// Finished matches since the last interstitial.
   int matchesSinceAd;
 
-  /// Keeps at most this many credited transaction ids.
-  static const int maxCreditedTx = 100;
+  /// Upper bound when reading a save, against corrupt files only; no player gets near it.
+  static const int maxCreditedTx = 100000;
 
   int get totalStars => stars.fold(0, (a, b) => a + starCount(b));
 
@@ -116,7 +117,7 @@ class SaveData {
     'losses': losses,
     'noAds': noAds,
     'creditedPacks': creditedPacks.toList(),
-    'creditedTx': creditedTx,
+    'creditedTx': creditedTx.toList(),
     'storeSince': storeSince,
     'adDay': adDay,
     'adCoinsUsed': adCoinsUsed,
@@ -174,10 +175,7 @@ class SaveData {
     final packs = data['creditedPacks'];
     if (packs is List) out.creditedPacks.addAll(packs.whereType<String>().take(50));
     final tx = data['creditedTx'];
-    if (tx is List) {
-      final ids = tx.whereType<String>().toList();
-      out.creditedTx.addAll(ids.skip(ids.length > maxCreditedTx ? ids.length - maxCreditedTx : 0));
-    }
+    if (tx is List) out.creditedTx.addAll(tx.whereType<String>().take(maxCreditedTx));
     out.storeSince = n(data['storeSince'], 0, 1 << 52, 0);
     out.adDay = n(data['adDay'], 0, 99991231, 0);
     out.adCoinsUsed = n(data['adCoinsUsed'], 0, 1000, 0);

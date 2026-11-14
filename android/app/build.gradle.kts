@@ -30,7 +30,8 @@ android {
         // AdMob app id: pass the real one with -PadmobAppId=ca-app-pub-...~...
         // (or set it in ~/.gradle/gradle.properties). Defaults to Google's test app.
         manifestPlaceholders["admobAppId"] =
-            (project.findProperty("admobAppId") as String?) ?: "ca-app-pub-3940256099942544~3347511713"
+            (project.findProperty("admobAppId") as String?)?.takeIf { it.isNotBlank() }
+                ?: "ca-app-pub-3940256099942544~3347511713"
     }
 
     buildTypes {

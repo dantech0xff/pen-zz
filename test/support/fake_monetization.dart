@@ -15,8 +15,11 @@ class FakeAds extends AdsService {
   @override
   bool get rewardedReady => true;
 
+  /// Whether Google's consent message asks for a privacy settings entry (EEA and UK).
+  bool privacy = false;
+
   @override
-  bool get privacyOptionsRequired => false;
+  bool get privacyOptionsRequired => privacy;
 
   @override
   Future<void> init() async {}
@@ -37,15 +40,22 @@ class FakeAds extends AdsService {
   Widget banner() => const SizedBox(key: Key('test-banner'), width: 320, height: 90);
 }
 
-/// A store that remembers purchases like RevenueCat does: entitlements plus a history.
+/// A store that behaves like RevenueCat: the history lists RevenueCat's own ids, and every
+/// snapshot carries the store server's clock. (The real purchase result also carries the
+/// store's order id, which never matches the history, so the game ignores it.)
 class FakeStore implements StoreService {
   Set<String> entitlements = {};
   final List<StoreTx> history = [];
   void Function(StoreSnapshot snapshot)? listener;
-  DateTime now = DateTime(2026, 11, 14, 10);
+
+  /// The store server's clock; each purchase moves it on a minute.
+  DateTime now = DateTime.utc(2026, 11, 14, 10);
   int _n = 0;
 
-  StoreSnapshot get snapshot => StoreSnapshot(Set.of(entitlements), List.of(history));
+  /// Starts without an answer from the store, as when the game opens offline.
+  bool silentInit = false;
+
+  StoreSnapshot get snapshot => StoreSnapshot(Set.of(entitlements), transactions: List.of(history), serverTime: now);
 
   @override
   bool get available => true;
@@ -56,7 +66,7 @@ class FakeStore implements StoreService {
   @override
   Future<void> init(void Function(StoreSnapshot snapshot) onUpdate) async {
     listener = onUpdate;
-    onUpdate(snapshot);
+    if (!silentInit) onUpdate(snapshot);
   }
 
   @override
@@ -65,10 +75,10 @@ class FakeStore implements StoreService {
   @override
   Future<PurchaseOutcome> buy(String productId) async {
     final p = productById(productId)!;
-    final tx = StoreTx('tx-${++_n}', productId, now);
-    history.add(tx);
+    now = now.add(const Duration(minutes: 1));
+    history.add(StoreTx('rc_${++_n}', productId, now));
     if (p.entitlement != null) entitlements.add(p.entitlement!);
-    return PurchaseDone(tx.id, snapshot);
+    return PurchaseDone(snapshot, purchaseTime: now);
   }
 
   @override

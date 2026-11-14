@@ -112,20 +112,26 @@ abstract final class AdRules {
 /// Local calendar day as yyyymmdd, used to reset the daily free-coin views.
 int dayKey(DateTime t) => t.year * 10000 + t.month * 100 + t.day;
 
-/// One store transaction for a one-time or consumable product.
+/// One past purchase of a one-time or consumable product, as RevenueCat lists it.
 class StoreTx {
   const StoreTx(this.id, this.productId, this.time);
 
-  final String id, productId;
+  /// RevenueCat's id for the purchase. It is the same in every snapshot, unlike the store's
+  /// own order id, which RevenueCat reports only in a purchase result.
+  final String id;
+  final String productId;
 
   /// Purchase time from the store; null when it could not be read.
   final DateTime? time;
 }
 
-/// What the store reports about the player: active entitlements and past purchases.
+/// What the store reports about the player: active entitlements and every past purchase.
 class StoreSnapshot {
-  const StoreSnapshot(this.entitlements, [this.transactions = const []]);
+  const StoreSnapshot(this.entitlements, {this.transactions = const [], this.serverTime});
 
   final Set<String> entitlements;
   final List<StoreTx> transactions;
+
+  /// The store server's clock when it produced this snapshot.
+  final DateTime? serverTime;
 }

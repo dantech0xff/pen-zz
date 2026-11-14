@@ -6,10 +6,12 @@ sealed class PurchaseOutcome {
 
 /// The purchase went through; [snapshot] is the player's state right after it.
 class PurchaseDone extends PurchaseOutcome {
-  const PurchaseDone(this.transactionId, this.snapshot);
+  const PurchaseDone(this.snapshot, {this.purchaseTime});
 
-  final String transactionId;
   final StoreSnapshot snapshot;
+
+  /// When the store took the payment, by the store's clock.
+  final DateTime? purchaseTime;
 }
 
 class PurchaseCancelled extends PurchaseOutcome {

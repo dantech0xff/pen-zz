@@ -26,3 +26,14 @@ double lerpD(double a, double b, double u) => a + (b - a) * u;
 /// Same rounding as JavaScript's Math.round (halves go towards +infinity),
 /// so formulas ported from the web game give identical integers.
 int jsRound(double v) => (v + 0.5).floor();
+
+/// Thousands with dots, Vietnamese style: 25000 -> 25.000.
+String fmtNum(int n) {
+  final s = n.abs().toString();
+  final b = StringBuffer();
+  for (var i = 0; i < s.length; i++) {
+    if (i > 0 && (s.length - i) % 3 == 0) b.write('.');
+    b.write(s[i]);
+  }
+  return n < 0 ? '-$b' : b.toString();
+}

@@ -8,7 +8,7 @@ import '../theme.dart';
 import '../widgets.dart';
 
 Future<void> showSettingsSheet(BuildContext context) =>
-    showModalBottomSheet<void>(context: context, builder: (ctx) => const _SettingsSheet());
+    showModalBottomSheet<void>(context: context, isScrollControlled: true, builder: (ctx) => const _SettingsSheet());
 
 class _SettingsSheet extends StatefulWidget {
   const _SettingsSheet();
@@ -25,7 +25,7 @@ class _SettingsSheetState extends State<_SettingsSheet> {
     final g = AppScope.of(context), m = MonetizationScope.of(context);
     final s = g.save;
     return SafeArea(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -50,11 +50,13 @@ class _SettingsSheetState extends State<_SettingsSheet> {
             const SizedBox(height: 12),
             if (m.storeReady) ...[
               SketchButton(
-                label: 'Khôi phục giao dịch',
-                onTap: () async {
-                  final msg = await m.restore();
-                  if (mounted) setState(() => _msg = msg);
-                },
+                label: m.busy == 'restore' ? 'Đang khôi phục…' : 'Khôi phục giao dịch',
+                onTap: m.busy != null
+                    ? null
+                    : () async {
+                        final msg = await m.restore();
+                        if (mounted && msg != null) setState(() => _msg = msg);
+                      },
               ),
               const SizedBox(height: 8),
             ],
@@ -77,7 +79,8 @@ class _SettingsSheetState extends State<_SettingsSheet> {
                   builder: (ctx) => AlertDialog(
                     title: Text('Xoá toàn bộ tiến trình?', style: T.display(19)),
                     content: Text(
-                      'Xu, cấp, đồ đã mua, màn đã qua và đồ đã vẽ sẽ mất hết. Không hoàn tác được.',
+                      'Xu (kể cả xu đã nạp), cấp, đồ mua bằng xu, màn đã qua và đồ đã vẽ sẽ mất hết. '
+                      'Đồ mua bằng tiền thật và gói gỡ quảng cáo vẫn được giữ. Không hoàn tác được.',
                       style: T.body(16),
                     ),
                     actions: [

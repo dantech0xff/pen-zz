@@ -38,9 +38,18 @@ class _StoreSheet extends StatefulWidget {
 class _StoreSheetState extends State<_StoreSheet> {
   String? _msg;
 
+  @override
+  void initState() {
+    super.initState();
+    // Prices may be missing if the game started offline; ask the store again.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) MonetizationScope.read(context).refreshPrices();
+    });
+  }
+
   Future<void> _run(Future<String?> Function() action) async {
     final msg = await action();
-    if (mounted) setState(() => _msg = msg);
+    if (mounted && msg != null) setState(() => _msg = msg);
   }
 
   @override
@@ -71,10 +80,13 @@ class _StoreSheetState extends State<_StoreSheet> {
                   CoinChip(coins: g.save.coins),
                 ],
               ),
-              if (!m.storeReady)
+              if (!m.storeReady || !m.pricesLoaded)
                 Padding(
                   padding: const EdgeInsets.only(top: 4),
-                  child: Text(m.storeUnavailableReason, style: T.body(15, Pal.red)),
+                  child: Text(
+                    m.storeReady ? 'Chưa tải được giá. Kiểm tra mạng rồi mở lại cửa hàng.' : m.storeUnavailableReason,
+                    style: T.body(15, Pal.red),
+                  ),
                 ),
               if (_msg != null)
                 Padding(
@@ -134,7 +146,11 @@ class _StoreSheetState extends State<_StoreSheet> {
               if (m.storeReady)
                 Padding(
                   padding: const EdgeInsets.only(top: 6),
-                  child: SketchButton(label: 'Khôi phục giao dịch', compact: true, onTap: () => _run(m.restore)),
+                  child: SketchButton(
+                    label: m.busy == 'restore' ? 'Đang khôi phục…' : 'Khôi phục giao dịch',
+                    compact: true,
+                    onTap: m.busy != null ? null : () => _run(m.restore),
+                  ),
                 ),
             ],
           ),
@@ -174,7 +190,7 @@ class _ProductCard extends StatelessWidget {
     } else if (!m.storeReady) {
       label = 'Chưa mở';
     } else if (price == null) {
-      label = 'Chưa bán';
+      label = m.pricesLoaded ? 'Chưa bán' : 'Chưa có giá';
     } else {
       label = price;
       tap = m.busy == null ? onBuy : null;

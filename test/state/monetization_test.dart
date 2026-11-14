@@ -81,6 +81,8 @@ void main() {
       expect(m.interstitialDue, isFalse, reason: 'not before stage 3 is cleared');
 
       g.save.stage = 3;
+      expect(m.interstitialDue, isFalse, reason: 'a session starts as if an ad had just closed');
+      now = now.add(const Duration(seconds: 151));
       expect(m.interstitialDue, isTrue);
       await m.afterMatch();
       expect(ads.interstitials, 1);
@@ -95,12 +97,28 @@ void main() {
       expect(m.interstitialDue, isTrue);
     });
 
+    test('a rewarded ad pushes the next interstitial back', () async {
+      final g = await freshGame();
+      var now = DateTime(2026, 11, 14, 9);
+      final m = Monetization(game: g, ads: FakeAds(), store: const NoStore(), clock: () => now);
+      g.save.stage = 10;
+      g.save.matchesSinceAd = 10;
+      now = now.add(const Duration(seconds: 151));
+      expect(m.interstitialDue, isTrue);
+      await m.claimFreeCoins();
+      expect(m.interstitialDue, isFalse);
+      now = now.add(const Duration(seconds: 151));
+      expect(m.interstitialDue, isTrue);
+    });
+
     test('remove ads turns off the banner and interstitials but keeps rewarded ads', () async {
       final g = await freshGame();
-      final m = Monetization(game: g, ads: FakeAds(), store: FakeStore());
+      var now = DateTime(2026, 11, 14, 9);
+      final m = Monetization(game: g, ads: FakeAds(), store: FakeStore(), clock: () => now);
       await m.init();
       g.save.stage = 10;
       g.save.matchesSinceAd = 10;
+      now = now.add(const Duration(seconds: 151));
       expect(m.showBanner, isTrue);
       expect(m.interstitialDue, isTrue);
 
@@ -135,6 +153,45 @@ void main() {
       final m = Monetization(game: g, ads: FakeAds(), store: store, clock: () => store.now);
       await m.init();
       expect(g.save.coins, 0);
+    });
+
+    test('more than a hundred coin packs are still never paid twice', () async {
+      final g = await freshGame();
+      final store = FakeStore();
+      final m = Monetization(game: g, ads: FakeAds(), store: store, clock: () => store.now);
+      await m.init();
+      for (var i = 0; i < 120; i++) {
+        await m.buy(product('pz_coins_1000'));
+      }
+      store.listener!(store.snapshot);
+      await m.restore();
+      expect(g.save.coins, 120 * 1000);
+    });
+
+    test('a wrong device clock does not decide which coin packs count', () async {
+      final g = await freshGame();
+      final store = FakeStore();
+      // The phone runs an hour fast; the cut-off comes from the store's clock instead.
+      final m = Monetization(
+        game: g,
+        ads: FakeAds(),
+        store: store,
+        clock: () => store.now.add(const Duration(hours: 1)),
+      );
+      await m.init();
+      store.history.add(StoreTx('cleared', 'pz_coins_3500', store.now.add(const Duration(minutes: 20))));
+      store.listener!(store.snapshot);
+      expect(g.save.coins, 3500);
+    });
+
+    test('a purchase made before the store ever answered still counts', () async {
+      final g = await freshGame();
+      final store = FakeStore()..silentInit = true;
+      final m = Monetization(game: g, ads: FakeAds(), store: store, clock: () => store.now);
+      await m.init();
+      expect(g.save.storeSince, 0);
+      expect(await m.buy(product('pz_coins_1000')), 'Đã nhận 1.000 xu. Cảm ơn bạn!');
+      expect(g.save.coins, 1000);
     });
 
     test('a pending payment that clears later is credited', () async {
@@ -190,7 +247,7 @@ void main() {
       await m.buy(product('pz_coins_1000'));
       final back = SaveData.fromJson(jsonDecode(jsonEncode(g.save.toJson())));
       expect(back.noAds, isTrue);
-      expect(back.creditedTx, contains('tx-2'));
+      expect(back.creditedTx, contains('rc_2'));
       expect(back.storeSince, g.save.storeSince);
     });
   });

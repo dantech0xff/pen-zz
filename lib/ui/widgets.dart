@@ -5,6 +5,10 @@ import '../audio/sfx.dart';
 import '../render/palette.dart';
 import 'theme.dart';
 
+import '../core/mathx.dart' show fmtNum;
+
+export '../core/mathx.dart' show fmtNum;
+
 /// Notebook paper: grid, fine lines and the red margin, like the web page background.
 class PaperPainter extends CustomPainter {
   const PaperPainter();
@@ -237,16 +241,6 @@ class _CoinChipState extends State<CoinChip> with SingleTickerProviderStateMixin
       ),
     ),
   );
-}
-
-String fmtNum(int n) {
-  final s = n.abs().toString();
-  final b = StringBuffer();
-  for (var i = 0; i < s.length; i++) {
-    if (i > 0 && (s.length - i) % 3 == 0) b.write('.');
-    b.write(s[i]);
-  }
-  return n < 0 ? '-$b' : b.toString();
 }
 
 /// Thin bar with an ink fill, used for XP and stat bars.
