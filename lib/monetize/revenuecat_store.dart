@@ -13,6 +13,9 @@ class RevenueCatStore implements StoreService {
   final String apiKey;
   bool _ready = false, _offline = false;
 
+  /// Account id asked for before the store started; [init] signs in with it.
+  String? _pendingUser;
+
   @override
   bool get available => _ready;
 
@@ -38,10 +41,15 @@ class RevenueCatStore implements StoreService {
     if (apiKey.isEmpty || _ready) return;
     try {
       await Purchases.setLogLevel(kDebugMode ? LogLevel.debug : LogLevel.warn);
-      await Purchases.configure(PurchasesConfiguration(apiKey));
+      final user = _pendingUser;
+      await Purchases.configure(PurchasesConfiguration(apiKey)..appUserID = user);
       _ready = true;
       Purchases.addCustomerInfoUpdateListener((info) => onUpdate(_snapshot(info)));
-      onUpdate(_snapshot(await Purchases.getCustomerInfo()));
+      var info = await Purchases.getCustomerInfo();
+      // The account id may have arrived while the store was starting.
+      final later = _pendingUser;
+      if (later != null && later != user) info = (await Purchases.logIn(later)).customerInfo;
+      onUpdate(_snapshot(info));
     } on PlatformException {
       // Offline or misconfigured: purchases already cached on the device still apply.
       _offline = !_ready;
@@ -84,6 +92,19 @@ class RevenueCatStore implements StoreService {
         PurchasesErrorCode.operationAlreadyInProgressError => const PurchaseFailed('Đang xử lý một giao dịch khác.'),
         final code => PurchaseFailed('Mua không thành công (${code.name}). Thử lại sau nhé.'),
       };
+    }
+  }
+
+  @override
+  Future<StoreSnapshot?> identify(String appUserId) async {
+    if (!_ready) {
+      _pendingUser = appUserId;
+      return null;
+    }
+    try {
+      return _snapshot((await Purchases.logIn(appUserId)).customerInfo);
+    } on PlatformException {
+      return null;
     }
   }
 

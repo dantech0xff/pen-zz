@@ -39,9 +39,14 @@ void main() {
   final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
 
   /// A RevenueCat backend whose history starts with [old] purchases from another install.
+  /// Calls the game made to the SDK, in order (method name and arguments).
+  final calls = <MethodCall>[];
+
   Future<(GameController, Monetization, List<Map<String, Object?>>)> start({
     List<Map<String, Object?>> old = const [],
+    String? accountBeforeStart,
   }) async {
+    calls.clear();
     SharedPreferences.setMockInitialValues({});
     final g = GameController();
     await g.load();
@@ -49,7 +54,10 @@ void main() {
     var clock = DateTime.utc(2026, 11, 14, 10);
     String now() => clock.toIso8601String();
     messenger.setMockMethodCallHandler(channel, (call) async {
+      calls.add(call);
       switch (call.method) {
+        case 'logIn':
+          return {'customerInfo': customerInfo(history, now()), 'created': false};
         case 'getCustomerInfo':
         case 'restorePurchases':
           return customerInfo(history, now());
@@ -84,6 +92,7 @@ void main() {
     });
     addTearDown(() => messenger.setMockMethodCallHandler(channel, null));
     final m = Monetization(game: g, ads: NoAds(), store: RevenueCatStore('goog_test'));
+    if (accountBeforeStart != null) await m.identify(accountBeforeStart);
     await m.init();
     return (g, m, history);
   }
@@ -108,12 +117,22 @@ void main() {
     await pushCustomerInfo(history);
     await m.restore();
     expect(g.save.coins, 1000);
-    expect(g.save.creditedTx, {'rc_1'});
+    expect(g.save.creditedTx, {'rc_1': 1000});
   });
 
   test('coin packs from before the first contact with the store are not paid', () async {
     final (g, _, _) = await start(old: [rcTx('rc_old', 'pz_coins_9000', '2026-01-02T08:00:00.000Z')]);
     expect(g.save.coins, 0);
     expect(g.save.storeSince, greaterThan(0));
+  });
+
+  test('the store signs in with the player id, before or after it starts', () async {
+    final (_, m, _) = await start(accountBeforeStart: 'uid-early');
+    final setup = calls.firstWhere((c) => c.method == 'setupPurchases');
+    expect((setup.arguments as Map)['appUserId'], 'uid-early');
+
+    await m.identify('uid-later');
+    final login = calls.lastWhere((c) => c.method == 'logIn');
+    expect((login.arguments as Map)['appUserID'], 'uid-later');
   });
 }

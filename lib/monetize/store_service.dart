@@ -48,6 +48,11 @@ abstract class StoreService {
 
   /// Restores one-time purchases. Returns null when the store could not be reached.
   Future<StoreSnapshot?> restore();
+
+  /// Ties purchases to the player's account id (the Firebase user), so they follow the
+  /// player to a new phone. Returns the account's state, or null when not connected yet;
+  /// before [init] the id is kept and used when the store starts.
+  Future<StoreSnapshot?> identify(String appUserId);
 }
 
 class NoStore implements StoreService {
@@ -70,4 +75,7 @@ class NoStore implements StoreService {
 
   @override
   Future<StoreSnapshot?> restore() async => null;
+
+  @override
+  Future<StoreSnapshot?> identify(String appUserId) async => null;
 }

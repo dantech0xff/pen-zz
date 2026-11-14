@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:pen_zz/core/store_catalog.dart';
 import 'package:pen_zz/monetize/ads_service.dart';
+import 'package:pen_zz/monetize/cloud_service.dart';
 import 'package:pen_zz/monetize/store_service.dart';
 
 /// Ads that always load; [banner] is as tall as the tallest banner the game accepts.
@@ -83,4 +84,101 @@ class FakeStore implements StoreService {
 
   @override
   Future<StoreSnapshot?> restore() async => snapshot;
+
+  /// Account ids the game signed the store in with, in order.
+  final List<String> identities = [];
+
+  @override
+  Future<StoreSnapshot?> identify(String appUserId) async {
+    identities.add(appUserId);
+    return snapshot;
+  }
+}
+
+/// A cloud with accounts and one saved document per account, like Firestore.
+class FakeCloud extends CloudService {
+  FakeCloud({this.online = true, this.idPrefix = 'anon'});
+
+  /// The server is reachable.
+  bool online;
+
+  /// Start of the anonymous ids this install gets, so two installs never share one.
+  final String idPrefix;
+
+  /// Saved documents by player id.
+  final Map<String, String> docs = {};
+
+  /// Player id that owns a Google account, by account name.
+  final Map<String, String> googleOwners = {};
+
+  /// Google account the player picks in the next [linkGoogle].
+  String googleAccount = 'ban@example.com';
+
+  String? _uid;
+  String? _google;
+  int _next = 0;
+  int uploads = 0;
+
+  @override
+  bool get available => true;
+
+  @override
+  String? get uid => _uid;
+
+  @override
+  bool get linked => _google != null;
+
+  @override
+  String? get accountName => _google;
+
+  void _needOnline() {
+    if (!online) throw StateError('offline');
+  }
+
+  @override
+  Future<void> init() async {
+    if (_uid != null) return;
+    _needOnline();
+    _uid = '$idPrefix-${++_next}';
+    notifyListeners();
+  }
+
+  @override
+  Future<String?> download() async {
+    _needOnline();
+    return docs[_uid];
+  }
+
+  @override
+  Future<void> upload(String json) async {
+    _needOnline();
+    docs[_uid!] = json;
+    uploads++;
+  }
+
+  @override
+  Future<LinkOutcome> linkGoogle() async {
+    if (!online || _uid == null) return const LinkFailed('offline');
+    final owner = googleOwners[googleAccount];
+    _google = googleAccount;
+    if (owner != null && owner != _uid) {
+      _uid = owner;
+      notifyListeners();
+      return const LinkedSwitched();
+    }
+    googleOwners[googleAccount] = _uid!;
+    notifyListeners();
+    return const LinkedSame();
+  }
+
+  @override
+  Future<bool> deleteAccount() async {
+    if (!online || _uid == null) return false;
+    docs.remove(_uid);
+    googleOwners.removeWhere((_, owner) => owner == _uid);
+    _google = null;
+    _uid = '$idPrefix-${++_next}';
+    notifyListeners();
+    return true;
+  }
 }

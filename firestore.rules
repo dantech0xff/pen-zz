@@ -1,0 +1,18 @@
+rules_version = '2';
+
+// Bút Chiến keeps one document per player: players/{uid} = { save: <JSON string>, updatedAt }.
+// Each signed-in player (anonymous or linked to Google) can only read, write and delete
+// their own document.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /players/{uid} {
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['save', 'updatedAt'])
+        && request.resource.data.save is string
+        && request.resource.data.save.size() < 600000
+        && request.resource.data.updatedAt == request.time;
+    }
+  }
+}

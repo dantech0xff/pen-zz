@@ -247,7 +247,7 @@ void main() {
       await m.buy(product('pz_coins_1000'));
       final back = SaveData.fromJson(jsonDecode(jsonEncode(g.save.toJson())));
       expect(back.noAds, isTrue);
-      expect(back.creditedTx, contains('rc_2'));
+      expect(back.creditedTx, containsPair('rc_2', 1000));
       expect(back.storeSince, g.save.storeSince);
     });
   });

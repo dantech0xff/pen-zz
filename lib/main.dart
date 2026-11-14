@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'app.dart';
 import 'audio/sfx.dart';
 import 'monetize/services.dart';
+import 'state/cloud_sync.dart';
 import 'state/game_controller.dart';
 import 'state/monetization.dart';
 
@@ -23,5 +24,6 @@ Future<void> main() async {
   await controller.load();
   Sfx.instance.preload();
   final monetization = Monetization(game: controller, ads: createAds(), store: createStore());
-  runApp(PenApp(controller: controller, monetization: monetization));
+  final cloud = CloudSync(game: controller, cloud: createCloud(), onAccount: monetization.identify);
+  runApp(PenApp(controller: controller, monetization: monetization, cloud: cloud));
 }

@@ -49,6 +49,12 @@ class Monetization extends ChangeNotifier {
     return coins;
   }
 
+  /// Ties purchases to the player's account (see [StoreService.identify]).
+  Future<void> identify(String uid) async {
+    final snap = await store.identify(uid);
+    if (snap != null) _apply(snap);
+  }
+
   /// This build has ads or a store at all: false on the web build, which shows neither.
   bool get enabled => ads is! NoAds || store is! NoStore;
 

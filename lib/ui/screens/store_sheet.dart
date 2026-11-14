@@ -6,10 +6,12 @@ import '../../core/store_catalog.dart';
 import '../../core/templates.dart';
 import '../../render/fighter_painter.dart';
 import '../../render/palette.dart';
+import '../../state/cloud_sync.dart';
 import '../../state/game_controller.dart';
 import '../../state/monetization.dart';
 import '../theme.dart';
 import '../widgets.dart';
+import 'cloud_panel.dart';
 
 /// The store: free coins for a rewarded ad, one-time packs, outfits and coin packs.
 /// [highlight] marks the product that unlocks an item the player tapped in the wardrobe.
@@ -38,6 +40,10 @@ class _StoreSheet extends StatefulWidget {
 class _StoreSheetState extends State<_StoreSheet> {
   String? _msg;
 
+  /// The player has paid for something, so losing the save would cost real money.
+  static bool _boughtSomething(GameController g) =>
+      g.save.noAds || g.save.creditedPacks.isNotEmpty || g.save.creditedTx.isNotEmpty;
+
   @override
   void initState() {
     super.initState();
@@ -54,7 +60,7 @@ class _StoreSheetState extends State<_StoreSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final m = MonetizationScope.of(context), g = AppScope.of(context);
+    final m = MonetizationScope.of(context), g = AppScope.of(context), cloud = CloudScope.of(context);
     List<StoreProductDef> pick(bool Function(StoreProductDef p) test) => [
       for (final p in storeProducts)
         if (test(p)) p,
@@ -92,6 +98,32 @@ class _StoreSheetState extends State<_StoreSheet> {
                 Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(_msg!, style: T.body(15, Pal.ink)),
+                ),
+              if (cloud.enabled && !cloud.linked && _boughtSomething(g))
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: SketchCard(
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Liên kết Google để không mất đồ đã mua khi cài lại app hoặc đổi máy.',
+                            style: T.body(15),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        SizedBox(
+                          width: 112,
+                          child: SketchButton(
+                            label: 'Liên kết',
+                            compact: true,
+                            primary: true,
+                            onTap: () => _run(() => linkGoogleAccount(context)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               const SizedBox(height: 6),
               Expanded(

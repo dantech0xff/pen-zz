@@ -4,6 +4,7 @@ import 'core/arenas.dart';
 import 'core/bots.dart';
 import 'core/levels.dart';
 import 'state/game_controller.dart';
+import 'state/cloud_sync.dart';
 import 'state/monetization.dart';
 import 'ui/screens/battle_screen.dart';
 import 'ui/screens/draw_screen.dart';
@@ -91,11 +92,14 @@ class NavScope extends InheritedNotifier<Nav> {
 }
 
 class PenApp extends StatefulWidget {
-  const PenApp({super.key, required this.controller, this.monetization});
+  const PenApp({super.key, required this.controller, this.monetization, this.cloud});
   final GameController controller;
 
   /// Ads and the store; none when left out (the web build and widget tests).
   final Monetization? monetization;
+
+  /// Cloud save; none when left out.
+  final CloudSync? cloud;
 
   @override
   State<PenApp> createState() => _PenAppState();
@@ -105,19 +109,30 @@ class _PenAppState extends State<PenApp> {
   final Nav _nav = Nav();
   late final AppLifecycleListener _life;
   late final Monetization _money = widget.monetization ?? Monetization.none(widget.controller);
+  late final CloudSync _cloud = widget.cloud ?? CloudSync.none(widget.controller);
+
+  void _save() {
+    widget.controller.flush();
+    _cloud.push();
+  }
 
   @override
   void initState() {
     super.initState();
-    _life = AppLifecycleListener(onPause: widget.controller.flush, onDetach: widget.controller.flush);
-    // The consent message needs a screen, so ads and the store start after the first frame.
-    WidgetsBinding.instance.addPostFrameCallback((_) => _money.init());
+    _life = AppLifecycleListener(onPause: _save, onDetach: _save, onResume: _cloud.connect);
+    // The consent message needs a screen, so ads, the store and the cloud start after the
+    // first frame.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _money.init();
+      _cloud.init();
+    });
   }
 
   @override
   void dispose() {
     _life.dispose();
     if (widget.monetization == null) _money.dispose();
+    if (widget.cloud == null) _cloud.dispose();
     super.dispose();
   }
 
@@ -126,13 +141,16 @@ class _PenAppState extends State<PenApp> {
     controller: widget.controller,
     child: MonetizationScope(
       monetization: _money,
-      child: NavScope(
-        nav: _nav,
-        child: MaterialApp(
-          title: 'Bút Chiến',
-          debugShowCheckedModeBanner: false,
-          theme: appTheme(),
-          home: const _Shell(),
+      child: CloudScope(
+        sync: _cloud,
+        child: NavScope(
+          nav: _nav,
+          child: MaterialApp(
+            title: 'Bút Chiến',
+            debugShowCheckedModeBanner: false,
+            theme: appTheme(),
+            home: const _Shell(),
+          ),
         ),
       ),
     ),

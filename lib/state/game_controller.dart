@@ -180,10 +180,20 @@ class GameController extends ChangeNotifier {
       storeSince: old.storeSince,
       adDay: old.adDay,
       adCoinsUsed: old.adCoinsUsed,
+      epoch: old.epoch + 1,
     );
     save.owned.addAll(old.owned.where((id) => itemIndex[id]?.exclusive ?? false));
     _changed();
     await flush();
+  }
+
+  /// Takes over a save merged with the cloud copy. Sound and haptics follow the new save,
+  /// which keeps this phone's own settings.
+  void replaceSave(SaveData merged) {
+    save = merged;
+    Sfx.instance.enabled = save.sound;
+    Haptics.instance.enabled = save.haptics;
+    _changed();
   }
 
   // ---------------- purchases and ads ----------------
@@ -242,7 +252,8 @@ class GameController extends ChangeNotifier {
       for (final t in snap.transactions) {
         final p = productById(t.productId), time = t.time;
         if (p == null || p.kind != ProductKind.consumable || time == null) continue;
-        if (time.millisecondsSinceEpoch < since || !save.creditedTx.add(t.id)) continue;
+        if (time.millisecondsSinceEpoch < since || save.creditedTx.containsKey(t.id)) continue;
+        save.creditedTx[t.id] = p.coins;
         save.coins += p.coins;
         credited += p.coins;
       }

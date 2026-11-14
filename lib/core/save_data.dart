@@ -27,11 +27,12 @@ class SaveData {
     this.losses = 0,
     this.noAds = false,
     Set<String>? creditedPacks,
-    Set<String>? creditedTx,
+    Map<String, int>? creditedTx,
     this.storeSince = 0,
     this.adDay = 0,
     this.adCoinsUsed = 0,
     this.matchesSinceAd = 0,
+    this.epoch = 0,
   }) : pts = pts ?? Points(),
        creditedPacks = creditedPacks ?? {},
        creditedTx = creditedTx ?? {},
@@ -77,9 +78,10 @@ class SaveData {
   /// One-time products whose coins were already credited (the starter pack).
   Set<String> creditedPacks;
 
-  /// RevenueCat ids of coin-pack purchases already credited. Never trimmed: the store lists
-  /// every past purchase, so a forgotten id would be paid again.
-  Set<String> creditedTx;
+  /// Coin-pack purchases already credited: RevenueCat transaction id to coins paid. Never
+  /// trimmed, because the store lists every past purchase and a forgotten id would be paid
+  /// again. The coin amounts let two saves be merged without losing or doubling coins.
+  Map<String, int> creditedTx;
 
   /// The store's clock (ms since epoch) when this save first reached the store. Coin packs
   /// bought before it belong to an older install and are not credited again.
@@ -90,6 +92,10 @@ class SaveData {
 
   /// Finished matches since the last interstitial.
   int matchesSinceAd;
+
+  /// Goes up by one each time the player resets progress. When two saves are merged, the
+  /// one with the newer epoch wins, so a reset on one phone also applies to the others.
+  int epoch;
 
   /// Upper bound when reading a save, against corrupt files only; no player gets near it.
   static const int maxCreditedTx = 100000;
@@ -117,11 +123,12 @@ class SaveData {
     'losses': losses,
     'noAds': noAds,
     'creditedPacks': creditedPacks.toList(),
-    'creditedTx': creditedTx.toList(),
+    'creditedTx': creditedTx,
     'storeSince': storeSince,
     'adDay': adDay,
     'adCoinsUsed': adCoinsUsed,
     'matchesSinceAd': matchesSinceAd,
+    'epoch': epoch,
   };
 
   /// Reads a save defensively: unknown or broken fields fall back to defaults.
@@ -175,11 +182,16 @@ class SaveData {
     final packs = data['creditedPacks'];
     if (packs is List) out.creditedPacks.addAll(packs.whereType<String>().take(50));
     final tx = data['creditedTx'];
-    if (tx is List) out.creditedTx.addAll(tx.whereType<String>().take(maxCreditedTx));
+    if (tx is Map) {
+      for (final e in tx.entries.take(maxCreditedTx)) {
+        if (e.key is String) out.creditedTx[e.key as String] = n(e.value, 0, 1000000, 0);
+      }
+    }
     out.storeSince = n(data['storeSince'], 0, 1 << 52, 0);
     out.adDay = n(data['adDay'], 0, 99991231, 0);
     out.adCoinsUsed = n(data['adCoinsUsed'], 0, 1000, 0);
     out.matchesSinceAd = n(data['matchesSinceAd'], 0, 1000000, 0);
+    out.epoch = n(data['epoch'], 0, 1000000, 0);
     return out;
   }
 }
