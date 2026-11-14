@@ -43,6 +43,14 @@ void main() {
     await settle(tester);
     expect(find.text('Vẽ khiên'), findsOneWidget);
 
+    // System back on the shield step returns to the weapon step and keeps the sword.
+    await tester.binding.handlePopRoute();
+    await settle(tester);
+    expect(find.text('Vẽ vũ khí'), findsOneWidget);
+    await tester.tap(find.text('Tiếp: vẽ khiên'));
+    await settle(tester);
+    expect(find.text('Vẽ khiên'), findsOneWidget);
+
     // A short shield stroke near the shield hand.
     await tester.dragFrom(handAt() + const Offset(-8, 0), const Offset(0, 70));
     await settle(tester);

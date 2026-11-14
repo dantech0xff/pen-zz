@@ -274,15 +274,24 @@ void botPickShield(OppSpec o, WeaponStats pw, Rng rng) {
   o.compute();
 }
 
+/// Smallest size a blueprint may shrink to when ink is short.
+const double stampMinScale = 0.3;
+
+/// Ink a blueprint needs at its smallest size.
+double stampMinInk(GearTemplate t) => inkOf(t.strokes) * stampMinScale;
+
 /// Stamps a blueprint for the player, scaled down to fit [inkLeft] if needed.
+/// The result never uses more than [inkLeft]; the editor checks [stampMinInk]
+/// first so the player never gets a blueprint cut short.
 Strokes stampBlueprint(GearTemplate t, double inkLeft, {int seed = 7}) {
   var st = t.strokes;
   final ink = inkOf(st);
   final room = inkLeft * 0.98;
-  if (ink > room && room > 0) st = scaleSt(st, math.max(0.3, room / ink));
+  if (ink > room && room > 0) st = scaleSt(st, math.max(stampMinScale, room / ink));
   st = wobble(st, 0.6, Rng(seed));
   while (st.length > 1 && inkOf(st) > inkLeft) {
     st.removeLast();
   }
-  return roundSt(st);
+  st = roundSt(st);
+  return inkOf(st) > inkLeft ? trimInk(st, math.max(0, inkLeft)) : st;
 }

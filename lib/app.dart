@@ -69,12 +69,11 @@ class Nav extends ChangeNotifier {
       case Scr.home:
         return true;
       case Scr.draw:
-        go(drawFrom == DrawFrom.pre ? Scr.pre : Scr.home);
+      case Scr.battle:
+        // These screens handle back themselves (editor steps, pause menu).
+        break;
       case Scr.pre:
         go(opp?.kind == OppKind.stage ? Scr.home : Scr.practice);
-      case Scr.battle:
-        // The battle screen handles back itself (pause menu).
-        break;
       case Scr.upgrade:
       case Scr.shop:
       case Scr.practice:
@@ -147,7 +146,7 @@ class _Shell extends StatelessWidget {
     return PopScope(
       canPop: nav.scr == Scr.home,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop && nav.scr != Scr.battle) nav.back();
+        if (!didPop) nav.back();
       },
       child: Scaffold(
         body: AnimatedSwitcher(

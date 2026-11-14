@@ -87,7 +87,14 @@ class _DrawScreenState extends State<DrawScreen> {
   void _flashInk() => _flash++;
 
   P _toLocal(Offset pos) => P(pos.dx / _dK - origin.x, pos.dy / _dK - origin.y);
-  bool _inZone(P p) => weapon || hypot(p.x, p.y) <= shZone;
+
+  /// Shields stay in the ring around the hand; weapons stay on the canvas, which keeps
+  /// every point inside the range a save can hold.
+  bool _inZone(P p) {
+    if (!weapon) return hypot(p.x, p.y) <= shZone;
+    final cx = p.x + origin.x, cy = p.y + origin.y;
+    return cx >= 0 && cx <= drawW && cy >= 0 && cy <= drawW;
+  }
 
   void _begin(P p) {
     if (inkLeft < 1) {
@@ -218,7 +225,17 @@ class _DrawScreenState extends State<DrawScreen> {
     );
     if (picked == null || !mounted) return;
     final other = weapon ? s : w;
-    final st = stampBlueprint(picked, inkMax - inkOf(other));
+    final room = inkMax - inkOf(other);
+    if (stampMinInk(picked) > room * 0.98) {
+      setState(() {
+        _warn =
+            'Không đủ mực cho mẫu ${picked.name.toLowerCase()}: ${weapon ? 'khiên' : 'vũ khí'} đang dùng '
+            '${inkOf(other).round()} mực. Xoá bớt nét ${weapon ? 'khiên' : 'vũ khí'} rồi chọn lại.';
+        _flashInk();
+      });
+      return;
+    }
+    final st = stampBlueprint(picked, room);
     setState(() {
       if (weapon) {
         w = st;
@@ -226,6 +243,7 @@ class _DrawScreenState extends State<DrawScreen> {
         s = st;
       }
       _drawing = null;
+      _warn = null;
       _recalc();
     });
   }
@@ -300,178 +318,185 @@ class _DrawScreenState extends State<DrawScreen> {
             : 'Vẽ trong vòng nét đứt quanh tay khiên. Mực càng nhiều thì thủ càng cao. Khiên càng cao thì giơ càng chậm, đi lại càng chậm, và chỉ chặn được khi đã giơ hẳn lên.');
     final left = math.max(0.0, inkLeft);
     final reserved = weapon ? inkOf(s) : inkOf(w);
-    return ScreenFrame(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          ScreenHeader(
-            title: first ? (weapon ? 'Vẽ vũ khí' : 'Vẽ khiên') : 'Sửa đồ',
-            onBack: _back,
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (!first)
-                  Segmented<DrawMode>(
-                    options: const {DrawMode.weapon: 'Vũ khí', DrawMode.shield: 'Khiên'},
-                    value: mode,
-                    onChanged: _setMode,
-                  ),
-                const SizedBox(width: 6),
-                SketchButton(label: 'Mẫu', compact: true, onTap: _pickBlueprint),
-              ],
+    // System back follows the same steps as the back chip.
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _back();
+      },
+      child: ScreenFrame(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ScreenHeader(
+              title: first ? (weapon ? 'Vẽ vũ khí' : 'Vẽ khiên') : 'Sửa đồ',
+              onBack: _back,
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (!first)
+                    Segmented<DrawMode>(
+                      options: const {DrawMode.weapon: 'Vũ khí', DrawMode.shield: 'Khiên'},
+                      value: mode,
+                      onChanged: _setMode,
+                    ),
+                  const SizedBox(width: 6),
+                  SketchButton(label: 'Mẫu', compact: true, onTap: _pickBlueprint),
+                ],
+              ),
             ),
-          ),
-          Text(tip, style: T.body(15, _warn != null ? Pal.red : Pal.pencil)),
-          const SizedBox(height: 4),
-          Expanded(
-            child: LayoutBuilder(
-              builder: (context, c) {
-                final side = math.min(c.maxWidth, math.min(440.0, c.maxHeight));
-                _dK = side / drawW;
-                return Center(
-                  child: SizedBox(
-                    width: side,
-                    height: side,
-                    child: Stack(
-                      children: [
-                        Positioned.fill(
-                          child: Listener(
-                            key: const ValueKey('draw-canvas'),
-                            behavior: HitTestBehavior.opaque,
-                            onPointerDown: (e) {
-                              if (_pointer != null) return;
-                              _pointer = e.pointer;
-                              _begin(_toLocal(e.localPosition));
-                            },
-                            onPointerMove: (e) {
-                              if (e.pointer == _pointer) _move(_toLocal(e.localPosition));
-                            },
-                            onPointerUp: (e) {
-                              if (e.pointer != _pointer) return;
-                              _pointer = null;
-                              _drawing = null;
-                              _changed();
-                            },
-                            onPointerCancel: (e) {
-                              if (e.pointer != _pointer) return;
-                              _pointer = null;
-                              _drawing = null;
-                            },
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.4),
-                                borderRadius: cardRadius,
-                                border: Border.all(color: const Color(0x59474B55), width: 2),
-                              ),
-                              child: CustomPaint(
-                                painter: _EditorPainter(
-                                  w: w,
-                                  s: s,
-                                  weapon: weapon,
-                                  look: lookFor(g.save.eq),
-                                  eW: eW,
-                                  dK: _dK,
+            Text(tip, style: T.body(15, _warn != null ? Pal.red : Pal.pencil)),
+            const SizedBox(height: 4),
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, c) {
+                  final side = math.min(c.maxWidth, math.min(440.0, c.maxHeight));
+                  _dK = side / drawW;
+                  return Center(
+                    child: SizedBox(
+                      width: side,
+                      height: side,
+                      child: Stack(
+                        children: [
+                          Positioned.fill(
+                            child: Listener(
+                              key: const ValueKey('draw-canvas'),
+                              behavior: HitTestBehavior.opaque,
+                              onPointerDown: (e) {
+                                if (_pointer != null) return;
+                                _pointer = e.pointer;
+                                _begin(_toLocal(e.localPosition));
+                              },
+                              onPointerMove: (e) {
+                                if (e.pointer == _pointer) _move(_toLocal(e.localPosition));
+                              },
+                              onPointerUp: (e) {
+                                if (e.pointer != _pointer) return;
+                                _pointer = null;
+                                _drawing = null;
+                                _changed();
+                              },
+                              onPointerCancel: (e) {
+                                if (e.pointer != _pointer) return;
+                                _pointer = null;
+                                _drawing = null;
+                              },
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.4),
+                                  borderRadius: cardRadius,
+                                  border: Border.all(color: const Color(0x59474B55), width: 2),
+                                ),
+                                child: CustomPaint(
+                                  painter: _EditorPainter(
+                                    w: w,
+                                    s: s,
+                                    weapon: weapon,
+                                    look: lookFor(g.save.eq),
+                                    eW: eW,
+                                    dK: _dK,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        if (!weapon && widget.from == DrawFrom.pre && o != null)
-                          Positioned(
-                            top: 6,
-                            right: 6,
-                            width: 96,
-                            child: Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: BoxDecoration(
-                                color: const Color(0xEBFFFDF7),
-                                border: Border.all(color: Pal.red, width: 1.5),
-                                borderRadius: sketchRadius,
-                              ),
-                              child: Column(
-                                children: [
-                                  SizedBox(
-                                    width: 86,
-                                    height: 86,
-                                    child: CustomPaint(
-                                      painter: _ThumbPainter(
-                                        Fighter(
-                                          look: lookFor(o.eq, versus: g.save.eq),
-                                          wStrokes: o.wStrokes,
+                          if (!weapon && widget.from == DrawFrom.pre && o != null)
+                            Positioned(
+                              top: 6,
+                              right: 6,
+                              width: 96,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xEBFFFDF7),
+                                  border: Border.all(color: Pal.red, width: 1.5),
+                                  borderRadius: sketchRadius,
+                                ),
+                                child: Column(
+                                  children: [
+                                    SizedBox(
+                                      width: 86,
+                                      height: 86,
+                                      child: CustomPaint(
+                                        painter: _ThumbPainter(
+                                          Fighter(
+                                            look: lookFor(o.eq, versus: g.save.eq),
+                                            wStrokes: o.wStrokes,
+                                          ),
+                                          gearBox([o.wStrokes]),
+                                          true,
                                         ),
-                                        gearBox([o.wStrokes]),
-                                        true,
                                       ),
                                     ),
-                                  ),
-                                  Text(
-                                    '${o.name}: công ${o.w.atk.round()}',
-                                    textAlign: TextAlign.center,
-                                    style: T.body(13, Pal.red),
-                                    maxLines: 2,
-                                  ),
-                                ],
+                                    Text(
+                                      '${o.name}: công ${o.w.atk.round()}',
+                                      textAlign: TextAlign.center,
+                                      style: T.body(13, Pal.red),
+                                      maxLines: 2,
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                      ],
+                        ],
+                      ),
                     ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 6),
+            InkTube(left: left / inkMax, reserved: reserved / inkMax, label: 'còn ${left.round()}', flash: _flash),
+            const SizedBox(height: 6),
+            StatGrid(items: items),
+            if (boosted)
+              Text(
+                'Đã tính điểm nâng cấp: công ×${mulAtk(pts).toStringAsFixed(2)}, thủ ×${mulDef(pts).toStringAsFixed(2)}, thời gian ×${mulTime(pts).toStringAsFixed(2)}.',
+                style: T.body(14),
+              ),
+            if (matchup != null)
+              Text(matchup, style: T.body(15, !eS.has || eS.def < (o?.w.atk ?? 0) - 4 ? Pal.red : Pal.pencil)),
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                Expanded(
+                  child: SketchButton(
+                    label: 'Hoàn tác',
+                    onTap: cur.isEmpty
+                        ? null
+                        : () {
+                            cur.removeLast();
+                            _drawing = null;
+                            _changed();
+                          },
                   ),
-                );
-              },
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: SketchButton(
+                    label: 'Xóa hết',
+                    onTap: cur.isEmpty
+                        ? null
+                        : () {
+                            cur.clear();
+                            _drawing = null;
+                            _changed();
+                          },
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  flex: 2,
+                  child: SketchButton(
+                    label: first ? (weapon ? 'Tiếp: vẽ khiên' : 'Xong, vào màn ${g.save.stage + 1}') : 'Lưu đồ',
+                    primary: true,
+                    onTap: _done,
+                  ),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(height: 6),
-          InkTube(left: left / inkMax, reserved: reserved / inkMax, label: 'còn ${left.round()}', flash: _flash),
-          const SizedBox(height: 6),
-          StatGrid(items: items),
-          if (boosted)
-            Text(
-              'Đã tính điểm nâng cấp: công ×${mulAtk(pts).toStringAsFixed(2)}, thủ ×${mulDef(pts).toStringAsFixed(2)}, thời gian ×${mulTime(pts).toStringAsFixed(2)}.',
-              style: T.body(14),
-            ),
-          if (matchup != null)
-            Text(matchup, style: T.body(15, !eS.has || eS.def < (o?.w.atk ?? 0) - 4 ? Pal.red : Pal.pencil)),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              Expanded(
-                child: SketchButton(
-                  label: 'Hoàn tác',
-                  onTap: cur.isEmpty
-                      ? null
-                      : () {
-                          cur.removeLast();
-                          _drawing = null;
-                          _changed();
-                        },
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: SketchButton(
-                  label: 'Xóa hết',
-                  onTap: cur.isEmpty
-                      ? null
-                      : () {
-                          cur.clear();
-                          _drawing = null;
-                          _changed();
-                        },
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 2,
-                child: SketchButton(
-                  label: first ? (weapon ? 'Tiếp: vẽ khiên' : 'Xong, vào màn ${g.save.stage + 1}') : 'Lưu đồ',
-                  primary: true,
-                  onTap: _done,
-                ),
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

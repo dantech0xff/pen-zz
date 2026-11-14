@@ -87,9 +87,12 @@ void main() {
 
   test('blueprint stamping respects the ink left', () {
     for (final t in [...weaponTemplates, ...shieldTemplates]) {
-      final st = stampBlueprint(t, 200);
-      expect(inkOf(st), lessThanOrEqualTo(200.0 + 1e-6), reason: t.id);
-      expect(st, isNotEmpty);
+      expect(stampBlueprint(t, 200), isNotEmpty, reason: t.id);
+      for (final left in [200.0, 60.0, 10.0, 0.0]) {
+        final st = stampBlueprint(t, left);
+        expect(inkOf(st), lessThanOrEqualTo(left + 1e-6), reason: '${t.id} with $left ink left');
+      }
+      expect(stampBlueprint(t, stampMinInk(t) / 0.98 + 1), isNotEmpty, reason: '${t.id} at its smallest size');
     }
   });
 }

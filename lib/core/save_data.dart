@@ -117,8 +117,9 @@ class SaveData {
     out.w = cleanStrokes(data['w']) ?? [];
     out.s = cleanStrokes(data['s']) ?? [];
     if (inkOf(out.w) + inkOf(out.s) > inkMax + 30) {
-      out.w = [];
-      out.s = [];
+      // Over the ink cap: keep the weapon and cut the shield (then the weapon) short.
+      out.w = trimInk(out.w, inkMax);
+      out.s = trimInk(out.s, inkMax - inkOf(out.w));
     }
     final bp = data['blueprints'];
     if (bp is List) {
@@ -133,21 +134,36 @@ class SaveData {
   }
 }
 
-/// Validates stroke data: at most 400 strokes and 5000 points, coordinates within ±420.
+/// Validates stroke data: at most 400 strokes and 5000 points. A point that is not a
+/// finite number within ±420 is dropped and splits its stroke, so one bad point does
+/// not cost the whole drawing.
 Strokes? cleanStrokes(Object? st) {
   if (st is! List || st.length > 400) return null;
   final out = <Stroke>[];
   var count = 0;
+  bool ok(Object? v) => v is num && v.isFinite && v.abs() <= 420;
   for (final s in st) {
     if (s is! List || s.length < 2 || s.length.isOdd) continue;
-    final t = <double>[];
-    for (final v in s) {
-      if (v is! num || !v.isFinite || v.abs() > 420) return null;
-      t.add(v.toDouble());
+    final dot = s.length == 2;
+    var t = <double>[];
+    void close() {
+      if (t.length >= 4 || (dot && t.length == 2)) out.add(t);
+      t = <double>[];
     }
-    count += t.length ~/ 2;
-    if (count > 5000) return null;
-    out.add(t);
+
+    for (var i = 0; i < s.length; i += 2) {
+      final x = s[i], y = s[i + 1];
+      if (ok(x) && ok(y)) {
+        t.addAll([(x as num).toDouble(), (y as num).toDouble()]);
+      } else {
+        close();
+      }
+    }
+    close();
+    if (out.length > 400) return null;
   }
-  return out;
+  for (final s in out) {
+    count += s.length ~/ 2;
+  }
+  return count > 5000 ? null : out;
 }

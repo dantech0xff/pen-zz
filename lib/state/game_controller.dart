@@ -12,6 +12,7 @@ import '../core/bots.dart';
 import '../core/catalog.dart';
 import '../core/gear.dart';
 import '../core/levels.dart';
+import '../core/rig.dart';
 import '../core/rng.dart';
 import '../core/save_data.dart';
 import '../core/strokes.dart';
@@ -94,9 +95,10 @@ class GameController extends ChangeNotifier {
 
   // ---------------- gear and wardrobe ----------------
 
+  /// Saves the drawings, cut to the ink cap so a later load never rejects them.
   void saveGear(Strokes w, Strokes s) {
-    save.w = roundSt(w);
-    save.s = roundSt(s);
+    save.w = trimInk(roundSt(w), inkMax);
+    save.s = trimInk(roundSt(s), inkMax - inkOf(save.w));
     _changed();
   }
 

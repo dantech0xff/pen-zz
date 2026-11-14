@@ -28,6 +28,38 @@ double inkOf(Strokes st) {
   return l;
 }
 
+/// Keeps strokes in order until [budget] ink is spent, cutting the last one short.
+Strokes trimInk(Strokes st, double budget) {
+  final out = <Stroke>[];
+  var left = budget;
+  for (final s in st) {
+    final len = strokeLen(s);
+    if (len <= left) {
+      out.add(List<double>.of(s));
+      left -= len;
+      continue;
+    }
+    // Keep a cut piece only when it is long enough to see.
+    if (s.length >= 4 && left > 0.5) {
+      final cut = <double>[s[0], s[1]];
+      for (var i = 2; i < s.length; i += 2) {
+        final d = hypot(s[i] - s[i - 2], s[i + 1] - s[i - 1]);
+        if (d <= left) {
+          cut.addAll([s[i], s[i + 1]]);
+          left -= d;
+          continue;
+        }
+        final k = left / d;
+        cut.addAll([s[i - 2] + (s[i] - s[i - 2]) * k, s[i - 1] + (s[i + 1] - s[i - 1]) * k]);
+        break;
+      }
+      if (cut.length >= 4) out.add(cut);
+    }
+    break;
+  }
+  return out;
+}
+
 /// A loop the player drew by returning near the start point; it gets a light fill.
 bool isClosed(Stroke s) =>
     s.length > 16 && hypot(s[0] - s[s.length - 2], s[1] - s[s.length - 1]) < 22 && strokeLen(s) > 60;
