@@ -47,7 +47,13 @@ class _SettingsSheetState extends State<_SettingsSheet> {
               activeTrackColor: Pal.ink,
               onChanged: g.setHaptics,
             ),
-            Text('Thắng ${s.wins} trận · thua ${s.losses} trận · qua ${s.stage}/120 màn', style: T.body(15)),
+            StatRow(
+              cells: [
+                StatCell(value: '${s.wins}', label: 'trận thắng'),
+                StatCell(value: '${s.losses}', label: 'trận thua'),
+                StatCell(value: '${s.stage}/120', label: 'màn đã qua'),
+              ],
+            ),
             const SizedBox(height: 12),
             const CloudPanel(),
             if (m.storeReady) ...[

@@ -37,7 +37,7 @@ class PreMatchScreen extends StatelessWidget {
     final s = g.save;
     final lv = o.kind == OppKind.stage ? LevelDef(o.stage) : null;
     final title = switch (o.kind) {
-      OppKind.stage => 'Màn ${o.stage}${o.boss ? ' · trùm' : ''} · ${lv!.chapter.name}',
+      OppKind.stage => 'Màn ${o.stage}',
       OppKind.ghost => 'Bóng ma của bạn',
       OppKind.practice => 'Luyện tập',
     };
@@ -77,7 +77,12 @@ class PreMatchScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ScreenHeader(title: title, onBack: nav.back),
+          ScreenHeader(
+            title: title,
+            onBack: nav.back,
+            badge: lv != null && o.boss ? const Pill('TRÙM', color: Pal.red, filled: true) : null,
+            subtitle: lv?.chapter.name,
+          ),
           Text('Sân ${nav.arena.name}: ${nav.arena.ruleText}', style: T.body(15, Pal.ink)),
           const SizedBox(height: 4),
           Text(note, style: T.body(15)),
@@ -89,7 +94,8 @@ class PreMatchScreen extends StatelessWidget {
                 Expanded(
                   child: _Card(
                     color: rgb(myLook.body),
-                    name: 'Bạn · cấp ${s.lvl}',
+                    name: 'Bạn',
+                    level: s.lvl,
                     stats: statLines(pw, ps, s.pts),
                     painter: _Thumb(Fighter(look: myLook, wStrokes: s.w), box, false),
                   ),
@@ -101,7 +107,8 @@ class PreMatchScreen extends StatelessWidget {
                 Expanded(
                   child: _Card(
                     color: rgb(opLook.body),
-                    name: '${o.name} · cấp ${o.lvl}',
+                    name: o.name,
+                    level: o.lvl,
                     stats: statLines(o.w, o.s, o.pts),
                     painter: _Thumb(Fighter(look: opLook, wStrokes: o.wStrokes), box, true),
                     rotate: 0.02,
@@ -167,9 +174,17 @@ class _Goal extends StatelessWidget {
 }
 
 class _Card extends StatelessWidget {
-  const _Card({required this.color, required this.name, required this.stats, required this.painter, this.rotate = 0});
+  const _Card({
+    required this.color,
+    required this.name,
+    required this.level,
+    required this.stats,
+    required this.painter,
+    this.rotate = 0,
+  });
   final Color color;
   final String name, stats;
+  final int level;
   final CustomPainter painter;
   final double rotate;
 
@@ -181,11 +196,18 @@ class _Card extends StatelessWidget {
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        AspectRatio(
-          aspectRatio: 1 / 1.15,
-          child: CustomPaint(painter: painter),
+        // The drawing gives up height first, so the name, level and stats always fit.
+        Flexible(
+          child: AspectRatio(
+            aspectRatio: 1 / 1.15,
+            child: CustomPaint(painter: painter),
+          ),
         ),
         Text(name, textAlign: TextAlign.center, style: T.display(15, color), maxLines: 2),
+        Padding(
+          padding: const EdgeInsets.only(top: 2, bottom: 4),
+          child: Pill('Cấp $level', color: color),
+        ),
         Text(stats, textAlign: TextAlign.center, style: T.body(14)),
       ],
     ),

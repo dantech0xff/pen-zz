@@ -361,10 +361,13 @@ class _StripePainter extends CustomPainter {
 }
 
 class StatItem {
-  const StatItem(this.label, this.value, this.bar, {this.wide = false});
+  const StatItem(this.label, this.value, this.bar, {this.wide = false, this.note});
   final String label, value;
   final double bar;
   final bool wide;
+
+  /// A detail line under the bar.
+  final String? note;
 }
 
 class StatGrid extends StatelessWidget {
@@ -391,6 +394,11 @@ class StatGrid extends StatelessWidget {
         ),
         const SizedBox(height: 2),
         InkBar(value: it.bar, height: 6, color: Pal.pencil, border: false),
+        if (it.note != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Text(it.note!, style: T.body(13)),
+          ),
       ],
     );
     final rows = <Widget>[];
@@ -413,6 +421,102 @@ class StatGrid extends StatelessWidget {
       children: [for (final r in rows) Padding(padding: const EdgeInsets.only(bottom: 6), child: r)],
     );
   }
+}
+
+/// A number over its label in a small box (match stats, play record).
+class StatCell extends StatelessWidget {
+  const StatCell({super.key, required this.value, required this.label});
+  final String value, label;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
+    decoration: BoxDecoration(
+      color: const Color(0xFFFFFDF7),
+      border: Border.all(color: const Color(0xFFC9CCD6), width: 1.5),
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          // Coiny draws "/" leaning like a backslash, so a slash ("34/120") is set in the body font.
+          child: Text.rich(
+            TextSpan(
+              children: [
+                for (final (i, part) in value.split('/').indexed) ...[
+                  if (i > 0) TextSpan(text: '/', style: T.body(20, Pal.ink)),
+                  TextSpan(text: part),
+                ],
+              ],
+            ),
+            style: T.display(20).copyWith(fontFeatures: const [FontFeature.tabularFigures()]),
+          ),
+        ),
+        Text(label, textAlign: TextAlign.center, style: T.body(13), maxLines: 1, overflow: TextOverflow.ellipsis),
+      ],
+    ),
+  );
+}
+
+/// [StatCell]s sharing a row evenly.
+class StatRow extends StatelessWidget {
+  const StatRow({super.key, required this.cells});
+  final List<StatCell> cells;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      for (var i = 0; i < cells.length; i++) ...[if (i > 0) const SizedBox(width: 6), Expanded(child: cells[i])],
+    ],
+  );
+}
+
+/// A small rounded label: a level, a point count, a boss badge.
+class Pill extends StatelessWidget {
+  const Pill(this.text, {super.key, this.color = Pal.ink, this.filled = false});
+  final String text;
+  final Color color;
+
+  /// Solid colour with white words (a badge) instead of a light tint.
+  final bool filled;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
+    decoration: BoxDecoration(
+      color: filled ? color : color.withValues(alpha: 0.1),
+      borderRadius: BorderRadius.circular(999),
+    ),
+    child: Text(text, style: filled ? T.display(13, Colors.white) : T.body(14, color)),
+  );
+}
+
+/// A reward amount in a rounded outline, with a coin when it is coins.
+class RewardChip extends StatelessWidget {
+  const RewardChip(this.text, {super.key, this.coin = false});
+  final String text;
+  final bool coin;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+    decoration: BoxDecoration(
+      color: const Color(0xFFFFFDF7),
+      border: Border.all(color: Pal.ink, width: 2),
+      borderRadius: BorderRadius.circular(999),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (coin) ...[const CoinIcon(size: 16), const SizedBox(width: 5)],
+        Flexible(
+          child: Text(text, style: T.body(17, Pal.ink), maxLines: 1, overflow: TextOverflow.ellipsis),
+        ),
+      ],
+    ),
+  );
 }
 
 class Segmented<V> extends StatelessWidget {
@@ -475,24 +579,49 @@ class BackChip extends StatelessWidget {
 }
 
 class ScreenHeader extends StatelessWidget {
-  const ScreenHeader({super.key, required this.title, this.onBack, this.trailing});
+  const ScreenHeader({super.key, required this.title, this.onBack, this.trailing, this.badge, this.subtitle});
   final String title;
   final VoidCallback? onBack;
   final Widget? trailing;
 
+  /// Shown right after the title, such as a boss badge.
+  final Widget? badge;
+
+  /// A second line under the title.
+  final String? subtitle;
+
   @override
-  Widget build(BuildContext context) => SizedBox(
-    height: 40,
-    child: Row(
+  Widget build(BuildContext context) {
+    final head = Row(
       children: [
-        if (onBack != null) ...[BackChip(onTap: onBack!), const SizedBox(width: 8)],
-        Expanded(
+        Flexible(
           child: Text(title, style: T.display(22), maxLines: 1, overflow: TextOverflow.ellipsis),
         ),
-        ?trailing,
+        if (badge != null) ...[const SizedBox(width: 8), badge!],
       ],
-    ),
-  );
+    );
+    return SizedBox(
+      height: subtitle == null ? 40 : null,
+      child: Row(
+        children: [
+          if (onBack != null) ...[BackChip(onTap: onBack!), const SizedBox(width: 8)],
+          Expanded(
+            child: subtitle == null
+                ? head
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      head,
+                      Text(subtitle!, style: T.body(15)),
+                    ],
+                  ),
+          ),
+          ?trailing,
+        ],
+      ),
+    );
+  }
 }
 
 /// Repaints every frame while mounted (hero, wardrobe preview); gives the painter elapsed seconds.

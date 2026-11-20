@@ -21,7 +21,7 @@ class UpgradeScreen extends StatelessWidget {
         Stat.spd,
         'Tốc độ',
         p.spd,
-        'thời gian ×${mulTime(p).toStringAsFixed(2)} · chạy ×${mulWalk(p).toStringAsFixed(2)}',
+        'thời gian ×${mulTime(p).toStringAsFixed(2)}, chạy ×${mulWalk(p).toStringAsFixed(2)}',
         'ra đòn, giơ khiên nhanh hơn',
       ),
     ];
@@ -56,7 +56,13 @@ class UpgradeScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('${r.$2} · ${r.$3} điểm', style: T.display(18)),
+                          Row(
+                            children: [
+                              Flexible(child: Text(r.$2, style: T.display(18))),
+                              const SizedBox(width: 8),
+                              Pill('${r.$3} điểm'),
+                            ],
+                          ),
                           Text('${r.$4} (${r.$5})', style: T.body(14)),
                         ],
                       ),
@@ -81,11 +87,29 @@ class UpgradeScreen extends StatelessWidget {
               border: Border.all(color: const Color(0x80474B55), width: 1.5),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Text(
-              'Bộ đồ hiện tại sau khi cộng điểm: công ${g.pw.atk.round()} · thủ ${g.ps.def.round()} · '
-              'thi triển ${g.pw.cast.toStringAsFixed(2)} s · giơ khiên ${(g.ps.raise * 1000).round()} ms. '
-              'Độ lì ×${toughness(p).toStringAsFixed(2)}: cấp càng cao càng khó bị đánh văng.',
-              style: T.body(15),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text('Bộ đồ hiện tại sau khi cộng điểm', style: T.display(15)),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Expanded(child: Text('Công ${g.pw.atk.round()}', style: T.body(15))),
+                    Expanded(child: Text('Thủ ${g.ps.def.round()}', style: T.body(15))),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Expanded(child: Text('Thi triển ${g.pw.cast.toStringAsFixed(2)} s', style: T.body(15))),
+                    Expanded(child: Text('Giơ khiên ${(g.ps.raise * 1000).round()} ms', style: T.body(15))),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Độ lì ×${toughness(p).toStringAsFixed(2)}: cấp càng cao càng khó bị đánh văng.',
+                  style: T.body(14),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 10),

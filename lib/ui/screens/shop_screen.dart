@@ -82,7 +82,7 @@ class _ShopScreenState extends State<ShopScreen> {
         buyLabel = 'Chỉ có trên bản app';
       }
     } else if (s.coins >= it.price) {
-      buyLabel = 'Mua · ${fmtNum(it.price)} xu';
+      buyLabel = 'Mua (${fmtNum(it.price)} xu)';
       buy = () => g.buyOrEquip(slot, selId);
     } else {
       buyLabel = 'Thiếu ${fmtNum(it.price - s.coins)} xu';

@@ -286,7 +286,7 @@ class _DrawScreenState extends State<DrawScreen> {
         ? [
             StatItem('Tấn công', ok ? '${eW.atk.round()}' : '-', eW.atk / 600),
             StatItem('Thi triển', ok ? '${eW.cast.toStringAsFixed(2)} s' : '-', ok ? (1.5 - eW.cast) / 1.3 : 0),
-            StatItem('Tầm đánh', ok ? '${eW.reach.round()} · ${eW.cls}' : '-', eW.reach / 300),
+            StatItem('Tầm đánh', ok ? '${eW.reach.round()} (${eW.cls})' : '-', eW.reach / 300),
             StatItem('Dài × rộng', ok ? '${eW.len.round()} × ${eW.wid.round()}' : '-', (eW.len + eW.wid) / 420),
           ]
         : [
@@ -302,11 +302,10 @@ class _DrawScreenState extends State<DrawScreen> {
     items.add(
       StatItem(
         'Đi lại',
-        ok
-            ? '×${gw.toStringAsFixed(2)} · vũ khí ×${walkW(eW).toStringAsFixed(2)}, khiên ×${walkS(eS).toStringAsFixed(2)}'
-            : '-',
+        ok ? '×${gw.toStringAsFixed(2)}' : '-',
         (gw - 0.5) / 0.75,
         wide: true,
+        note: ok ? 'vũ khí ×${walkW(eW).toStringAsFixed(2)}, khiên ×${walkS(eS).toStringAsFixed(2)}' : null,
       ),
     );
     final boosted = pts.total > 0;
@@ -488,7 +487,7 @@ class _DrawScreenState extends State<DrawScreen> {
                 Expanded(
                   flex: 2,
                   child: SketchButton(
-                    label: first ? (weapon ? 'Tiếp: vẽ khiên' : 'Xong, vào màn ${g.save.stage + 1}') : 'Lưu đồ',
+                    label: first ? (weapon ? 'Vẽ Khiên' : 'XONG') : 'Lưu đồ',
                     primary: true,
                     onTap: _done,
                   ),

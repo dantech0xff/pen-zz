@@ -118,7 +118,8 @@ class _BattleScreenState extends State<BattleScreen> {
                               wins: h.winsP,
                               of: battle.roundsToWin,
                               color: rgb(p.look.body),
-                              ad: 'công ${p.w.atk.round()} · thủ ${p.s.def.round()}',
+                              atk: p.w.atk.round(),
+                              def: p.s.def.round(),
                               right: false,
                             ),
                           ),
@@ -139,7 +140,8 @@ class _BattleScreenState extends State<BattleScreen> {
                               wins: h.winsB,
                               of: battle.roundsToWin,
                               color: rgb(b.look.body),
-                              ad: 'công ${b.w.atk.round()} · thủ ${b.s.def.round()}',
+                              atk: b.w.atk.round(),
+                              def: b.s.def.round(),
                               right: true,
                             ),
                           ),
@@ -181,9 +183,10 @@ class _BattleScreenState extends State<BattleScreen> {
                             Expanded(
                               flex: 78,
                               child: _Pad(
+                                key: const ValueKey('pad-back'),
                                 label: '',
+                                semantic: 'Lùi',
                                 icon: Icons.arrow_left_rounded,
-                                sub: 'lùi',
                                 move: true,
                                 onDown: () => game.pad(back: true),
                                 onUp: () => game.pad(back: false),
@@ -193,9 +196,10 @@ class _BattleScreenState extends State<BattleScreen> {
                             Expanded(
                               flex: 78,
                               child: _Pad(
+                                key: const ValueKey('pad-fwd'),
                                 label: '',
+                                semantic: 'Tới',
                                 icon: Icons.arrow_right_rounded,
-                                sub: 'tới',
                                 move: true,
                                 onDown: () => game.pad(fwd: true),
                                 onUp: () => game.pad(fwd: false),
@@ -205,8 +209,9 @@ class _BattleScreenState extends State<BattleScreen> {
                             Expanded(
                               flex: 100,
                               child: _Pad(
+                                key: const ValueKey('pad-block'),
                                 label: 'ĐỠ',
-                                sub: h.blockReady ? 'giữ để đỡ' : 'không khiên',
+                                semantic: h.blockReady ? 'Đỡ' : 'Đỡ, chưa có khiên',
                                 enabled: h.blockReady,
                                 onDown: () => game.pad(block: true),
                                 onUp: () => game.pad(block: false),
@@ -216,8 +221,9 @@ class _BattleScreenState extends State<BattleScreen> {
                             Expanded(
                               flex: 118,
                               child: _Pad(
+                                key: const ValueKey('pad-attack'),
                                 label: 'ĐÁNH',
-                                sub: 'chạm để vung',
+                                semantic: 'Đánh',
                                 attack: true,
                                 ready: h.atkReady,
                                 onDown: game.attack,
@@ -318,18 +324,29 @@ class _BattleScreenState extends State<BattleScreen> {
     final lv = o.kind == OppKind.stage ? LevelDef(o.stage) : null;
     final title = r.won ? (lv != null && lv.boss ? 'Hạ trùm rồi!' : 'Thắng!') : 'Thua rồi';
     final body = <Widget>[
-      Text(
-        'Tỉ số ${battle.winsP}-${battle.winsB} · trúng ${st.hits} đòn · chặn ${st.blocks} · đỡ chuẩn ${st.parries}',
-        textAlign: TextAlign.center,
-        style: T.body(16),
+      StatRow(
+        cells: [
+          StatCell(value: '${battle.winsP}-${battle.winsB}', label: 'tỉ số'),
+          StatCell(value: '${st.hits}', label: 'trúng đòn'),
+          StatCell(value: '${st.blocks}', label: 'chặn'),
+          StatCell(value: '${st.parries}', label: 'đỡ chuẩn'),
+        ],
       ),
-      const SizedBox(height: 4),
-      Text('+${r.coins} xu · +${r.xp} kinh nghiệm', textAlign: TextAlign.center, style: T.body(19, Pal.ink)),
+      const SizedBox(height: 8),
+      Wrap(
+        alignment: WrapAlignment.center,
+        spacing: 8,
+        runSpacing: 6,
+        children: [RewardChip('+${r.coins} xu', coin: true), RewardChip('+${r.xp} kinh nghiệm')],
+      ),
       if (m.doubled(r))
-        Text(
-          'Đã nhân đôi: thêm +${r.coins} xu · +${r.xp} kinh nghiệm',
-          textAlign: TextAlign.center,
-          style: T.body(16, Pal.ink).copyWith(backgroundColor: Pal.hl),
+        Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Text(
+            'Đã nhân đôi: thêm +${r.coins} xu và +${r.xp} kinh nghiệm',
+            textAlign: TextAlign.center,
+            style: T.body(16, Pal.ink).copyWith(backgroundColor: Pal.hl),
+          ),
         )
       else if (m.canDouble(r))
         Padding(
@@ -410,11 +427,6 @@ class _BattleScreenState extends State<BattleScreen> {
       buttons.add(SketchButton(label: 'Đấu lại', primary: true, onTap: () => _leave(nav.startBattle)));
       buttons.add(SketchButton(label: 'Về luyện tập', onTap: () => _leave(() => nav.go(Scr.practice))));
     }
-    if (g.save.free > 0) {
-      buttons.add(
-        SketchButton(label: 'Cộng ${g.save.free} điểm nâng cấp', onTap: () => _leave(() => nav.go(Scr.upgrade))),
-      );
-    }
     if (!r.won) {
       buttons.add(
         SketchButton(
@@ -449,11 +461,12 @@ class _Side extends StatelessWidget {
     required this.wins,
     required this.of,
     required this.color,
-    required this.ad,
+    required this.atk,
+    required this.def,
     required this.right,
   });
-  final String name, ad;
-  final int pct, wins, of;
+  final String name;
+  final int pct, wins, of, atk, def;
   final Color color;
   final bool right;
 
@@ -463,7 +476,18 @@ class _Side extends StatelessWidget {
     children: [
       Text(name, style: T.body(15, color), maxLines: 1, overflow: TextOverflow.ellipsis),
       Text('$pct%', style: T.display(30, color).copyWith(fontFeatures: const [FontFeature.tabularFigures()])),
-      Text(ad, style: T.body(13, color), maxLines: 1, overflow: TextOverflow.ellipsis),
+      FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: right ? Alignment.centerRight : Alignment.centerLeft,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('công $atk', style: T.body(13, color)),
+            const SizedBox(width: 8),
+            Text('thủ $def', style: T.body(13, color)),
+          ],
+        ),
+      ),
       const SizedBox(height: 2),
       Row(
         mainAxisSize: MainAxisSize.min,
@@ -488,8 +512,9 @@ class _Side extends StatelessWidget {
 /// Touch pad. Uses raw pointer events so holding ĐỠ and the forward arrow at once works (multi-touch).
 class _Pad extends StatefulWidget {
   const _Pad({
+    super.key,
     required this.label,
-    required this.sub,
+    required this.semantic,
     required this.onDown,
     required this.onUp,
     this.move = false,
@@ -499,7 +524,8 @@ class _Pad extends StatefulWidget {
     this.icon,
   });
 
-  final String label, sub;
+  /// [semantic] is what a screen reader says; the pads show only an arrow or a short word.
+  final String label, semantic;
   final IconData? icon;
   final VoidCallback onDown, onUp;
   final bool move, attack, ready, enabled;
@@ -535,47 +561,41 @@ class _PadState extends State<_Pad> {
   Widget build(BuildContext context) {
     final held = _pointers.isNotEmpty;
     final color = widget.move ? Pal.pencil : Pal.ink;
-    return Opacity(
-      opacity: widget.enabled ? 1 : 0.35,
-      child: Listener(
-        onPointerDown: (e) => _down(e.pointer),
-        onPointerUp: (e) => _up(e.pointer),
-        onPointerCancel: (e) => _up(e.pointer),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 60),
-          height: 78,
-          transform: held ? (Matrix4.identity()..translateByDouble(0, 2, 0, 1)) : Matrix4.identity(),
-          decoration: BoxDecoration(
-            color: widget.attack ? Pal.hl : const Color(0xFFFFFDF7),
-            border: Border.all(color: color, width: 3),
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.elliptical(18, 12),
-              topRight: Radius.elliptical(10, 20),
-              bottomRight: Radius.elliptical(20, 10),
-              bottomLeft: Radius.elliptical(12, 18),
-            ),
-            boxShadow: [
-              if (widget.ready) const BoxShadow(color: Pal.hl, spreadRadius: 3),
-              if (widget.ready) const BoxShadow(color: Pal.ink, spreadRadius: 5),
-              if (held)
-                const BoxShadow(color: Color(0x1F000000), offset: Offset(0, -2), blurRadius: 0, spreadRadius: -2),
-            ],
-          ),
-          alignment: Alignment.center,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (widget.icon != null)
-                Icon(widget.icon, size: 40, color: color)
-              else
-                Text(widget.label, style: T.display(22, color)),
-              Text(
-                widget.sub,
-                style: T.body(13, color.withValues(alpha: 0.75)),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+    return Semantics(
+      button: true,
+      enabled: widget.enabled,
+      label: widget.semantic,
+      excludeSemantics: true,
+      child: Opacity(
+        opacity: widget.enabled ? 1 : 0.35,
+        child: Listener(
+          onPointerDown: (e) => _down(e.pointer),
+          onPointerUp: (e) => _up(e.pointer),
+          onPointerCancel: (e) => _up(e.pointer),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 60),
+            height: 78,
+            transform: held ? (Matrix4.identity()..translateByDouble(0, 2, 0, 1)) : Matrix4.identity(),
+            decoration: BoxDecoration(
+              color: widget.attack ? Pal.hl : const Color(0xFFFFFDF7),
+              border: Border.all(color: color, width: 3),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.elliptical(18, 12),
+                topRight: Radius.elliptical(10, 20),
+                bottomRight: Radius.elliptical(20, 10),
+                bottomLeft: Radius.elliptical(12, 18),
               ),
-            ],
+              boxShadow: [
+                if (widget.ready) const BoxShadow(color: Pal.hl, spreadRadius: 3),
+                if (widget.ready) const BoxShadow(color: Pal.ink, spreadRadius: 5),
+                if (held)
+                  const BoxShadow(color: Color(0x1F000000), offset: Offset(0, -2), blurRadius: 0, spreadRadius: -2),
+              ],
+            ),
+            alignment: Alignment.center,
+            child: widget.icon != null
+                ? Icon(widget.icon, size: 40, color: color)
+                : Text(widget.label, style: T.display(22, color)),
           ),
         ),
       ),

@@ -144,11 +144,26 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Column(
                           children: [
                             Text(chapter.name, style: T.display(17)),
-                            Text(
-                              'Sân ${chapter.arena.name} · qua ${(s.stage - ch * 10).clamp(0, 10)}/10 · $chStars/30 sao',
-                              style: T.body(13),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                            Wrap(
+                              alignment: WrapAlignment.center,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              spacing: 12,
+                              children: [
+                                Text('Sân ${chapter.arena.name}', style: T.body(13)),
+                                Text('Qua ${(s.stage - ch * 10).clamp(0, 10)}/10 màn', style: T.body(13)),
+                                Semantics(
+                                  label: '$chStars trên 30 sao',
+                                  excludeSemantics: true,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      StarIcon(on: chStars > 0, size: 14, offColor: Pal.pencil),
+                                      const SizedBox(width: 2),
+                                      Text('$chStars/30', style: T.body(13)),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),

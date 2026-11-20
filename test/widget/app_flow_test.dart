@@ -43,7 +43,7 @@ void main() {
     await tester.dragFrom(handAt(), const Offset(4, -130));
     await settle(tester);
     expect(g.save.w, isEmpty, reason: 'gear is only saved at the end');
-    await tester.tap(find.text('Tiếp: vẽ khiên'));
+    await tester.tap(find.text('Vẽ Khiên'));
     await settle(tester);
     expect(find.text('Vẽ khiên'), findsOneWidget);
 
@@ -51,14 +51,14 @@ void main() {
     await tester.binding.handlePopRoute();
     await settle(tester);
     expect(find.text('Vẽ vũ khí'), findsOneWidget);
-    await tester.tap(find.text('Tiếp: vẽ khiên'));
+    await tester.tap(find.text('Vẽ Khiên'));
     await settle(tester);
     expect(find.text('Vẽ khiên'), findsOneWidget);
 
     // A short shield stroke near the shield hand.
     await tester.dragFrom(handAt() + const Offset(-8, 0), const Offset(0, 70));
     await settle(tester);
-    await tester.tap(find.text('Xong, vào màn 1'));
+    await tester.tap(find.text('XONG'));
     await settle(tester);
     expect(g.save.w, isNotEmpty);
     expect(find.text('Vào trận'), findsOneWidget);
@@ -98,7 +98,7 @@ void main() {
     expect(find.text('Mũ'), findsWidgets);
     await tester.tap(find.text('Nón lá'));
     await tester.pump(const Duration(milliseconds: 100));
-    await tester.tap(find.text('Mua · 150 xu'));
+    await tester.tap(find.text('Mua (150 xu)'));
     await tester.pump(const Duration(milliseconds: 100));
     expect(g.save.coins, 850);
     expect(g.owns('non-la'), isTrue);
@@ -140,7 +140,7 @@ void main() {
     expect(battle.phase, Phase.fight);
     expect(battle.p.state, FState.idle);
 
-    final fwd = await tester.startGesture(tester.getCenter(find.text('tới')), pointer: 11);
+    final fwd = await tester.startGesture(tester.getCenter(find.byKey(const ValueKey('pad-fwd'))), pointer: 11);
     await tester.pump(const Duration(milliseconds: 16));
     expect(battle.inFwd, isTrue);
 
